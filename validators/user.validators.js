@@ -9,6 +9,7 @@ export const adminCreateUserRules = [
   sexValidator,
   body('role').optional().isIn(['STUDENT', 'SUBADMIN', 'ADMIN']),
   body('isActive').optional().isBoolean(),
+  body('expiresAt').optional({ nullable: true }).isISO8601().withMessage("صيغة تاريخ انتهاء الصلاحية غير صحيحة"),
 ];
 
 export const adminUpdateUserRules = [
@@ -24,4 +25,5 @@ export const adminUpdateUserRules = [
   body('sex').optional().isIn(['ذ', 'ا','أ', 'ذكر', 'انثى','أنثى']),
   body('role').optional().isIn(['STUDENT', 'SUBADMIN', 'ADMIN']),
   body('isActive').optional().isBoolean(),
+  body('expiresAt').optional({ nullable: true }).isISO8601().withMessage("صيغة تاريخ انتهاء الصلاحية غير صحيحة"),
 ];

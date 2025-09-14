@@ -1,12 +1,11 @@
 import { body, param } from "express-validator";
 
-export const courseIdParam = param("courseId").isInt({ gt: 0 }).withMessage("courseId غير صالح");
-export const levelIdParam = param("levelId").isInt({ gt: 0 }).withMessage("levelId غير صالح");
+export const courseLevelIdParam = param("courseLevelId").isInt({ gt: 0 }).withMessage("courseLevelId غير صالح");
 export const idParam = param("id").isInt({ gt: 0 }).withMessage("id غير صالح");
 
 export const levelCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
-  body("orderIndex").optional().isInt({ min: 0 })
+  body("order").optional().isInt({ min: 0 })
 ];
 
 export const lessonCreateRules = [

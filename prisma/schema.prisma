@@ -37,6 +37,7 @@ model User {
   isVerified   Boolean   @default(false)
   isActive     Boolean   @default(true)
   expiresAt    DateTime?
+  accessCodes  AccessCode[]
 
   currentSessionId String?        @unique
   sessions         Session[]
@@ -162,7 +163,7 @@ model Instructor {
   name      String
   bio       String?
   avatarUrl String?
-  courses   Course[]
+  courses   CourseInstructor[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -177,8 +178,6 @@ model Course {
   isFree       Boolean          @default(false)
   subjectId    Int
   subject      Subject          @relation(fields: [subjectId], references: [id])
-  instructorId Int
-  instructor   Instructor       @relation(fields: [instructorId], references: [id])
   lessons      Lesson[]
   levels       CourseLevel[]
   quizzes      Quiz[]
@@ -189,9 +188,9 @@ model Course {
   updatedAt    DateTime         @updatedAt
   Transaction  Transaction[]
   CodeRequest  CodeRequest[]
+  instructors  CourseInstructor[]
 
   @@index([subjectId])
-  @@index([instructorId])
 }
 
 model CourseLevel {
@@ -199,6 +198,7 @@ model CourseLevel {
   name      String
   order     Int?
   courseId  Int
+  isActive  Boolean  @default(true)
   course    Course   @relation(fields: [courseId], references: [id])
   lessons   Lesson[]
   createdAt DateTime @default(now())
@@ -217,6 +217,7 @@ model Lesson {
   durationSec    Int?
   orderIndex     Int?
   isFreePreview  Boolean          @default(false)
+  isActive       Boolean          @default(true)
   courseId       Int
   course         Course           @relation(fields: [courseId], references: [id])
   courseLevelId  Int?
@@ -256,12 +257,25 @@ model AccessCode {
   issuedBy  Int?
   issuedAt  DateTime  @default(now())
   usedBy    Int?
+  user      User?     @relation(fields: [usedBy], references: [id])
   usedAt    DateTime?
   expiresAt DateTime?
   isActive  Boolean   @default(true)
 
   @@index([courseId])
   @@index([usedBy])
+}
+
+model CourseInstructor {
+  courseId     Int
+  course       Course     @relation(fields: [courseId], references: [id])
+  instructorId Int
+  instructor   Instructor @relation(fields: [instructorId], references: [id])
+  createdAt    DateTime   @default(now())
+
+  @@id([courseId, instructorId])
+  @@index([courseId])
+  @@index([instructorId])
 }
 
 model CodeRequest {

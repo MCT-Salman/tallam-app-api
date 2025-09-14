@@ -57,7 +57,7 @@ export const forgotRequestOtp = async (req, res, next) => {
     res.json({
       success: SUCCESS_REQUEST,
       message: result.message,
-      data: {}
+      data: result.data
     });
   } catch (error) {
     error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;

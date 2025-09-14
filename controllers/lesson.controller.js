@@ -1,14 +1,14 @@
 import { serializeResponse } from "../utils/serialize.js";
 import {
-  createLevel, listLevelsByCourse, updateLevel, toggleLevel,
+  createLevel, listLevelsByCourse, updateLevel, toggleLevel, deleteLevel,
   createLessonForCourse, createLessonForLevel, listLessonsByCourse, listLessonsByLevel,
-  updateLesson, toggleLesson
+  updateLesson, toggleLesson, deleteLesson
 } from "../services/lesson.service.js";
 
 // Levels (Admin)
 export const adminCreateLevel = async (req, res, next) => {
   try { 
-    const level = await createLevel(parseInt(req.params.courseId,10), { title: req.body.title, orderIndex: req.body.orderIndex? parseInt(req.body.orderIndex,10): 0 }); 
+    const level = await createLevel(parseInt(req.params.courseId,10), { title: req.body.title, order: req.body.order ? parseInt(req.body.order,10): 0 }); 
     res.status(201).json({ 
       success: true, 
       message: "تم إنشاء المستوى بنجاح",
@@ -34,7 +34,7 @@ export const adminListLevels = async (req, res, next) => {
 };
 export const adminUpdateLevel = async (req, res, next) => {
   try { 
-    const level = await updateLevel(parseInt(req.params.id,10), { title: req.body.title, orderIndex: req.body.orderIndex? parseInt(req.body.orderIndex,10): undefined }); 
+    const level = await updateLevel(parseInt(req.params.id,10), { title: req.body.title, order: req.body.order ? parseInt(req.body.order,10): undefined }); 
     res.json({ 
       success: true, 
       message: "تم تحديث المستوى بنجاح",
@@ -60,6 +60,24 @@ export const adminToggleLevel = async (req, res, next) => {
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
+export const adminDeleteLevel = async (req, res, next) => {
+  try {
+    await deleteLevel(parseInt(req.params.id, 10));
+    res.json({
+      success: true,
+      message: "تم حذف المستوى بنجاح"
+    });
+  } catch (e) {
+    if (e.code === 'P2025') { // Prisma record not found
+      e.statusCode = 404;
+      e.message = "المستوى غير موجود";
+    } else {
+      e.statusCode = e.statusCode || 400;
+    }
+    next(e);
+  }
+};
+
 // Lessons (Admin)
 export const adminCreateLessonForCourse = async (req, res, next) => {
   try { 
@@ -83,7 +101,7 @@ export const adminCreateLessonForCourse = async (req, res, next) => {
 };
 export const adminCreateLessonForLevel = async (req, res, next) => {
   try { 
-    const lesson = await createLessonForLevel(parseInt(req.params.levelId,10), {
+    const lesson = await createLessonForLevel(parseInt(req.params.courseLevelId,10), {
       title: req.body.title,
       youtubeUrl: req.body.youtubeUrl,
       youtubeId: req.body.youtubeId,
@@ -134,6 +152,24 @@ export const adminToggleLesson = async (req, res, next) => {
     }); 
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};
+
+export const adminDeleteLesson = async (req, res, next) => {
+  try {
+    await deleteLesson(parseInt(req.params.id, 10));
+    res.json({
+      success: true,
+      message: "تم حذف الدرس بنجاح"
+    });
+  } catch (e) {
+    if (e.code === 'P2025') { // Prisma record not found
+      e.statusCode = 404;
+      e.message = "الدرس غير موجود";
+    } else {
+      e.statusCode = e.statusCode || 400;
+    }
+    next(e);
+  }
 };
 
 // Public

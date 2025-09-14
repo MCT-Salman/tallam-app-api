@@ -1,7 +1,7 @@
 import { UserModel } from '../models/index.js';
 import { hashPassword } from '../utils/hash.js';
 import { getCountryFromPhone } from '../utils/phoneCountry.js';
-import { NUMBER_ALREADY_EXIST } from '../validators/messagesResponse.js';
+import { INSUFFICIENT_PERMISSIONS, NUMBER_ALREADY_EXIST } from '../validators/messagesResponse.js';
 
 /**
  * Get all users with filtering and pagination (for admins)
@@ -53,7 +53,7 @@ export const getUserById = async (id) => {
   // Using a select clause to explicitly exclude the password hash
   return UserModel.findById(id, {
     id: true, name: true, phone: true, birthDate: true, avatarUrl: true,
-    role: true, sex: true, country: true, countryCode: true,
+    role: true, sex: true, country: true, countryCode: true, expiresAt: true,
     isVerified: true, isActive: true, createdAt: true, updatedAt: true,
   });
 };
@@ -61,10 +61,17 @@ export const getUserById = async (id) => {
 /**
  * Create a new user (by admin)
  * @param {object} userData - { phone, password, name, birthDate, sex, role, isActive }
+ * @param {object} actor - The admin performing the action
  * @returns {Promise<User>}
  */
-export const createUserByAdmin = async (userData) => {
-  const { phone, password, name, birthDate, sex, role, isActive } = userData;
+export const createUserByAdmin = async (userData, actor) => {
+  const { phone, password, name, birthDate, sex, role, isActive, expiresAt } = userData;
+
+  // Security check: Only ADMIN can create other ADMINs or SUBADMINs.
+  const targetRole = role || 'STUDENT';
+  if (actor.role === 'SUBADMIN' && (targetRole === 'ADMIN' || targetRole === 'SUBADMIN')) {
+    throw new Error(INSUFFICIENT_PERMISSIONS);
+  }
 
   const exists = await UserModel.findByPhone(phone);
   if (exists) throw new Error(NUMBER_ALREADY_EXIST);
@@ -78,11 +85,12 @@ export const createUserByAdmin = async (userData) => {
     name,
     birthDate: new Date(birthDate),
     sex,
-    role: role || 'STUDENT',
+    role: targetRole,
     isActive: isActive !== undefined ? isActive : true,
     isVerified: true, // Admin-created users are verified by default
     country: phoneInfo.success ? phoneInfo.countryName : null,
     countryCode: phoneInfo.success ? phoneInfo.countryCode : null,
+    expiresAt: actor.role === 'ADMIN' && expiresAt ? new Date(expiresAt) : null,
   });
 
   const { passwordHash: _, ...safeUser } = user;
@@ -93,11 +101,27 @@ export const createUserByAdmin = async (userData) => {
  * Update a user (by admin)
  * @param {number} id
  * @param {object} updateData
+ * @param {object} actor - The admin performing the action
  * @returns {Promise<User>}
  */
-export const updateUserByAdmin = async (id, updateData) => {
+export const updateUserByAdmin = async (id, updateData, actor) => {
   const { phone, password, ...restData } = updateData;
   const dataToUpdate = { ...restData };
+
+  // Security check: SUBADMIN can only edit STUDENTS.
+  if (actor.role === 'SUBADMIN') {
+    const targetUser = await UserModel.findById(id);
+    if (!targetUser) throw new Error('المستخدم المستهدف غير موجود');
+
+    // SUBADMIN cannot change roles, and can only edit students.
+    if (updateData.role || targetUser.role !== 'STUDENT') {
+      throw new Error(INSUFFICIENT_PERMISSIONS);
+    }
+    // SUBADMIN cannot set expiration. We explicitly remove the property if it exists.
+    if (updateData.hasOwnProperty('expiresAt')) {
+        delete dataToUpdate.expiresAt;
+    }
+  }
 
   if (phone) {
     const exists = await UserModel.findByPhone(phone);
@@ -118,17 +142,31 @@ export const updateUserByAdmin = async (id, updateData) => {
     dataToUpdate.birthDate = new Date(updateData.birthDate);
   }
 
+  // Handle expiresAt - allow setting it to null
+  if (actor.role === 'ADMIN' && updateData.hasOwnProperty('expiresAt')) {
+    dataToUpdate.expiresAt = updateData.expiresAt ? new Date(updateData.expiresAt) : null;
+  }
+
   const user = await UserModel.updateById(id, dataToUpdate);
   const { passwordHash: _, ...safeUser } = user;
   return safeUser;
 };
 
+
 /**
  * Delete a user by ID (for admins)
  * @param {number} id
+ * @param {object} actor - The admin performing the action
  * @returns {Promise<User>}
  */
-export const deleteUserById = async (id) => {
+export const deleteUserById = async (id, actor) => {
+  // Security check: SUBADMIN can only delete STUDENTS.
+  if (actor.role === 'SUBADMIN') {
+    const targetUser = await UserModel.findById(id);
+    if (!targetUser || targetUser.role !== 'STUDENT') {
+      throw new Error(INSUFFICIENT_PERMISSIONS);
+    }
+  }
   // Prisma will handle cascading deletes based on schema relations.
   return UserModel.deleteById(id);
 };

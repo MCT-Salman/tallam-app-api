@@ -1,16 +1,16 @@
 import { Router } from "express";
 import { validate } from "../middlewares/validate.middleware.js";
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireAuth, optionalAuth } from "../middlewares/auth.middleware.js";
 import { requireRole } from "../middlewares/role.middleware.js";
 import {
-  domainCreateRules, subjectCreateRules, instructorCreateRules, courseCreateRules,
+  domainCreateRules, subjectCreateRules, instructorCreateRules, courseCreateRules, courseUpdateRules,
   toggleActiveRules, idParam, listQueryRules
 } from "../validators/catalog.validators.js";
 import {
   adminCreateDomain, adminListDomains, adminUpdateDomain, adminToggleDomain,
   adminCreateSubject, adminListSubjects, adminUpdateSubject, adminToggleSubject,
   adminCreateInstructor, adminListInstructors, adminUpdateInstructor, adminToggleInstructor,
-  adminCreateCourse, adminUpdateCourse, adminToggleCourse,
+  adminCreateCourse, adminUpdateCourse, adminToggleCourse, adminDeleteCourse, adminListCourses,
   publicListCourses, publicGetCourse
 } from "../controllers/catalog.controller.js";
 
@@ -32,12 +32,14 @@ r.get("/admin/instructors", requireAuth, requireRole(["ADMIN"]), adminListInstru
 r.put("/admin/instructors/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(instructorCreateRules), adminUpdateInstructor);
 r.put("/admin/instructors/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleInstructor);
 
+r.get("/admin/courses", requireAuth, requireRole(["ADMIN", "SUBADMIN"]), validate(listQueryRules), adminListCourses);
 r.post("/admin/courses", requireAuth, requireRole(["ADMIN"]), validate(courseCreateRules), adminCreateCourse);
-r.put("/admin/courses/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(courseCreateRules), adminUpdateCourse);
+r.put("/admin/courses/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(courseUpdateRules), adminUpdateCourse);
 r.put("/admin/courses/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleCourse);
+r.delete("/admin/courses/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteCourse);
 
 // Public routes
 r.get("/courses", validate(listQueryRules), publicListCourses);
-r.get("/courses/:id", validate(idParam), publicGetCourse);
+r.get("/courses/:id", optionalAuth, validate(idParam), publicGetCourse);
 
 export default r;

@@ -1,6 +1,7 @@
 import { body, param, query } from "express-validator";
 
 export const idParam = param("id").isInt({ gt: 0 }).withMessage("معرّف غير صالح");
+export const courseIdParam = param("courseId").isInt({ gt: 0 }).withMessage("courseId غير صالح");
 
 export const domainCreateRules = [
   body("name").exists({ checkFalsy: true }).withMessage("الاسم مطلوب").isString().isLength({ min: 2 }).withMessage("الاسم قصير")
@@ -20,13 +21,15 @@ export const instructorCreateRules = [
 export const courseCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
   body("description").optional().isString(),
-  body("priceUSD").optional().isFloat({ min: 0 }),
-  body("priceSYP").optional().isFloat({ min: 0 }),
-  body("promoVideoUrl").optional().isString(),
-  body("levelCount").optional().isInt({ min: 0 }),
+  body("price").optional().isFloat({ min: 0 }).withMessage("السعر يجب أن يكون رقماً"),
+  body("currency").optional().isString().withMessage("العملة يجب أن تكون نصاً"),
+  body("isFree").optional().isBoolean().withMessage("isFree يجب أن يكون قيمة منطقية"),
   body("subjectId").isInt({ gt: 0 }).withMessage("subjectId غير صالح"),
-  body("instructorId").isInt({ gt: 0 }).withMessage("instructorId غير صالح")
+  body("instructorIds").exists({ checkFalsy: true }).withMessage("يجب تحديد مدرب واحد على الأقل").isArray({ min: 1 }).withMessage("يجب تحديد مدرب واحد على الأقل"),
+  body("instructorIds.*").isInt({ gt: 0 }).withMessage("معرفات المدربين غير صالحة")
 ];
+
+export const courseUpdateRules = courseCreateRules.map(rule => rule.optional());
 
 export const toggleActiveRules = [
   body("isActive").isBoolean().withMessage("isActive غير صالح")

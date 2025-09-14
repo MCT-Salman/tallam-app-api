@@ -13,6 +13,7 @@ export const OTP_TIME_OUT_OTP = 5 * 60 * 1000
 
 // auth (Middleware) messages
 export const NO_AUTH = "ليس لديك الصلاحية"
+export const INSUFFICIENT_PERMISSIONS = "صلاحياتك غير كافية لتنفيذ هذا الإجراء"
 export const USER_NOT_FOUND = "المستخدم غير موجود"
 export const NOT_VERIFIED = "لم يتم التحقق من الحساب" 
 export const CANCELD_SESSION = "تم إلغاء الجلسة"
@@ -34,6 +35,7 @@ export const MAX_TRY_FAILURE_LOGIN = 5
 export const TIME_TRY_AFTER_FAILURE_LOGIN = 5 * 60 * 1000
 export const LOCKOUT_TIME_LOGIN = 5 * 60 * 1000
 export const CLEANUP_LIMIT = 5 * 60 * 1000
+export const ACCOUNT_EXPIRED = "انتهت صلاحية حسابك"
 export const ACCOUNT_LOCKED_LOGIN = "تم قفل الحساب"
 export const USER_NOT_FOUND_LOGIN = "هذا الحساب غير مسجل مسبقاَ"
 export const PHONENUMBER_OR_PASSWORD_FAILED = "رقم الهاتف أو كلمة المرور خاطئة"
@@ -63,4 +65,14 @@ export const USER_NOT_FOUND_PROFILE = "المستخدم غير موجود"
 export const CURRENT_PASSWORD_REQUIRED_TO_CHANGE_FROM_PROFILE = "يجب إدخال كلمة المرور الحالية لتغيير كلمة المرور"
 export const CURRENT_PASSWORD_NOT_CORRECT_PROFILE = "كلمة المرور الحالية غير صحيحة"
 export const UPDATE_PROFILE_INFO_SUCCESSFULLY = "تم تحديث الملف الشخصي بنجاح"
-// export const ddddd
+
+// Catalog & Purchase messages
+export const COURSE_NOT_FOUND = "الدورة غير موجودة";
+export const ALREADY_REQUESTED_CODE = "لديك طلب قيد المراجعة لهذه الدورة بالفعل.";
+
+// Quiz messages
+export const QUIZ_NOT_FOUND = "الاختبار غير موجود";
+export const QUIZ_NO_ACCESS = "ليس لديك صلاحية الوصول لهذا الاختبار";
+export const QUIZ_ALREADY_TAKEN = "لقد قمت بتقديم هذا الاختبار مسبقاً.";
+export const QUIZ_ALREADY_EXISTS = "هذه الدورة لديها اختبار بالفعل.";
+export const QUESTION_NEEDS_CORRECT_OPTION = "يجب أن يحتوي السؤال على خيار صحيح واحد على الأقل.";

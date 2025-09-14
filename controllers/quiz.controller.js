@@ -1,0 +1,118 @@
+import * as QuizService from '../services/quiz.service.js';
+import { serializeResponse } from '../utils/serialize.js';
+import { FAILURE_REQUEST, SUCCESS_REQUEST } from '../validators/messagesResponse.js';
+import { BAD_REQUEST_STATUS_CODE, NOT_FOUND_STATUS_CODE, SUCCESS_CREATE_STATUS_CODE, SUCCESS_STATUS_CODE } from '../validators/statusCode.js';
+
+const handleServiceError = (error, next) => {
+  if (error.message.includes('غير موجود') || error.code === 'P2025') {
+    error.statusCode = NOT_FOUND_STATUS_CODE;
+  } else {
+    error.statusCode = BAD_REQUEST_STATUS_CODE;
+  }
+  next(error);
+};
+
+// --- Quiz Management ---
+export const adminCreateQuiz = async (req, res, next) => {
+  try {
+    const courseId = parseInt(req.params.courseId, 10);
+    const quiz = await QuizService.createQuiz(courseId, req.body);
+    res.status(SUCCESS_CREATE_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم إنشاء الاختبار بنجاح.', data: serializeResponse(quiz) });
+  } catch (error) {
+    handleServiceError(error, next);
+  }
+};
+
+export const adminGetQuiz = async (req, res, next) => {
+  try {
+    const quizId = parseInt(req.params.id, 10);
+    const quiz = await QuizService.getQuizById(quizId);
+    if (!quiz) return res.status(NOT_FOUND_STATUS_CODE).json({ success: FAILURE_REQUEST, message: 'الاختبار غير موجود' });
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, data: serializeResponse(quiz) });
+  } catch (error) {
+    handleServiceError(error, next);
+  }
+};
+
+export const adminGetQuizByCourse = async (req, res, next) => {
+  try {
+    const courseId = parseInt(req.params.courseId, 10);
+    const quiz = await QuizService.getQuizByCourseId(courseId);
+    if (!quiz) return res.status(NOT_FOUND_STATUS_CODE).json({ success: FAILURE_REQUEST, message: 'لا يوجد اختبار لهذه الدورة' });
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, data: serializeResponse(quiz) });
+  } catch (error) {
+    handleServiceError(error, next);
+  }
+};
+
+export const adminUpdateQuiz = async (req, res, next) => {
+  try {
+    const quizId = parseInt(req.params.id, 10);
+    const quiz = await QuizService.updateQuiz(quizId, req.body);
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم تحديث الاختبار بنجاح.', data: serializeResponse(quiz) });
+  } catch (error) {
+    handleServiceError(error, next);
+  }
+};
+
+export const adminDeleteQuiz = async (req, res, next) => {
+  try {
+    const quizId = parseInt(req.params.id, 10);
+    await QuizService.deleteQuiz(quizId);
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم حذف الاختبار بنجاح.' });
+  } catch (error) {
+    handleServiceError(error, next);
+  }
+};
+
+// --- Question Management ---
+export const adminAddQuestion = async (req, res, next) => {
+  try {
+    const quizId = parseInt(req.params.quizId, 10);
+    const question = await QuizService.addQuestionToQuiz(quizId, req.body);
+    res.status(SUCCESS_CREATE_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تمت إضافة السؤال بنجاح.', data: serializeResponse(question) });
+  } catch (error) {
+    handleServiceError(error, next);
+  }
+};
+
+export const adminUpdateQuestion = async (req, res, next) => {
+  try {
+    const questionId = parseInt(req.params.id, 10);
+    const question = await QuizService.updateQuestion(questionId, req.body);
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم تحديث السؤال بنجاح.', data: serializeResponse(question) });
+  } catch (error) {
+    handleServiceError(error, next);
+  }
+};
+
+export const adminDeleteQuestion = async (req, res, next) => {
+  try {
+    const questionId = parseInt(req.params.id, 10);
+    await QuizService.deleteQuestion(questionId);
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم حذف السؤال بنجاح.' });
+  } catch (error) {
+    handleServiceError(error, next);
+  }
+};
+
+// --- Option Management ---
+export const adminUpdateOption = async (req, res, next) => {
+  try {
+    const optionId = parseInt(req.params.id, 10);
+    const option = await QuizService.updateOption(optionId, req.body);
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم تحديث الخيار بنجاح.', data: serializeResponse(option) });
+  } catch (error) {
+    handleServiceError(error, next);
+  }
+};
+
+export const adminDeleteOption = async (req, res, next) => {
+  try {
+    const optionId = parseInt(req.params.id, 10);
+    await QuizService.deleteOption(optionId);
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم حذف الخيار بنجاح.' });
+  } catch (error) {
+    handleServiceError(error, next);
+  }
+};

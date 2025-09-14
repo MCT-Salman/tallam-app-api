@@ -1,7 +1,7 @@
 import prisma from "../prisma/client.js";
 import { verifyAccessToken } from "../utils/jwt.js";
 import { getRealIP } from "../utils/ip.js";
-import { CANCELD_SESSION, FAILURE_REQUEST, IN_ACTIVE_ACCOUNT, NO_AUTH, NOT_VERIFIED, TOKEN_EXPIRED, TOKEN_NOT_CORRECT, USER_NOT_FOUND } from "../validators/messagesResponse.js";
+import { ACCOUNT_EXPIRED, CANCELD_SESSION, FAILURE_REQUEST, IN_ACTIVE_ACCOUNT, NO_AUTH, NOT_VERIFIED, TOKEN_EXPIRED, TOKEN_NOT_CORRECT, USER_NOT_FOUND } from "../validators/messagesResponse.js";
 
 /**
  * Middleware للتحقق من المصادقة
@@ -29,7 +29,8 @@ export const requireAuth = async (req, res, next) => {
         role: true,
         isActive: true,
         isVerified: true,
-        currentSessionId: true
+        currentSessionId: true,
+        expiresAt: true
       }
     });
 
@@ -63,6 +64,16 @@ export const requireAuth = async (req, res, next) => {
       return res.status(401).json({ 
         success: FAILURE_REQUEST,
         message: CANCELD_SESSION,
+        data:{}
+      });
+    }
+
+    // التحقق من تاريخ انتهاء صلاحية الحساب (للمدراء الفرعيين مثلاً)
+    if (user.expiresAt && new Date() > new Date(user.expiresAt)) {
+      return res.status(401).json({
+        success: FAILURE_REQUEST,
+        message: ACCOUNT_EXPIRED,
+        code: 'ACCOUNT_EXPIRED',
         data:{}
       });
     }
@@ -240,4 +251,3 @@ export const logRequest = (req, res, next) => {
 
   next();
 };
-

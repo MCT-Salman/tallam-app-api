@@ -2,8 +2,8 @@ import { serializeResponse } from "../utils/serialize.js";
 import { 
   createDomain, listDomains, updateDomain, toggleDomain,
   createSubject, listSubjects, updateSubject, toggleSubject,
-  createInstructor, listInstructors, updateInstructor, toggleInstructor,
-  createCourse, updateCourse, toggleCourse, getCourseById, listCoursesPublic
+  createInstructor, listInstructors, updateInstructor, toggleInstructor, 
+  createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic, listCoursesAdmin
 } from "../services/catalog.service.js";
 
 // Admin: Domains
@@ -174,54 +174,68 @@ export const adminToggleInstructor = async (req, res, next) => {
 
 // Admin: Courses
 export const adminCreateCourse = async (req, res, next) => {
-  try { 
-    const c = await createCourse({
-      title: req.body.title,
-      description: req.body.description,
-      priceUSD: req.body.priceUSD ? parseFloat(req.body.priceUSD) : null,
-      priceSYP: req.body.priceSYP ? parseFloat(req.body.priceSYP) : null,
-      promoVideoUrl: req.body.promoVideoUrl,
-      levelCount: req.body.levelCount ? parseInt(req.body.levelCount,10): 0,
-      subjectId: parseInt(req.body.subjectId,10),
-      instructorId: parseInt(req.body.instructorId,10),
-    });
+  try {
+    const { instructorIds, ...courseData } = req.body;
+    const c = await createCourse(courseData, instructorIds);
     res.status(201).json({ 
       success: true, 
-      data: {
-        message: "تم إنشاء الكورس بنجاح",
-        ...serializeResponse(c)
-      }
+      message: "تم إنشاء الكورس بنجاح",
+      data: serializeResponse(c)
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 export const adminUpdateCourse = async (req, res, next) => {
   try { 
-    const id = parseInt(req.params.id,10); const data = { ...req.body };
-    if (data.priceUSD!==undefined) data.priceUSD = data.priceUSD===null? null: parseFloat(data.priceUSD);
-    if (data.priceSYP!==undefined) data.priceSYP = data.priceSYP===null? null: parseFloat(data.priceSYP);
-    if (data.levelCount!==undefined) data.levelCount = parseInt(data.levelCount,10);
-    if (data.subjectId!==undefined) data.subjectId = parseInt(data.subjectId,10);
-    if (data.instructorId!==undefined) data.instructorId = parseInt(data.instructorId,10);
-    const c = await updateCourse(id, data); 
+    const id = parseInt(req.params.id, 10);
+    const { instructorIds, ...courseData } = req.body;
+    const c = await updateCourse(id, courseData, instructorIds);
     res.json({ 
       success: true, 
-      data: {
-        message: "تم تحديث الكورس بنجاح",
-        ...serializeResponse(c)
-      }
+      message: "تم تحديث الكورس بنجاح",
+      data: serializeResponse(c)
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
+
+export const adminDeleteCourse = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    await deleteCourse(id);
+    res.json({
+      success: true,
+      message: "تم حذف الكورس بنجاح"
+    });
+  } catch (e) {
+    if (e.code === 'P2025') { // Prisma record not found
+      e.statusCode = 404;
+      e.message = "الكورس غير موجود";
+    } else {
+      e.statusCode = e.statusCode || 400;
+    }
+    next(e);
+  }
+};
+
 export const adminToggleCourse = async (req, res, next) => {
   try { 
     const c = await toggleCourse(parseInt(req.params.id,10), !!req.body.isActive); 
     const message = !!req.body.isActive ? "تم تفعيل الكورس بنجاح" : "تم تعطيل الكورس بنجاح";
     res.json({ 
       success: true, 
-      data: {
-        message,
-        ...serializeResponse(c)
-      }
+      message,
+      data: serializeResponse(c)
+    }); 
+  }
+  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};
+
+export const adminListCourses = async (req, res, next) => {
+  try {
+    const result = await listCoursesAdmin(req.query, parseInt(req.query.skip) || 0, parseInt(req.query.take) || 20);
+    res.json({
+      success: true,
+      message: "تم جلب قائمة الكورسات بنجاح",
+      data: serializeResponse(result)
     }); 
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
@@ -240,30 +254,28 @@ export const publicListCourses = async (req, res, next) => {
     };
     const result = await listCoursesPublic(filters, skip, take);
     res.json({ 
-      success: true, 
-      data: {
-        message: "تم جلب قائمة الكورسات بنجاح",
-        ...serializeResponse(result)
-      }
+      success: true,
+      message: "تم جلب قائمة الكورسات بنجاح",
+      data: serializeResponse(result)
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
 export const publicGetCourse = async (req, res, next) => {
   try { 
-    const c = await getCourseById(parseInt(req.params.id,10)); 
-    if (!c || !c.isActive) return res.status(404).json({ 
+    const courseId = parseInt(req.params.id, 10);
+    const userId = req.user?.id; // from optionalAuth
+
+    const course = userId ? await getCourseByIdForUser(courseId, userId) : await getCourseById(courseId);
+
+    if (!course || !course.isActive) return res.status(404).json({ 
       success: false, 
-      data: { 
-        message: "الكورس غير موجود" 
-      }
+      message: "الكورس غير موجود"
     }); 
     res.json({ 
       success: true, 
-      data: {
-        message: "تم جلب الكورس بنجاح",
-        ...serializeResponse(c)
-      }
+      message: "تم جلب الكورس بنجاح",
+      data: serializeResponse(course)
     }); 
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
