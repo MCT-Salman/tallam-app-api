@@ -39,14 +39,20 @@ export const sendOtp = async (phone) => {
     // في التطوير يمكن اعادة الكود كـ convenience:
     return {
       success: SUCCESS_REQUEST,
-      message: `${OTP_SUCCESS_REQUEST}: ${code}`
+      message: `${OTP_SUCCESS_REQUEST}: ${code}`,
+      data: {
+        isAlreadyVerified: FAILURE_REQUEST
+      }
     };
   }
 
   // في الإنتاج — لا تُرجع الكود ولا تطبعه
   return {
     success: SUCCESS_REQUEST,
-    message: OTP_SUCCESS_REQUEST
+    message: OTP_SUCCESS_REQUEST,
+    data: {
+      isAlreadyVerified: FAILURE_REQUEST
+    }
   };
 
 

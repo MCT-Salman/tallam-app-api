@@ -22,6 +22,7 @@ import authRoutes from './routes/auth.routes.js';
 import adminRoutes from './routes/admin.routes.js';
 import otpRoutes from './routes/otp.routes.js';
 import catalogRoutes from './routes/catalog.routes.js';
+import userRoutes from './routes/user.routes.js';
 import lessonRoutes from './routes/lesson.routes.js';
 
 const app = express();
@@ -127,6 +128,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 // app.use('/api/otp', authLimiter, otpRoutes);
 app.use('/api/otp', otpRoutes);
+app.use('/api/users', userRoutes);
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/catalog', lessonRoutes);
 
@@ -224,4 +226,3 @@ app.listen(PORT, '0.0.0.0', () => {
 });
  
 export default app;
-
