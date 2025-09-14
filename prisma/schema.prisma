@@ -38,6 +38,7 @@ model User {
   isActive     Boolean   @default(true)
   expiresAt    DateTime?
   accessCodes  AccessCode[]
+  lessonProgress LessonProgress[]
 
   currentSessionId String?        @unique
   sessions         Session[]
@@ -225,6 +226,7 @@ model Lesson {
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   VideoLinkCheck VideoLinkCheck[]
+  progress       LessonProgress[]
 
   @@index([courseId])
   @@index([courseLevelId])
@@ -362,6 +364,20 @@ model CourseProgress {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, courseId])
+}
+
+model LessonProgress {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lessonId  Int
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, lessonId])
+  @@index([lessonId])
 }
 
 // ---------- Notifications / Stories / Ads ----------

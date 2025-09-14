@@ -27,6 +27,7 @@ import codeRequestRoutes from './routes/codeRequest.routes.js';
 import accessCodeRoutes from './routes/accessCode.routes.js';
 import quizRoutes from './routes/quiz.routes.js';
 import studentQuizRoutes from './routes/quiz.public.routes.js';
+import progressRoutes from './routes/progress.routes.js';
 import lessonRoutes from './routes/lesson.routes.js';
 
 const app = express();
@@ -137,6 +138,7 @@ app.use('/api/code-requests', codeRequestRoutes);
 app.use('/api/access-codes', accessCodeRoutes);
 app.use('/api/admin', quizRoutes); // Using /api/admin prefix for quiz management
 app.use('/api/quizzes', studentQuizRoutes); // Routes for students to take quizzes
+app.use('/api/progress', progressRoutes); // Routes for students to track progress
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/catalog', lessonRoutes);
 

@@ -1,7 +1,13 @@
 import * as AccessCodeService from '../services/accessCode.service.js';
 import { serializeResponse } from '../utils/serialize.js';
-import { FAILURE_REQUEST, SUCCESS_REQUEST } from '../validators/messagesResponse.js';
-import { BAD_REQUEST_STATUS_CODE, NOT_FOUND_STATUS_CODE, SUCCESS_CREATE_STATUS_CODE, SUCCESS_STATUS_CODE } from '../validators/statusCode.js';
+import {
+  COURSE_NOT_FOUND,
+  FAILURE_REQUEST,
+  SUCCESS_REQUEST,
+} from '../validators/messagesResponse.js';
+import {
+  BAD_REQUEST_STATUS_CODE, NOT_FOUND_STATUS_CODE, SUCCESS_CREATE_STATUS_CODE, SUCCESS_STATUS_CODE,
+} from '../validators/statusCode.js';
 
 // --- Admin Controllers ---
 
@@ -17,7 +23,11 @@ export const adminGenerateCodes = async (req, res, next) => {
       data: serializeResponse({ codes }),
     });
   } catch (error) {
-    error.statusCode = BAD_REQUEST_STATUS_CODE;
+    if (error.message === COURSE_NOT_FOUND) {
+      error.statusCode = NOT_FOUND_STATUS_CODE;
+    } else {
+      error.statusCode = BAD_REQUEST_STATUS_CODE;
+    }
     next(error);
   }
 };
