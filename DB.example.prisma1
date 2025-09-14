@@ -23,12 +23,6 @@ enum TransactionStatus {
   CANCELLED
 }
 
-enum PaymentMethod {
-  STRIPE
-  MANUAL
-  WALLET
-  OTHER
-}
 
 // ---------- Auth / Sessions / Security ----------
 model User {
@@ -228,7 +222,6 @@ model Transaction {
   course     Course?           @relation(fields: [courseId], references: [id])
   amount     Decimal           @db.Decimal(12,2)
   currency   String
-  method     PaymentMethod
   status     TransactionStatus @default(PENDING)
   providerId String?
   metadata   Json?

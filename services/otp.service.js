@@ -14,7 +14,7 @@ export const sendOtp = async (phone) => {
     return {
       success: SUCCESS_REQUEST,
       message: OTP_ALREADY_VERIFIED,
-      data:{
+      data: {
         isAlreadyVerified: SUCCESS_REQUEST
       }
     }
@@ -33,14 +33,31 @@ export const sendOtp = async (phone) => {
 
   await OtpCodeModel.createOtp(phone, code, expiresAt);
 
-  console.log(`📩 OTP to ${phone}: ${code}`);
+  // بعد إنشاء code و قبل الإرجاع
+  if (process.env.NODE_ENV === 'development') {
+    console.log(`📩 OTP to ${phone}: ${code}`);
+    // في التطوير يمكن اعادة الكود كـ convenience:
+    return {
+      success: SUCCESS_REQUEST,
+      message: `${OTP_SUCCESS_REQUEST}: ${code}`
+    };
+  }
+
+  // في الإنتاج — لا تُرجع الكود ولا تطبعه
   return {
     success: SUCCESS_REQUEST,
-    message: `${OTP_SUCCESS_REQUEST}: ${code}`,
-    data:{
-      isAlreadyVerified: FAILURE_REQUEST
-    }
+    message: OTP_SUCCESS_REQUEST
   };
+
+
+  // console.log(`📩 OTP to ${phone}: ${code}`);
+  // return {
+  //   success: SUCCESS_REQUEST,
+  //   message: `${OTP_SUCCESS_REQUEST}: ${code}`,
+  //   data:{
+  //     isAlreadyVerified: FAILURE_REQUEST
+  //   }
+  // };
 };
 
 export const verifyOtp = async (phone, code) => {

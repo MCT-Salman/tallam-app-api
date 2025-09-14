@@ -125,7 +125,8 @@ app.get('/', (req, res) => {
 // لا نطبق authLimiter على جميع مسارات /api/auth حتى لا تتأثر مسارات مثل /profile
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/otp', authLimiter, otpRoutes);
+// app.use('/api/otp', authLimiter, otpRoutes);
+app.use('/api/otp', otpRoutes);
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/catalog', lessonRoutes);
 

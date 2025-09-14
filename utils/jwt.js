@@ -8,14 +8,22 @@ const JWT_SECRET = process.env.JWT_SECRET ;
 const REFRESH_SECRET = process.env.REFRESH_SECRET ;
 const PASSWORD_RESET_SECRET = process.env.PASSWORD_RESET_SECRET;
 
+if (process.env.NODE_ENV === 'production') {
+  if (!process.env.JWT_SECRET || !process.env.REFRESH_SECRET || !process.env.PASSWORD_RESET_SECRET) {
+    console.error("Missing JWT_SECRET / REFRESH_SECRET / PASSWORD_RESET_SECRET in production env");
+    process.exit(1);
+  }
+}
+
+
 // مدد صلاحية التوكنات من المتغيرات البيئية
-// أمثلة: "15m", "1h", "7d"
-// نجعل access token قصير العمر، ونحافظ على الجلسة عبر refresh token طويل العمر
 const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRES_IN || "5m";
-// لجعل الجلسة لا تنتهي إلا عند تسجيل الخروج، نجعل مدة طويلة جداً بشكل افتراضي (10 سنوات)
+
 const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRES_IN || "10m";
 // توكن إعادة تعيين كلمة المرور قصير الأجل
 const RESET_TOKEN_EXPIRY = process.env.PASSWORD_RESET_EXPIRES_IN || "10m";
+
+
 
 // تحويل صيغ المدة (s, m, h, d) إلى ميلي ثانية
 const durationToMs = (str) => {

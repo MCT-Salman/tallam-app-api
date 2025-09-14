@@ -35,8 +35,10 @@ router.post('/register', authRateLimit, uploadAvatar.single('avatar'), normalize
 router.post('/login', authRateLimit, normalizePhoneE164, validate(loginRules), login);
 router.post('/refresh', authRateLimit, validate(refreshRules), refresh);
 // نسيت كلمة المرور
-router.post('/forgot/request-otp', normalizePhoneE164, otpRateLimitByPhone, validate(forgotRequestOtpRules), forgotRequestOtp);
-router.post('/forgot/verify-otp', normalizePhoneE164, otpRateLimitByPhone, validate(forgotVerifyOtpRules), forgotVerifyOtp);
+// router.post('/forgot/request-otp', normalizePhoneE164, otpRateLimitByPhone, validate(forgotRequestOtpRules), forgotRequestOtp);
+router.post('/forgot/request-otp', normalizePhoneE164, validate(forgotRequestOtpRules), forgotRequestOtp);
+// router.post('/forgot/verify-otp', normalizePhoneE164, otpRateLimitByPhone, validate(forgotVerifyOtpRules), forgotVerifyOtp);
+router.post('/forgot/verify-otp', normalizePhoneE164, validate(forgotVerifyOtpRules), forgotVerifyOtp);
 router.post('/forgot/reset', validate(forgotResetRules), resetPassword);
 
 // مسارات تتطلب مصادقة
