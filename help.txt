@@ -1,0 +1,8 @@
+postman: https://documenter.getpostman.com/view/47317298/2sB3HkrM3N
+
+npx prisma generate 
+npx prisma migrate deploy
+npx prisma studio
+npx prisma migrate dev --name add_is_active_to_user
+
+figma: https://www.figma.com/design/bYpDqqLsycd8aD6GhXAlgI/app?node-id=68-2&p=f&t=hDfWTJlkzSoUySUH-0

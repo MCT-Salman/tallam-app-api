@@ -1,0 +1,207 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  STUDENT
+  ADMIN
+  SUBADMIN
+}
+
+model User {
+  id           Int       @id @default(autoincrement())
+  phone        String    @unique
+  passwordHash String
+  name         String
+  birthDate    DateTime
+  avatarUrl    String?
+  role         Role      @default(STUDENT)
+  sex          String
+  country      String?   // سيتم ملؤه تلقائياً من رقم الهاتف
+  countryCode  String?   // رمز الدولة (+966, +20, إلخ)
+  isVerified   Boolean   @default(false)
+  isActive     Boolean   @default(true)
+
+  currentSessionId String?   @unique
+  sessions         Session[]
+  refreshTokens    RefreshToken[]
+  loginAttempts    LoginAttempt[]
+
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  userAgent String?
+  ip        String?
+  realIp    String?  // عنوان IP الحقيقي (بعد معالجة proxy headers)
+  location  String?  // معلومات الموقع الجغرافي (اختياري)
+  deviceInfo String? // معلومات الجهاز (اختياري)
+  createdAt DateTime @default(now())
+  revokedAt DateTime?
+
+  refreshTokens RefreshToken[]
+
+  @@index([userId])
+  @@index([realIp])
+}
+
+model RefreshToken {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique // hash للتوكن للأمان
+  user      User     @relation(fields: [userId], references: [id])
+  userId    Int
+  session   Session  @relation(fields: [sessionId], references: [id])
+  sessionId String
+  expiresAt DateTime
+  isRevoked Boolean  @default(false)
+  revokedAt DateTime?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([tokenHash])
+}
+
+model LoginAttempt {
+  id         Int      @id @default(autoincrement())
+  identifier String   // رقم الهاتف أو البريد الإلكتروني
+  user       User?    @relation(fields: [userId], references: [id])
+  userId     Int?
+  ip         String
+  userAgent  String?
+  success    Boolean  @default(false)
+  failureReason String? // سبب الفشل (كلمة مرور خاطئة، حساب مقفل، إلخ)
+  createdAt  DateTime @default(now())
+
+  @@index([identifier])
+  @@index([ip])
+  @@index([createdAt])
+}
+
+model OtpCode {
+  id        Int      @id @default(autoincrement())
+  phone     String
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  attempts  Int      @default(0) // عدد محاولات التحقق
+  maxAttempts Int    @default(3) // الحد الأقصى للمحاولات
+
+  createdAt DateTime @default(now())
+
+  @@index([phone])
+}
+
+/// الكتالوج الأساسي للكورسات
+model Domain {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  subjects  Subject[]
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Subject {
+  id        Int       @id @default(autoincrement())
+  name      String
+  domain    Domain    @relation(fields: [domainId], references: [id])
+  domainId  Int
+  courses   Course[]
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@index([domainId])
+  @@unique([domainId, name])
+}
+
+model Instructor {
+  id        Int       @id @default(autoincrement())
+  name      String
+  bio       String?
+  avatarUrl String?
+  courses   Course[]
+  isActive  Boolean   @default(true)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Course {
+  id            Int        @id @default(autoincrement())
+  title         String
+  description   String?
+  priceUSD      Decimal?   @db.Decimal(10, 2)
+  priceSYP      Decimal?   @db.Decimal(14, 2)
+  promoVideoUrl String?
+  playlistId    String?
+  levelCount    Int        @default(0)
+  isActive      Boolean    @default(true)
+
+  subject       Subject    @relation(fields: [subjectId], references: [id])
+  subjectId     Int
+  instructor    Instructor @relation(fields: [instructorId], references: [id])
+  instructorId  Int
+  
+  levels        CourseLevel[]
+  lessons       Lesson[]
+
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([subjectId])
+  @@index([instructorId])
+  @@index([isActive])
+}
+
+model CourseLevel {
+  id        Int      @id @default(autoincrement())
+  title     String
+  orderIndex Int     @default(0)
+  isActive  Boolean  @default(true)
+
+  course   Course   @relation(fields: [courseId], references: [id])
+  courseId Int
+
+  lessons  Lesson[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+  @@index([isActive])
+}
+
+model Lesson {
+  id           Int          @id @default(autoincrement())
+  title        String
+  youtubeUrl   String
+  youtubeId    String?      // اختياري: لاستخراج الـ ID للتكامل لاحقاً
+  durationSec  Int?         // مدة الفيديو بالثواني (اختياري)
+  orderIndex   Int          @default(0)
+  isFreePreview Boolean     @default(false)
+  isActive     Boolean      @default(true)
+
+  // يسمح بدروس بدون مستوى مباشرة ضمن الكورس
+  course     Course       @relation(fields: [courseId], references: [id])
+  courseId   Int
+  level      CourseLevel? @relation(fields: [levelId], references: [id])
+  levelId    Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([courseId])
+  @@index([levelId])
+  @@index([isActive])
+}
+

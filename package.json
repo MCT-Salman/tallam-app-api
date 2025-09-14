@@ -1,0 +1,47 @@
+{
+  "name": "taalam-app",
+  "version": "1.0.0",
+  "description": "taalam app for online courses",
+  "main": "app.js",
+  "type": "module",
+  "scripts": {
+    "start": "node app.js",
+    "dev": "nodemon app.js",
+    "migrate": "prisma migrate dev",
+    "generate": "npx prisma generate",
+    "studio": "npx prisma studio",
+    "seed": "prisma db seed"
+  },
+  "keywords": [
+    "nodejs",
+    "express",
+    "prisma",
+    "mysql",
+    "authentication",
+    "jwt",
+    "phone-validation",
+    "rate-limiting"
+  ],
+  "author": "MCT",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "prisma": "^6.15.0"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.15.0",
+    "bcrypt": "^6.0.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
+    "express-validator": "^7.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "libphonenumber-js": "^1.12.15",
+    "morgan": "^1.10.1",
+    "multer": "^2.0.2",
+    "xss": "^1.0.15"
+  }
+}
