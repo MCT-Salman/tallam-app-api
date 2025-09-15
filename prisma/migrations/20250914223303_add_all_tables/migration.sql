@@ -1,95 +1,105 @@
-/*
-  Warnings:
+-- CreateTable
+CREATE TABLE `User` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `phone` VARCHAR(191) NOT NULL,
+    `passwordHash` VARCHAR(191) NOT NULL,
+    `name` VARCHAR(191) NOT NULL,
+    `birthDate` DATETIME(3) NOT NULL,
+    `avatarUrl` VARCHAR(191) NULL,
+    `role` ENUM('STUDENT', 'ADMIN', 'SUBADMIN') NOT NULL DEFAULT 'STUDENT',
+    `sex` VARCHAR(191) NOT NULL,
+    `country` VARCHAR(191) NULL,
+    `countryCode` VARCHAR(191) NULL,
+    `isVerified` BOOLEAN NOT NULL DEFAULT false,
+    `isActive` BOOLEAN NOT NULL DEFAULT true,
+    `expiresAt` DATETIME(3) NULL,
+    `currentSessionId` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
-  - You are about to drop the column `isActive` on the `course` table. All the data in the column will be lost.
-  - You are about to drop the column `levelCount` on the `course` table. All the data in the column will be lost.
-  - You are about to drop the column `playlistId` on the `course` table. All the data in the column will be lost.
-  - You are about to drop the column `priceSYP` on the `course` table. All the data in the column will be lost.
-  - You are about to drop the column `priceUSD` on the `course` table. All the data in the column will be lost.
-  - You are about to drop the column `promoVideoUrl` on the `course` table. All the data in the column will be lost.
-  - You are about to drop the column `isActive` on the `courselevel` table. All the data in the column will be lost.
-  - You are about to drop the column `orderIndex` on the `courselevel` table. All the data in the column will be lost.
-  - You are about to drop the column `title` on the `courselevel` table. All the data in the column will be lost.
-  - You are about to drop the column `isActive` on the `domain` table. All the data in the column will be lost.
-  - You are about to drop the column `isActive` on the `instructor` table. All the data in the column will be lost.
-  - You are about to drop the column `isActive` on the `lesson` table. All the data in the column will be lost.
-  - You are about to drop the column `levelId` on the `lesson` table. All the data in the column will be lost.
-  - You are about to drop the column `domainId` on the `subject` table. All the data in the column will be lost.
-  - You are about to drop the column `isActive` on the `subject` table. All the data in the column will be lost.
-  - A unique constraint covering the columns `[slug]` on the table `Course` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[slug]` on the table `Domain` will be added. If there are existing duplicate values, this will fail.
-  - A unique constraint covering the columns `[slug]` on the table `Subject` will be added. If there are existing duplicate values, this will fail.
-  - Added the required column `name` to the `CourseLevel` table without a default value. This is not possible if the table is not empty.
-  - Added the required column `specializationId` to the `Subject` table without a default value. This is not possible if the table is not empty.
+    UNIQUE INDEX `User_phone_key`(`phone`),
+    UNIQUE INDEX `User_currentSessionId_key`(`currentSessionId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-*/
--- DropForeignKey
-ALTER TABLE `lesson` DROP FOREIGN KEY `Lesson_levelId_fkey`;
+-- CreateTable
+CREATE TABLE `Session` (
+    `id` VARCHAR(191) NOT NULL,
+    `userId` INTEGER NOT NULL,
+    `userAgent` VARCHAR(191) NULL,
+    `ip` VARCHAR(191) NULL,
+    `realIp` VARCHAR(191) NULL,
+    `location` VARCHAR(191) NULL,
+    `deviceInfo` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `revokedAt` DATETIME(3) NULL,
 
--- DropForeignKey
-ALTER TABLE `subject` DROP FOREIGN KEY `Subject_domainId_fkey`;
+    INDEX `Session_userId_idx`(`userId`),
+    INDEX `Session_realIp_idx`(`realIp`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- DropIndex
-DROP INDEX `Course_isActive_idx` ON `course`;
+-- CreateTable
+CREATE TABLE `RefreshToken` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `tokenHash` VARCHAR(191) NOT NULL,
+    `userId` INTEGER NOT NULL,
+    `sessionId` VARCHAR(191) NOT NULL,
+    `expiresAt` DATETIME(3) NOT NULL,
+    `isRevoked` BOOLEAN NOT NULL DEFAULT false,
+    `revokedAt` DATETIME(3) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
--- DropIndex
-DROP INDEX `CourseLevel_isActive_idx` ON `courselevel`;
+    UNIQUE INDEX `RefreshToken_tokenHash_key`(`tokenHash`),
+    INDEX `RefreshToken_userId_idx`(`userId`),
+    INDEX `RefreshToken_sessionId_idx`(`sessionId`),
+    INDEX `RefreshToken_tokenHash_idx`(`tokenHash`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- DropIndex
-DROP INDEX `Domain_name_key` ON `domain`;
+-- CreateTable
+CREATE TABLE `LoginAttempt` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `identifier` VARCHAR(191) NOT NULL,
+    `userId` INTEGER NULL,
+    `ip` VARCHAR(191) NOT NULL,
+    `userAgent` VARCHAR(191) NULL,
+    `success` BOOLEAN NOT NULL DEFAULT false,
+    `failureReason` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
--- DropIndex
-DROP INDEX `Lesson_isActive_idx` ON `lesson`;
+    INDEX `LoginAttempt_identifier_idx`(`identifier`),
+    INDEX `LoginAttempt_ip_idx`(`ip`),
+    INDEX `LoginAttempt_createdAt_idx`(`createdAt`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- DropIndex
-DROP INDEX `Lesson_levelId_idx` ON `lesson`;
+-- CreateTable
+CREATE TABLE `OtpCode` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `phone` VARCHAR(191) NOT NULL,
+    `code` VARCHAR(191) NOT NULL,
+    `expiresAt` DATETIME(3) NOT NULL,
+    `used` BOOLEAN NOT NULL DEFAULT false,
+    `attempts` INTEGER NOT NULL DEFAULT 0,
+    `maxAttempts` INTEGER NOT NULL DEFAULT 3,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
 
--- DropIndex
-DROP INDEX `Subject_domainId_idx` ON `subject`;
+    INDEX `OtpCode_phone_idx`(`phone`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- DropIndex
-DROP INDEX `Subject_domainId_name_key` ON `subject`;
+-- CreateTable
+CREATE TABLE `Domain` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+    `slug` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
--- AlterTable
-ALTER TABLE `course` DROP COLUMN `isActive`,
-    DROP COLUMN `levelCount`,
-    DROP COLUMN `playlistId`,
-    DROP COLUMN `priceSYP`,
-    DROP COLUMN `priceUSD`,
-    DROP COLUMN `promoVideoUrl`,
-    ADD COLUMN `currency` VARCHAR(191) NULL DEFAULT 'USD',
-    ADD COLUMN `isFree` BOOLEAN NOT NULL DEFAULT false,
-    ADD COLUMN `price` DOUBLE NULL,
-    ADD COLUMN `slug` VARCHAR(191) NULL;
-
--- AlterTable
-ALTER TABLE `courselevel` DROP COLUMN `isActive`,
-    DROP COLUMN `orderIndex`,
-    DROP COLUMN `title`,
-    ADD COLUMN `name` VARCHAR(191) NOT NULL,
-    ADD COLUMN `order` INTEGER NULL;
-
--- AlterTable
-ALTER TABLE `domain` DROP COLUMN `isActive`,
-    ADD COLUMN `slug` VARCHAR(191) NULL;
-
--- AlterTable
-ALTER TABLE `instructor` DROP COLUMN `isActive`;
-
--- AlterTable
-ALTER TABLE `lesson` DROP COLUMN `isActive`,
-    DROP COLUMN `levelId`,
-    ADD COLUMN `contentUrl` VARCHAR(191) NULL,
-    ADD COLUMN `courseLevelId` INTEGER NULL,
-    ADD COLUMN `description` VARCHAR(191) NULL,
-    MODIFY `youtubeUrl` VARCHAR(191) NULL,
-    MODIFY `orderIndex` INTEGER NULL;
-
--- AlterTable
-ALTER TABLE `subject` DROP COLUMN `domainId`,
-    DROP COLUMN `isActive`,
-    ADD COLUMN `slug` VARCHAR(191) NULL,
-    ADD COLUMN `specializationId` INTEGER NOT NULL;
+    UNIQUE INDEX `Domain_slug_key`(`slug`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- CreateTable
 CREATE TABLE `Specialization` (
@@ -102,6 +112,86 @@ CREATE TABLE `Specialization` (
 
     UNIQUE INDEX `Specialization_slug_key`(`slug`),
     INDEX `Specialization_domainId_idx`(`domainId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Subject` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+    `slug` VARCHAR(191) NULL,
+    `specializationId` INTEGER NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Subject_slug_key`(`slug`),
+    INDEX `Subject_specializationId_idx`(`specializationId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Instructor` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+    `bio` VARCHAR(191) NULL,
+    `avatarUrl` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Course` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(191) NOT NULL,
+    `slug` VARCHAR(191) NULL,
+    `description` VARCHAR(191) NULL,
+    `price` DOUBLE NULL,
+    `currency` VARCHAR(191) NULL DEFAULT 'USD',
+    `isFree` BOOLEAN NOT NULL DEFAULT false,
+    `subjectId` INTEGER NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `Course_slug_key`(`slug`),
+    INDEX `Course_subjectId_idx`(`subjectId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `CourseLevel` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `name` VARCHAR(191) NOT NULL,
+    `order` INTEGER NULL,
+    `courseId` INTEGER NOT NULL,
+    `isActive` BOOLEAN NOT NULL DEFAULT true,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `CourseLevel_courseId_idx`(`courseId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `Lesson` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `title` VARCHAR(191) NOT NULL,
+    `description` VARCHAR(191) NULL,
+    `youtubeUrl` VARCHAR(191) NULL,
+    `youtubeId` VARCHAR(191) NULL,
+    `contentUrl` VARCHAR(191) NULL,
+    `durationSec` INTEGER NULL,
+    `orderIndex` INTEGER NULL,
+    `isFreePreview` BOOLEAN NOT NULL DEFAULT false,
+    `isActive` BOOLEAN NOT NULL DEFAULT true,
+    `courseId` INTEGER NOT NULL,
+    `courseLevelId` INTEGER NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `Lesson_courseId_idx`(`courseId`),
+    INDEX `Lesson_courseLevelId_idx`(`courseLevelId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -138,6 +228,32 @@ CREATE TABLE `AccessCode` (
     UNIQUE INDEX `AccessCode_code_key`(`code`),
     INDEX `AccessCode_courseId_idx`(`courseId`),
     INDEX `AccessCode_usedBy_idx`(`usedBy`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `CourseInstructor` (
+    `courseId` INTEGER NOT NULL,
+    `instructorId` INTEGER NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+
+    INDEX `CourseInstructor_courseId_idx`(`courseId`),
+    INDEX `CourseInstructor_instructorId_idx`(`instructorId`),
+    PRIMARY KEY (`courseId`, `instructorId`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `CodeRequest` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `courseId` INTEGER NOT NULL,
+    `status` VARCHAR(191) NOT NULL DEFAULT 'PENDING',
+    `contact` VARCHAR(191) NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `CodeRequest_userId_idx`(`userId`),
+    INDEX `CodeRequest_courseId_idx`(`courseId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -215,6 +331,20 @@ CREATE TABLE `CourseProgress` (
     `updatedAt` DATETIME(3) NOT NULL,
 
     UNIQUE INDEX `CourseProgress_userId_courseId_key`(`userId`, `courseId`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `LessonProgress` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `userId` INTEGER NOT NULL,
+    `lessonId` INTEGER NOT NULL,
+    `completed` BOOLEAN NOT NULL DEFAULT false,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    INDEX `LessonProgress_lessonId_idx`(`lessonId`),
+    UNIQUE INDEX `LessonProgress_userId_lessonId_key`(`userId`, `lessonId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -349,26 +479,44 @@ CREATE TABLE `VideoLinkCheck` (
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- CreateIndex
-CREATE UNIQUE INDEX `Course_slug_key` ON `Course`(`slug`);
+-- CreateTable
+CREATE TABLE `AppSettings` (
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `key` VARCHAR(191) NOT NULL,
+    `value` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
 
--- CreateIndex
-CREATE UNIQUE INDEX `Domain_slug_key` ON `Domain`(`slug`);
+    UNIQUE INDEX `AppSettings_key_key`(`key`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- CreateIndex
-CREATE INDEX `Lesson_courseLevelId_idx` ON `Lesson`(`courseLevelId`);
+-- AddForeignKey
+ALTER TABLE `Session` ADD CONSTRAINT `Session_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- CreateIndex
-CREATE UNIQUE INDEX `Subject_slug_key` ON `Subject`(`slug`);
+-- AddForeignKey
+ALTER TABLE `RefreshToken` ADD CONSTRAINT `RefreshToken_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
--- CreateIndex
-CREATE INDEX `Subject_specializationId_idx` ON `Subject`(`specializationId`);
+-- AddForeignKey
+ALTER TABLE `RefreshToken` ADD CONSTRAINT `RefreshToken_sessionId_fkey` FOREIGN KEY (`sessionId`) REFERENCES `Session`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LoginAttempt` ADD CONSTRAINT `LoginAttempt_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Specialization` ADD CONSTRAINT `Specialization_domainId_fkey` FOREIGN KEY (`domainId`) REFERENCES `Domain`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Subject` ADD CONSTRAINT `Subject_specializationId_fkey` FOREIGN KEY (`specializationId`) REFERENCES `Specialization`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Course` ADD CONSTRAINT `Course_subjectId_fkey` FOREIGN KEY (`subjectId`) REFERENCES `Subject`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `CourseLevel` ADD CONSTRAINT `CourseLevel_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `Course`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Lesson` ADD CONSTRAINT `Lesson_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `Course`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Lesson` ADD CONSTRAINT `Lesson_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `CourseLevel`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
@@ -381,6 +529,21 @@ ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_courseId_fkey` FOREIGN KEY
 
 -- AddForeignKey
 ALTER TABLE `AccessCode` ADD CONSTRAINT `AccessCode_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `Course`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `AccessCode` ADD CONSTRAINT `AccessCode_usedBy_fkey` FOREIGN KEY (`usedBy`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `CourseInstructor` ADD CONSTRAINT `CourseInstructor_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `Course`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `CourseInstructor` ADD CONSTRAINT `CourseInstructor_instructorId_fkey` FOREIGN KEY (`instructorId`) REFERENCES `Instructor`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `CodeRequest` ADD CONSTRAINT `CodeRequest_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `CodeRequest` ADD CONSTRAINT `CodeRequest_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `Course`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Quiz` ADD CONSTRAINT `Quiz_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `Course`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -402,6 +565,12 @@ ALTER TABLE `CourseProgress` ADD CONSTRAINT `CourseProgress_userId_fkey` FOREIGN
 
 -- AddForeignKey
 ALTER TABLE `CourseProgress` ADD CONSTRAINT `CourseProgress_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `Course`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LessonProgress` ADD CONSTRAINT `LessonProgress_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `LessonProgress` ADD CONSTRAINT `LessonProgress_lessonId_fkey` FOREIGN KEY (`lessonId`) REFERENCES `Lesson`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `Notification` ADD CONSTRAINT `Notification_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `User`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;

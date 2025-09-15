@@ -53,7 +53,7 @@ export const ERROR_PHONE_NUMBER = "رقم الهاتف غير صحيح"
 // auth (forgot password) messages
 export const PHONE_NUMBER_REQUIRED = "رقم الهاتف مطلوب"
 export const USER_NOT_FOUND_FORGET = "المستخدم غير موجود"
-export const CHANGE_PASSWORD_SUCCESSFULLY = "تم تغيير كلمة المرور وتسجيل الدخول بنجاح"
+export const CHANGE_PASSWORD_SUCCESSFULLY = "تم تغيير كلمة المرور بنجاح"
 
 // referesh token messages
 export const REFERESH_TOKEN_REQUIRED = "Refresh token مطلوب"

@@ -31,9 +31,12 @@ const router = express.Router();
 router.use(logRequest);
 
 // مسارات المصادقة العامة (لا تتطلب مصادقة)
-router.post('/register', authRateLimit, uploadAvatar.single('avatar'), normalizePhoneE164, validate(registerRules), register);
-router.post('/login', authRateLimit, normalizePhoneE164, validate(loginRules), login);
-router.post('/refresh', authRateLimit, validate(refreshRules), refresh);
+router.post('/register',  uploadAvatar.single('avatar'), normalizePhoneE164, validate(registerRules), register);
+router.post('/login',  normalizePhoneE164, validate(loginRules), login);
+router.post('/refresh',  validate(refreshRules), refresh);
+// router.post('/register', authRateLimit, uploadAvatar.single('avatar'), normalizePhoneE164, validate(registerRules), register);
+// router.post('/login', authRateLimit, normalizePhoneE164, validate(loginRules), login);
+// router.post('/refresh', authRateLimit, validate(refreshRules), refresh);
 // نسيت كلمة المرور
 // router.post('/forgot/request-otp', normalizePhoneE164, otpRateLimitByPhone, validate(forgotRequestOtpRules), forgotRequestOtp);
 router.post('/forgot/request-otp', normalizePhoneE164, validate(forgotRequestOtpRules), forgotRequestOtp);

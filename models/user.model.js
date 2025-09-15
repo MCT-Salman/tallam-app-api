@@ -28,9 +28,6 @@ export const updateSafeProfile = (id, data, select = undefined) => {
 };
 
 
-// export const updateById = (id, data, select) => {
-//   return prisma.user.update({ where: { id }, data, select });
-// };
 
 /**
  * Find all users with optional filtering and pagination

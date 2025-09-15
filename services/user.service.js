@@ -29,10 +29,14 @@ export const getAllUsers = async (filters = {}, skip = 0, take = 20) => {
     id: true,
     name: true,
     phone: true,
+    birthDate: true,
+    avatarUrl: true,
+    sex: true,
     role: true,
     country: true,
     isActive: true,
     isVerified: true,
+    expiresAt: true,
     createdAt: true,
   };
 
@@ -90,7 +94,7 @@ export const createUserByAdmin = async (userData, actor) => {
     isVerified: true, // Admin-created users are verified by default
     country: phoneInfo.success ? phoneInfo.countryName : null,
     countryCode: phoneInfo.success ? phoneInfo.countryCode : null,
-    expiresAt: actor.role === 'ADMIN' && expiresAt ? new Date(expiresAt) : null,
+    expiresAt: expiresAt ? new Date(expiresAt) : null,
   });
 
   const { passwordHash: _, ...safeUser } = user;
@@ -109,8 +113,8 @@ export const updateUserByAdmin = async (id, updateData, actor) => {
   const dataToUpdate = { ...restData };
 
   // Security check: SUBADMIN can only edit STUDENTS.
+  const targetUser = await UserModel.findById(id);
   if (actor.role === 'SUBADMIN') {
-    const targetUser = await UserModel.findById(id);
     if (!targetUser) throw new Error('المستخدم المستهدف غير موجود');
 
     // SUBADMIN cannot change roles, and can only edit students.
@@ -119,9 +123,12 @@ export const updateUserByAdmin = async (id, updateData, actor) => {
     }
     // SUBADMIN cannot set expiration. We explicitly remove the property if it exists.
     if (updateData.hasOwnProperty('expiresAt')) {
-        delete dataToUpdate.expiresAt;
+      delete dataToUpdate.expiresAt;
     }
   }
+
+  if (!targetUser) throw new Error('المستخدم المستهدف غير موجود');
+
 
   if (phone) {
     const exists = await UserModel.findByPhone(phone);
@@ -169,4 +176,31 @@ export const deleteUserById = async (id, actor) => {
   }
   // Prisma will handle cascading deletes based on schema relations.
   return UserModel.deleteById(id);
+};
+
+
+/**
+ * Toggle user active status (by admin)
+ * @param {number} id - User ID
+ * @param {object} actor - The admin performing the action
+ * @returns {Promise<User>}
+ */
+export const toggleUserActiveStatus = async (id, actor) => {
+  const targetUser = await UserModel.findById(id);
+
+  if (!targetUser) {
+    throw new Error("المستخدم المستهدف غير موجود");
+  }
+
+  // SUBADMIN لا يمكنه التحكم إلا بالطلاب
+  if (actor.role === "SUBADMIN" && targetUser.role !== "STUDENT") {
+    throw new Error("ليست لديك صلاحية لتغيير حالة هذا الحساب");
+  }
+
+  const updatedUser = await UserModel.updateById(id, {
+    isActive: !targetUser.isActive,
+  });
+
+  const { passwordHash, ...safeUser } = updatedUser;
+  return safeUser;
 };

@@ -118,18 +118,18 @@ export const loginUser = async (phone, password, req) => {
 
   try {
     // التحقق من rate limiting
-    const canAttempt = await rateLimiter.canAttempt(phone);
-    if (!canAttempt) {
-      const attemptInfo = rateLimiter.getAttemptInfo(phone);
-      const retryAfterSeconds = Math.max(1, Math.ceil(attemptInfo.timeUntilReset / 1000));
-      const timeLeftMin = Math.ceil(retryAfterSeconds / 60);
-      const err = new Error(`تم قفل الحساب مؤقتاً. حاول مرة أخرى بعد ${timeLeftMin} دقيقة`);
-      err.code = 'ACCOUNT_LOCKED';
-      err.retryAfterSeconds = retryAfterSeconds;
-      // سجل محاولة فاشلة بسبب قفل الحساب
-      await rateLimiter.recordFailedAttempt(phone, realIp, userAgent, null, ACCOUNT_LOCKED_LOGIN);
-      throw err;
-    }
+    // const canAttempt = await rateLimiter.canAttempt(phone);
+    // if (!canAttempt) {
+    //   const attemptInfo = rateLimiter.getAttemptInfo(phone);
+    //   const retryAfterSeconds = Math.max(1, Math.ceil(attemptInfo.timeUntilReset / 1000));
+    //   const timeLeftMin = Math.ceil(retryAfterSeconds / 60);
+    //   const err = new Error(`تم قفل الحساب مؤقتاً. حاول مرة أخرى بعد ${timeLeftMin} دقيقة`);
+    //   err.code = 'ACCOUNT_LOCKED';
+    //   err.retryAfterSeconds = retryAfterSeconds;
+    //   // سجل محاولة فاشلة بسبب قفل الحساب
+    //   await rateLimiter.recordFailedAttempt(phone, realIp, userAgent, null, ACCOUNT_LOCKED_LOGIN);
+    //   throw err;
+    // }
 
     // البحث عن المستخدم
     const user = await UserModel.findByPhone(phone);

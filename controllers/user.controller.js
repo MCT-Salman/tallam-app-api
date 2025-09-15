@@ -22,7 +22,7 @@ export const adminGetUserById = async (req, res, next) => {
   try {
     const user = await UserService.getUserById(parseInt(req.params.id));
     if (!user) {
-      return res.status(NOT_FOUND_STATUS_CODE).json({ success: FAILURE_REQUEST, message: 'الطالب غير موجود' });
+      return res.status(NOT_FOUND_STATUS_CODE).json({ success: FAILURE_REQUEST, message: 'هذا الحساب غير موجود' });
     }
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
@@ -36,7 +36,7 @@ export const adminGetUserById = async (req, res, next) => {
 
 export const adminCreateUser = async (req, res, next) => {
   try {
-    const user = await UserService.createUserByAdmin(req.body);
+    const user = await UserService.createUserByAdmin(req.body,req.user);
     res.status(SUCCESS_CREATE_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
       message: 'تم إنشاء حساب الطالب بنجاح',
@@ -50,7 +50,8 @@ export const adminCreateUser = async (req, res, next) => {
 
 export const adminUpdateUser = async (req, res, next) => {
   try {
-    const user = await UserService.updateUserByAdmin(parseInt(req.params.id), req.body);
+
+    const user = await UserService.updateUserByAdmin(parseInt(req.params.id), req.body,req.user);
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
       message: 'تم تحديث بيانات الطالب بنجاح',
@@ -64,7 +65,7 @@ export const adminUpdateUser = async (req, res, next) => {
 
 export const adminDeleteUser = async (req, res, next) => {
   try {
-    await UserService.deleteUserById(parseInt(req.params.id));
+    await UserService.deleteUserById(parseInt(req.params.id),req.user);
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
       message: 'تم حذف الطالب بنجاح',
@@ -72,8 +73,23 @@ export const adminDeleteUser = async (req, res, next) => {
   } catch (error) {
     // Handle Prisma's P2025 error for record not found
     if (error.code === 'P2025') {
-      return res.status(NOT_FOUND_STATUS_CODE).json({ success: FAILURE_REQUEST, message: 'الطالب غير موجود' });
+      return res.status(NOT_FOUND_STATUS_CODE).json({ success: FAILURE_REQUEST, message: 'الحساب غير موجود' });
     }
+    next(error);
+  }
+};
+
+
+export const adminToggleUserActive = async (req, res, next) => {
+  try {
+    const user = await UserService.toggleUserActiveStatus(parseInt(req.params.id), req.user);
+    res.status(SUCCESS_STATUS_CODE).json({
+      success: SUCCESS_REQUEST,
+      message: `تم ${user.isActive ? "تفعيل" : "تعطيل"} الحساب بنجاح`,
+      data: serializeResponse(user),
+    });
+  } catch (error) {
+    error.statusCode = BAD_REQUEST_STATUS_CODE;
     next(error);
   }
 };

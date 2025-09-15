@@ -17,5 +17,6 @@ router.post('/', validate(adminCreateUserRules), UserController.adminCreateUser)
 router.get('/:id', validate(idParam), UserController.adminGetUserById);
 router.put('/:id', validate(idParam), validate(adminUpdateUserRules), UserController.adminUpdateUser);
 router.delete('/:id', validate(idParam), UserController.adminDeleteUser);
+router.put('/:id/toggle-active', validate(idParam), UserController.adminToggleUserActive);
 
 export default router;

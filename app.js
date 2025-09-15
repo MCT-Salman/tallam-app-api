@@ -38,44 +38,44 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // إعداد Rate Limiting العام
-const generalLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 دقيقة
-  max: 100, // الحد الأقصى 100 طلب لكل IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res /*, next, options */) => {
-    const resetTime = req.rateLimit?.resetTime instanceof Date ? req.rateLimit.resetTime.getTime() : null;
-    const now = Date.now();
-    const retryAfterSeconds = resetTime ? Math.max(1, Math.ceil((resetTime - now) / 1000)) : undefined;
-    const waitMin = retryAfterSeconds ? Math.ceil(retryAfterSeconds / 60) : undefined;
-    return res.status(429).json({
-      success: false,
-      error: 'تم تجاوز الحد الأقصى للطلبات، حاول مرة أخرى لاحقاً',
-      ...(retryAfterSeconds ? { retryAfterSeconds } : {}),
-      ...(retryAfterSeconds ? { waitMessage: waitMin >= 1 ? `يرجى الانتظار حوالي ${waitMin} دقيقة قبل المحاولة مجدداً` : `يرجى الانتظار ${retryAfterSeconds} ثانية قبل المحاولة مجدداً` } : {})
-    });
-  }
-});
+// const generalLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 دقيقة
+//   max: 100, // الحد الأقصى 100 طلب لكل IP
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   handler: (req, res /*, next, options */) => {
+//     const resetTime = req.rateLimit?.resetTime instanceof Date ? req.rateLimit.resetTime.getTime() : null;
+//     const now = Date.now();
+//     const retryAfterSeconds = resetTime ? Math.max(1, Math.ceil((resetTime - now) / 1000)) : undefined;
+//     const waitMin = retryAfterSeconds ? Math.ceil(retryAfterSeconds / 60) : undefined;
+//     return res.status(429).json({
+//       success: false,
+//       error: 'تم تجاوز الحد الأقصى للطلبات، حاول مرة أخرى لاحقاً',
+//       ...(retryAfterSeconds ? { retryAfterSeconds } : {}),
+//       ...(retryAfterSeconds ? { waitMessage: waitMin >= 1 ? `يرجى الانتظار حوالي ${waitMin} دقيقة قبل المحاولة مجدداً` : `يرجى الانتظار ${retryAfterSeconds} ثانية قبل المحاولة مجدداً` } : {})
+//     });
+//   }
+// });
 
 // إعداد Rate Limiting للمصادقة
-const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 دقيقة
-  max: 10, // الحد الأقصى 10 محاولات تسجيل دخول لكل IP
-  standardHeaders: true,
-  legacyHeaders: false,
-  handler: (req, res /*, next, options */) => {
-    const resetTime = req.rateLimit?.resetTime instanceof Date ? req.rateLimit.resetTime.getTime() : null;
-    const now = Date.now();
-    const retryAfterSeconds = resetTime ? Math.max(1, Math.ceil((resetTime - now) / 1000)) : undefined;
-    const waitMin = retryAfterSeconds ? Math.ceil(retryAfterSeconds / 60) : undefined;
-    return res.status(429).json({
-      success: false,
-      error: 'تم تجاوز الحد الأقصى لمحاولات تسجيل الدخول',
-      ...(retryAfterSeconds ? { retryAfterSeconds } : {}),
-      ...(retryAfterSeconds ? { waitMessage: waitMin >= 1 ? `يرجى الانتظار حوالي ${waitMin} دقيقة قبل المحاولة مجدداً` : `يرجى الانتظار ${retryAfterSeconds} ثانية قبل المحاولة مجدداً` } : {})
-    });
-  }
-}); 
+// const authLimiter = rateLimit({
+//   windowMs: 15 * 60 * 1000, // 15 دقيقة
+//   max: 10, // الحد الأقصى 10 محاولات تسجيل دخول لكل IP
+//   standardHeaders: true,
+//   legacyHeaders: false,
+//   handler: (req, res /*, next, options */) => {
+//     const resetTime = req.rateLimit?.resetTime instanceof Date ? req.rateLimit.resetTime.getTime() : null;
+//     const now = Date.now();
+//     const retryAfterSeconds = resetTime ? Math.max(1, Math.ceil((resetTime - now) / 1000)) : undefined;
+//     const waitMin = retryAfterSeconds ? Math.ceil(retryAfterSeconds / 60) : undefined;
+//     return res.status(429).json({
+//       success: false,
+//       error: 'تم تجاوز الحد الأقصى لمحاولات تسجيل الدخول',
+//       ...(retryAfterSeconds ? { retryAfterSeconds } : {}),
+//       ...(retryAfterSeconds ? { waitMessage: waitMin >= 1 ? `يرجى الانتظار حوالي ${waitMin} دقيقة قبل المحاولة مجدداً` : `يرجى الانتظار ${retryAfterSeconds} ثانية قبل المحاولة مجدداً` } : {})
+//     });
+//   }
+// }); 
 
 // Middleware الأساسي
 app.use(helmet()); // حماية أمنية
@@ -91,7 +91,7 @@ app.use(cors({
 app.use(morgan('combined'));
 
 // تطبيق Rate Limiting
-app.use(generalLimiter);
+// app.use(generalLimiter);
 
 // معالجة JSON و URL encoding
 app.use(express.json({ limit: '10mb' }));
