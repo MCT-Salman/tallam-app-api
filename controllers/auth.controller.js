@@ -304,6 +304,7 @@ export const revokeSessionById = async (req, res, next) => {
  */
 export const getProfile = async (req, res, next) => {
   try {
+    // const userId = parseInt(req.user.id);
     const userId = req.user.id;
 
     const user = await UserModel.findById(userId, {

@@ -132,11 +132,11 @@ export const requireAuth = async (req, res, next) => {
       });
     }
     
-    return res.status(401).json({ 
-      success: FAILURE_REQUEST,
-      message: TOKEN_NOT_CORRECT,
-      data:{} 
-    });
+    // return res.status(401).json({ 
+    //   success: FAILURE_REQUEST,
+    //   message: TOKEN_NOT_CORRECT,
+    //   data:{} 
+    // });
   }
 };
 
