@@ -20,10 +20,11 @@ export const requireAuth = async (req, res, next) => {
   try {
     const token = hdr.slice(7);
     const payload = verifyAccessToken(token);
-console.log("before user");
+    console.log("before user");
+    console.log("payload.id"+payload.id);
     // التحقق من وجود المستخدم
     const user = await prisma.user.findUnique({
-      where: { id: parseInt(payload.id) },
+      where: { id: payload.id },
       select: {
         id: true,
         role: true,
@@ -61,7 +62,7 @@ console.log("before user");
       });
     }
 
-    
+
 
     // التحقق من الجلسة
     if (!user.currentSessionId || user.currentSessionId !== payload.sid) {
@@ -71,7 +72,7 @@ console.log("before user");
         data: {}
       });
     }
-    
+
 
     // التحقق من تاريخ انتهاء صلاحية الحساب (للمدراء الفرعيين مثلاً)
     if (user.expiresAt && new Date() > new Date(user.expiresAt)) {
@@ -83,7 +84,7 @@ console.log("before user");
       });
     }
 
-    
+
 
     // التحقق من صحة الجلسة في قاعدة البيانات
     const session = await prisma.session.findUnique({
