@@ -23,7 +23,7 @@ export const requireAuth = async (req, res, next) => {
 console.log("before user");
     // التحقق من وجود المستخدم
     const user = await prisma.user.findUnique({
-      where: { id: payload.id },
+      where: { id: parseInt(payload.id) },
       select: {
         id: true,
         role: true,
