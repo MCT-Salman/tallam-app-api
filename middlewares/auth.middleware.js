@@ -20,13 +20,6 @@ export const requireAuth = async (req, res, next) => {
   try {
     const token = hdr.slice(7);
     const payload = verifyAccessToken(token);
-    console.log("payload:", payload);
-    console.log("payload.id:", payload.id);
-    console.log("payload.sid:", payload.sid);
-    console.log("payload.role:", payload.role);
-    console.log("payload.iat:", payload.iat);
-    console.log("payload.exp:", payload.exp);
-
 
     // التحقق من وجود المستخدم
     const user = await prisma.user.findUnique({ 
@@ -76,7 +69,7 @@ export const requireAuth = async (req, res, next) => {
     }
 
     // التحقق من تاريخ انتهاء صلاحية الحساب (للمدراء الفرعيين مثلاً)
-    if (user.expiresAt && new Date() > new Date(user.expiresAt)) {
+    if (user.expiresAt !== null && new Date() > new Date(user.expiresAt)) {
       return res.status(401).json({
         success: FAILURE_REQUEST,
         message: ACCOUNT_EXPIRED,
