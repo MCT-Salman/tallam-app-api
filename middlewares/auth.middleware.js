@@ -20,6 +20,13 @@ export const requireAuth = async (req, res, next) => {
   try {
     const token = hdr.slice(7);
     const payload = verifyAccessToken(token);
+    console.log("payload:", payload);
+    console.log("payload.id:", payload.id);
+    console.log("payload.sid:", payload.sid);
+    console.log("payload.role:", payload.role);
+    console.log("payload.iat:", payload.iat);
+    console.log("payload.exp:", payload.exp);
+
 
     // التحقق من وجود المستخدم
     const user = await prisma.user.findUnique({ 
@@ -132,11 +139,11 @@ export const requireAuth = async (req, res, next) => {
       });
     }
     
-    // return res.status(401).json({ 
-    //   success: FAILURE_REQUEST,
-    //   message: TOKEN_NOT_CORRECT,
-    //   data:{} 
-    // });
+    return res.status(401).json({ 
+      success: FAILURE_REQUEST,
+      message: TOKEN_NOT_CORRECT,
+      data:{} 
+    });
   }
 };
 
