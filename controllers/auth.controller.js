@@ -333,6 +333,7 @@ export const getProfile = async (req, res, next) => {
 
     res.json({
       success: SUCCESS_REQUEST,
+      message:"تم جلب البيانات بنجاح",
       data: {
         ...serializeResponse(user)
       }

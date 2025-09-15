@@ -20,8 +20,7 @@ export const requireAuth = async (req, res, next) => {
   try {
     const token = hdr.slice(7);
     const payload = verifyAccessToken(token);
-    console.log("before user");
-    console.log("payload.id"+payload.id);
+
     // التحقق من وجود المستخدم
     const user = await prisma.user.findUnique({
       where: { id: payload.id },
