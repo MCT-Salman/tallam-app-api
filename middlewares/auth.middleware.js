@@ -20,7 +20,7 @@ export const requireAuth = async (req, res, next) => {
   try {
     const token = hdr.slice(7);
     const payload = verifyAccessToken(token);
-
+console.log("before user");
     // التحقق من وجود المستخدم
     const user = await prisma.user.findUnique({
       where: { id: payload.id },
@@ -33,6 +33,8 @@ export const requireAuth = async (req, res, next) => {
         expiresAt: true
       }
     });
+
+    console.log("after user");
 
     if (!user) {
       return res.status(401).json({
@@ -59,6 +61,8 @@ export const requireAuth = async (req, res, next) => {
       });
     }
 
+    
+
     // التحقق من الجلسة
     if (!user.currentSessionId || user.currentSessionId !== payload.sid) {
       return res.status(401).json({
@@ -67,10 +71,10 @@ export const requireAuth = async (req, res, next) => {
         data: {}
       });
     }
-    console.log("before date");
     
+
     // التحقق من تاريخ انتهاء صلاحية الحساب (للمدراء الفرعيين مثلاً)
-    if (user.expiresAt !== null && new Date() > new Date(user.expiresAt)) {
+    if (user.expiresAt && new Date() > new Date(user.expiresAt)) {
       return res.status(401).json({
         success: FAILURE_REQUEST,
         message: ACCOUNT_EXPIRED,
@@ -79,7 +83,7 @@ export const requireAuth = async (req, res, next) => {
       });
     }
 
-    console.log("after date");
+    
 
     // التحقق من صحة الجلسة في قاعدة البيانات
     const session = await prisma.session.findUnique({
