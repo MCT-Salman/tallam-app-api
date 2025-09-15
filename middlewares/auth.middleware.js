@@ -8,12 +8,12 @@ import { ACCOUNT_EXPIRED, CANCELD_SESSION, FAILURE_REQUEST, IN_ACTIVE_ACCOUNT, N
  */
 export const requireAuth = async (req, res, next) => {
   const hdr = req.headers.authorization;
-  
+
   if (!hdr?.startsWith("Bearer ")) {
-    return res.status(401).json({ 
+    return res.status(401).json({
       success: FAILURE_REQUEST,
       message: NO_AUTH,
-      data:{}
+      data: {}
     });
   }
 
@@ -22,7 +22,7 @@ export const requireAuth = async (req, res, next) => {
     const payload = verifyAccessToken(token);
 
     // التحقق من وجود المستخدم
-    const user = await prisma.user.findUnique({ 
+    const user = await prisma.user.findUnique({
       where: { id: payload.id },
       select: {
         id: true,
@@ -35,48 +35,51 @@ export const requireAuth = async (req, res, next) => {
     });
 
     if (!user) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: FAILURE_REQUEST,
         message: USER_NOT_FOUND,
-        data:{}
+        data: {}
       });
     }
 
     // التحقق من حالة المستخدم
     if (!user.isActive) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: FAILURE_REQUEST,
         message: IN_ACTIVE_ACCOUNT,
-        data:{}
+        data: {}
       });
     }
 
     if (!user.isVerified) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: FAILURE_REQUEST,
         message: NOT_VERIFIED,
-        data:{}
+        data: {}
       });
     }
 
     // التحقق من الجلسة
     if (!user.currentSessionId || user.currentSessionId !== payload.sid) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: FAILURE_REQUEST,
         message: CANCELD_SESSION,
-        data:{}
+        data: {}
       });
     }
-
+    console.log("before date");
+    
     // التحقق من تاريخ انتهاء صلاحية الحساب (للمدراء الفرعيين مثلاً)
     if (user.expiresAt !== null && new Date() > new Date(user.expiresAt)) {
       return res.status(401).json({
         success: FAILURE_REQUEST,
         message: ACCOUNT_EXPIRED,
         code: 'ACCOUNT_EXPIRED',
-        data:{}
+        data: {}
       });
     }
+
+    console.log("after date");
 
     // التحقق من صحة الجلسة في قاعدة البيانات
     const session = await prisma.session.findUnique({
@@ -91,16 +94,16 @@ export const requireAuth = async (req, res, next) => {
     });
 
     if (!session || session.revokedAt || session.userId !== user.id) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: FAILURE_REQUEST,
         message: CANCELD_SESSION,
-        data:{}
+        data: {}
       });
     }
 
     // إضافة معلومات المستخدم والجلسة إلى الطلب
-    req.user = { 
-      id: user.id, 
+    req.user = {
+      id: user.id,
       role: user.role,
       sessionId: session.id
     };
@@ -123,19 +126,19 @@ export const requireAuth = async (req, res, next) => {
     next();
   } catch (error) {
     if (error.name === 'TokenExpiredError') {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: FAILURE_REQUEST,
         message: TOKEN_EXPIRED,
-        data: { 
+        data: {
           code: "TOKEN_EXPIRED"
         }
       });
     }
-    
-    return res.status(401).json({ 
+
+    return res.status(401).json({
       success: FAILURE_REQUEST,
       message: TOKEN_NOT_CORRECT,
-      data:{} 
+      data: {}
     });
   }
 };
@@ -146,10 +149,10 @@ export const requireAuth = async (req, res, next) => {
 export const requireRole = (roles) => {
   return (req, res, next) => {
     if (!req.user) {
-      return res.status(401).json({ 
+      return res.status(401).json({
         success: FAILURE_REQUEST,
         message: NO_AUTH,
-        data:{}
+        data: {}
       });
     }
 
@@ -157,10 +160,10 @@ export const requireRole = (roles) => {
     const allowedRoles = Array.isArray(roles) ? roles : [roles];
 
     if (!allowedRoles.includes(userRole)) {
-      return res.status(403).json({ 
+      return res.status(403).json({
         success: FAILURE_REQUEST,
         message: NO_AUTH,
-        data:{}
+        data: {}
       });
     }
 
@@ -183,7 +186,7 @@ export const requireMainAdmin = requireRole(['ADMIN']);
  */
 export const optionalAuth = async (req, res, next) => {
   const hdr = req.headers.authorization;
-  
+
   if (!hdr?.startsWith("Bearer ")) {
     return next(); // المتابعة بدون مصادقة
   }
@@ -192,7 +195,7 @@ export const optionalAuth = async (req, res, next) => {
     const token = hdr.slice(7);
     const payload = verifyAccessToken(token);
 
-    const user = await prisma.user.findUnique({ 
+    const user = await prisma.user.findUnique({
       where: { id: payload.id },
       select: {
         id: true,
@@ -214,8 +217,8 @@ export const optionalAuth = async (req, res, next) => {
       });
 
       if (session && !session.revokedAt && session.userId === user.id) {
-        req.user = { 
-          id: user.id, 
+        req.user = {
+          id: user.id,
           role: user.role,
           sessionId: session.id
         };
@@ -239,7 +242,7 @@ export const logRequest = (req, res, next) => {
   const timestamp = new Date().toISOString();
 
   console.log(`[${timestamp}] ${method} ${url} - IP: ${realIp} - UA: ${userAgent}`);
-  
+
   // إضافة معلومات الطلب للاستخدام في controllers
   req.requestInfo = {
     realIp,
