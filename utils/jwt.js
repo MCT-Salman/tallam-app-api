@@ -17,11 +17,11 @@ if (process.env.NODE_ENV === 'production') {
 
 
 // مدد صلاحية التوكنات من المتغيرات البيئية
-const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRES_IN || "5m";
+const ACCESS_TOKEN_EXPIRY = process.env.ACCESS_TOKEN_EXPIRES_IN || "24h";
 
-const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRES_IN || "10m";
+const REFRESH_TOKEN_EXPIRY = process.env.REFRESH_TOKEN_EXPIRES_IN || "7d";
 // توكن إعادة تعيين كلمة المرور قصير الأجل
-const RESET_TOKEN_EXPIRY = process.env.PASSWORD_RESET_EXPIRES_IN || "10m";
+const RESET_TOKEN_EXPIRY = process.env.PASSWORD_RESET_EXPIRES_IN || "7d";
 
 
 
@@ -123,7 +123,6 @@ export const refreshAccessToken = async (refreshToken) => {
   try {
     // التحقق من صحة refresh token
     const decoded = verifyRefreshToken(refreshToken);
-    
     if (decoded.type !== 'refresh') {
       throw new Error(TOKEN_NOT_CORRECT);
     }

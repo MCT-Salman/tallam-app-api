@@ -34,8 +34,6 @@ export const requireAuth = async (req, res, next) => {
       }
     });
 
-    console.log("after user");
-
     if (!user) {
       return res.status(401).json({
         success: FAILURE_REQUEST,

@@ -1,8 +1,9 @@
 import { serializeResponse } from "../utils/serialize.js";
 import { 
-  createDomain, listDomains, updateDomain, toggleDomain,
-  createSubject, listSubjects, updateSubject, toggleSubject,
-  createInstructor, listInstructors, updateInstructor, toggleInstructor, 
+  createDomain, listDomains, updateDomain, toggleDomain, DeleteDomain,
+  createSpecialization, listSpecializations, listSpecializationsByDomain, updateSpecialization, toggleSpecialization, DeleteSpecialization,
+  createSubject, listSubjects, updateSubject, toggleSubject, DeleteSubject,
+  createInstructor, listInstructors, updateInstructor, toggleInstructor, DeleteInstructor,
   createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic, listCoursesAdmin
 } from "../services/catalog.service.js";
 
@@ -61,27 +62,48 @@ export const adminToggleDomain = async (req, res, next) => {
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
-// Admin: Subjects
-export const adminCreateSubject = async (req, res, next) => {
-  try { 
-    const s = await createSubject(req.body.name, parseInt(req.body.domainId,10)); 
-    res.status(201).json({ 
-      success: true, 
-      message: "تم إنشاء الموضوع بنجاح",
-      data: {
-        ...serializeResponse(s)
-      }
-    }); 
+export const adminDeleteDomain = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    await DeleteDomain(id);
+    res.json({
+      success: true,
+      message: "تم حذف المجال بنجاح"
+    });
+  } catch (e) {
+    if (e.code === 'P2025') { // Prisma record not found
+      e.statusCode = 404;
+      e.message = "الحقل غير موجود";
+    } else {
+      e.statusCode = e.statusCode || 400;
+    }
+    next(e);
   }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
-export const adminListSubjects = async (req, res, next) => {
+
+// Admin: Specializations
+export const adminCreateSpecialization = async (req, res, next) => {
+  try {
+    const { name } = req.body;
+    const domainId = parseInt(req.params.id, 10);
+    const specialization = await createSpecialization({ name, domainId });
+    res.status(201).json({
+      success: true,
+      message: "تم إنشاء التخصص بنجاح",
+      data: serializeResponse(specialization)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminListSpecializations = async (req, res, next) => {
   try { 
-    const domainId = req.query.domainId ? parseInt(req.query.domainId,10): undefined; 
-    const list = await listSubjects(domainId); 
+    const list = await listSpecializations(); 
     res.json({ 
       success: true, 
-      message: "تم جلب قائمة المواضيع بنجاح",
+      message: "تم جلب التخصصات بنجاح",
       data: {
         ...serializeResponse(list)
       }
@@ -89,6 +111,106 @@ export const adminListSubjects = async (req, res, next) => {
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
+
+export const publicListSpecializationsByDomain = async (req, res, next) => {
+  try {
+    const domainId = parseInt(req.params.id, 10);
+    const items = await listSpecializationsByDomain(domainId);
+    res.json({
+      success: true,
+      message: "تم جلب التخصصات",
+      data: serializeResponse(items)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminUpdateSpecialization = async (req, res, next) => {
+  try { 
+    const s = await updateSpecialization(parseInt(req.params.id,10), { name: req.body.name, domainId: req.body.domainId? parseInt(req.body.domainId,10): undefined }); 
+    res.json({ 
+      success: true, 
+      message: "تم تحديث التخصص بنجاح",
+      data: {
+        ...serializeResponse(s)
+      }
+    }); 
+  }
+  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};  
+
+export const adminToggleSpecialization = async (req, res, next) => {
+  try { 
+    const s = await toggleSpecialization(parseInt(req.params.id,10), !!req.body.isActive); 
+    const message = !!req.body.isActive ? "تم تفعيل التخصص بنجاح" : "تم تعطيل التخصص بنجاح";
+    res.json({ 
+      success: true, 
+      message,
+      data: {
+        ...serializeResponse(s)
+      }
+    }); 
+  }
+  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};  
+
+export const adminDeleteSpecialization = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    await DeleteSpecialization(id);
+    res.json({
+      success: true,
+      message: "تم حذف التخصص بنجاح"
+    });
+  } catch (e) {
+    if (e.code === 'P2025') { // Prisma record not found
+      e.statusCode = 404;
+      e.message = "الحقل غير موجود";
+    } else {
+      e.statusCode = e.statusCode || 400;
+    }
+    next(e);
+  }
+};
+
+
+// Admin: Subjects
+export const adminCreateSubject = async (req, res, next) => {
+  try {
+    const s = await createSubject(
+      req.body.name,
+      parseInt(req.body.specializationId, 10)
+    );
+    res.status(201).json({
+      success: true,
+      message: "تم إنشاء المادة بنجاح",
+      data: serializeResponse(s)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminListSubjects = async (req, res, next) => {
+  try {
+    const specializationId = req.query.specializationId
+      ? parseInt(req.query.specializationId, 10)
+      : undefined;
+    const list = await listSubjects(specializationId);
+    res.json({
+      success: true,
+      message: "تم جلب المواد",
+      data: serializeResponse(list)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
 export const adminUpdateSubject = async (req, res, next) => {
   try { 
     const s = await updateSubject(parseInt(req.params.id,10), { name: req.body.name, domainId: req.body.domainId? parseInt(req.body.domainId,10): undefined }); 
@@ -115,6 +237,25 @@ export const adminToggleSubject = async (req, res, next) => {
     }); 
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};
+
+export const adminDeleteSubject = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    await DeleteSubject(id);
+    res.json({
+      success: true,
+      message: "تم حذف الموضوع بنجاح"
+    });
+  } catch (e) {
+    if (e.code === 'P2025') { // Prisma record not found
+      e.statusCode = 404;
+      e.message = "الحقل غير موجود";
+    } else {
+      e.statusCode = e.statusCode || 400;
+    }
+    next(e);
+  }
 };
 
 // Admin: Instructors
@@ -170,6 +311,24 @@ export const adminToggleInstructor = async (req, res, next) => {
     }); 
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};
+export const adminDeleteInstructor = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    await DeleteInstructor(id);
+    res.json({
+      success: true,
+      message: "تم حذف المدرب بنجاح"
+    });
+  } catch (e) {
+    if (e.code === 'P2025') { // Prisma record not found
+      e.statusCode = 404;
+      e.message = "الحقل غير موجود";
+    } else {
+      e.statusCode = e.statusCode || 400;
+    }
+    next(e);
+  }
 };
 
 // Admin: Courses

@@ -7,10 +7,31 @@ export const domainCreateRules = [
   body("name").exists({ checkFalsy: true }).withMessage("الاسم مطلوب").isString().isLength({ min: 2 }).withMessage("الاسم قصير")
 ];
 
-export const subjectCreateRules = [
-  body("name").exists({ checkFalsy: true }).withMessage("الاسم مطلوب").isString().isLength({ min: 2 }).withMessage("الاسم قصير"),
-  body("domainId").isInt({ gt: 0 }).withMessage("domainId غير صالح")
+export const specializationCreateRules = [
+  body("name")
+    .exists({ checkFalsy: true })
+    .withMessage("الاسم مطلوب")
+    .isString()
+    .isLength({ min: 2 })
+    .withMessage("الاسم قصير"),
+  body("domainId")
+    .isInt({ gt: 0 })
+    .withMessage("domainId غير صالح")
 ];
+
+
+export const subjectCreateRules = [
+  body("name")
+    .exists({ checkFalsy: true })
+    .withMessage("الاسم مطلوب")
+    .isString()
+    .isLength({ min: 2 })
+    .withMessage("الاسم قصير"),
+  body("specializationId")
+    .isInt({ gt: 0 })
+    .withMessage("specializationId غير صالح")
+];
+
 
 export const instructorCreateRules = [
   body("name").exists({ checkFalsy: true }).withMessage("الاسم مطلوب").isString().isLength({ min: 2 }).withMessage("الاسم قصير"),
@@ -38,6 +59,7 @@ export const toggleActiveRules = [
 export const listQueryRules = [
   query("q").optional().isString(),
   query("domainId").optional().isInt({ gt: 0 }),
+  query("specializationId").optional().isInt({ gt: 0 }),
   query("subjectId").optional().isInt({ gt: 0 }),
   query("instructorId").optional().isInt({ gt: 0 }),
   query("skip").optional().isInt({ min: 0 }),

@@ -9,7 +9,7 @@ export const OTP_ALREADY_VERIFIED = "رقم الهاتف مؤكد مسبقاً"
 export const FAILURE_OTP_CODE = "رمز التحقق غير صالح"
 export const OTP_CODE_EXPIRED = "انتهت صلاحية رمز التحقق"
 export const OTP_SUCCESS_VERIFY = "تم التحقق من الرمز بنجاح"
-export const OTP_TIME_OUT_OTP = 5 * 60 * 1000
+export const OTP_TIME_OUT_OTP = 2 * 60 * 1000
 
 // auth (Middleware) messages
 export const NO_AUTH = "ليس لديك الصلاحية"

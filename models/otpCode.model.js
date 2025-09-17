@@ -15,7 +15,7 @@ export const markOtpUnUsed = (phone) =>
     data: { used: false }
   });
 
-  export const markOtpUsedByPhone = (phone) =>
+export const markOtpUsedByPhone = (phone) =>
   prisma.otpCode.updateMany({
     where: { phone, used: false },
     data: { used: true }
@@ -30,8 +30,19 @@ export const findForVerify = (phone, code) =>
     orderBy: { createdAt: "desc" }
   });
 
-  export const findForVerifeidNumber = (phone) =>
+export const findForNotUsedOtpNumber = (phone) =>
+  prisma.otpCode.findMany({
+    where: { phone, used: false }
+  });
+
+export const findForVerifeidNumber = (phone) =>
   prisma.otpCode.findFirst({
     where: { phone, used: true },
     orderBy: { createdAt: "desc" }
+  });
+
+export const editExpDate = (phone) =>
+  prisma.otpCode.updateMany({
+    where: { phone },
+    data: { expiresAt: new Date(Date.now() - 1 * 60 * 1000) }
   });

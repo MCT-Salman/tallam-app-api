@@ -5,6 +5,7 @@ import * as LoginAttemptModel from './loginAttempt.model.js';
 import * as OtpCodeModel from './otpCode.model.js';
 import * as DomainModel from './domain.model.js';
 import * as SubjectModel from './subject.model.js';
+import * as SpecializationModel from './specialization.model.js';
 import * as InstructorModel from './instructor.model.js';
 import * as CourseModel from './course.model.js';
 import * as CourseLevelModel from './courseLevel.model.js';
@@ -25,6 +26,7 @@ export {
   LoginAttemptModel,
   OtpCodeModel,
   DomainModel,
+  SpecializationModel,
   SubjectModel,
   InstructorModel,
   CourseModel,

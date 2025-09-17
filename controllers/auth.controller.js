@@ -17,12 +17,12 @@ import { UserModel, SessionModel, OtpCodeModel } from "../models/index.js";
 import { BAD_REQUEST_STATUS_CODE, SUCCESS_CREATE_STATUS_CODE, SUCCESS_STATUS_CODE } from "../validators/statusCode.js";
 import { CHANGE_PASSWORD_SUCCESSFULLY, CURRENT_PASSWORD_NOT_CORRECT_PROFILE, CURRENT_PASSWORD_REQUIRED_TO_CHANGE_FROM_PROFILE, FAILURE_REQUEST, OTP_SUCCESS_VERIFY, PHONE_NUMBER_REQUIRED, REFERESH_TOKEN_REQUIRED, SUCCESS_LOGIN, SUCCESS_REFERESH_TOKEN, SUCCESS_REGISTER, SUCCESS_REQUEST, UPDATE_PROFILE_INFO_SUCCESSFULLY, USER_NOT_FOUND_FORGET, USER_NOT_FOUND_PROFILE } from "../validators/messagesResponse.js";
 
-/**
+/** 
  * تسجيل مستخدم جديد
  */
 export const register = async (req, res, next) => {
   try {
-    
+    console.log(req.body);
     const { phone, password, name, birthDate, sex } = req.body;
     const avatarUrl = req.file ? `/uploads/avatars/${req.file.filename}` : null;
 

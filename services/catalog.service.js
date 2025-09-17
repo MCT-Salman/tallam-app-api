@@ -1,4 +1,4 @@
-import { DomainModel, SubjectModel, InstructorModel, CourseModel } from "../models/index.js";
+import { DomainModel, SpecializationModel, SubjectModel, InstructorModel, CourseModel } from "../models/index.js";
 import prisma from "../prisma/client.js";
 
 // Domains
@@ -6,18 +6,55 @@ export const createDomain = (name) => prisma.domain.create({ data: { name } });
 export const listDomains = () => DomainModel.findAll({});
 export const updateDomain = (id, data) => prisma.domain.update({ where: { id }, data });
 export const toggleDomain = (id, isActive) => prisma.domain.update({ where: { id }, data: { isActive } });
+export const DeleteDomain = (id) => prisma.domain.delete({ where: { id } });
+
+// Specializations
+// Specializations
+export const createSpecialization = (data) =>
+  prisma.specialization.create({ data });
+
+export const listSpecializations = () =>
+  prisma.specialization.findMany({
+    orderBy: { name: "asc" },
+    include: { domain: true }
+  });
+ 
+export const listSpecializationsByDomain = (domainId) =>
+  prisma.specialization.findMany({
+    where: { domainId },
+    orderBy: { name: "asc" }
+  });
+
+export const updateSpecialization = (id, data) =>
+  prisma.specialization.update({ where: { id }, data });
+
+export const toggleSpecialization = (id, isActive) =>
+  prisma.specialization.update({ where: { id }, data: { isActive } });
+
+export const DeleteSpecialization = (id) => prisma.specialization.delete({ where: { id } });
+
 
 // Subjects
-export const createSubject = (name, domainId) => prisma.subject.create({ data: { name, domainId }, include: { domain: true } });
-export const listSubjects = (domainId) => prisma.subject.findMany({ where: domainId ? { domainId } : {}, orderBy: { name: 'asc' }, include: { domain: true } });
-export const updateSubject = (id, data) => prisma.subject.update({ where: { id }, data, include: { domain: true } });
+export const createSubject = (name, specializationId) =>
+  prisma.subject.create({ data: { name, specializationId } });
+
+export const listSubjects = (specializationId) =>
+  prisma.subject.findMany({
+    where: specializationId ? { specializationId } : undefined,
+    orderBy: { name: "asc" },
+    include: { specialization: true }
+  });
+
+export const updateSubject = (id, data) => prisma.subject.update({ where: { id }, data, include: { specialization: true } });
 export const toggleSubject = (id, isActive) => prisma.subject.update({ where: { id }, data: { isActive }, include: { domain: true } });
+export const DeleteSubject = (id) => prisma.subject.delete({ where: { id } });
 
 // Instructors
 export const createInstructor = (data) => prisma.instructor.create({ data });
 export const listInstructors = () => InstructorModel.findAll({});
 export const updateInstructor = (id, data) => prisma.instructor.update({ where: { id }, data });
 export const toggleInstructor = (id, isActive) => prisma.instructor.update({ where: { id }, data: { isActive } });
+export const DeleteInstructor = (id) => prisma.instructor.delete({ where: { id } });
 
 /**
  * Create a new course and associate it with instructors.

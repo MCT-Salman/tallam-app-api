@@ -6,6 +6,11 @@ function generateOtpCode() {
 }
 
 export const sendOtp = async (phone) => {
+
+  const notUsedOtp = await OtpCodeModel.findForNotUsedOtpNumber(phone);
+  if (notUsedOtp.length > 0) {
+   await editExpDate(phone);
+  }
   // Check if user with this phone already exists and is verified
   const isVerifiedNumber = await OtpCodeModel.findForVerifeidNumber(phone);
   const user = await UserModel.findByPhone(phone);
