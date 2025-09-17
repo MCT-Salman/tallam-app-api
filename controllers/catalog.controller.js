@@ -2,7 +2,7 @@ import { serializeResponse } from "../utils/serialize.js";
 import { 
   createDomain, listDomains, updateDomain, toggleDomain, DeleteDomain,
   createSpecialization, listSpecializations, listSpecializationsByDomain, updateSpecialization, toggleSpecialization, DeleteSpecialization,
-  createSubject, listSubjects, updateSubject, toggleSubject, DeleteSubject,
+  createSubject, listSubjects,listSubjectsBySpecialization, updateSubject, toggleSubject, DeleteSubject,
   createInstructor, listInstructors, updateInstructor, toggleInstructor, DeleteInstructor,
   createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic, listCoursesAdmin
 } from "../services/catalog.service.js";
@@ -85,7 +85,7 @@ export const adminDeleteDomain = async (req, res, next) => {
 export const adminCreateSpecialization = async (req, res, next) => {
   try {
     const { name } = req.body;
-    const domainId = parseInt(req.params.id, 10);
+    const domainId = parseInt(req.body.domainId, 10);
     const specialization = await createSpecialization({ name, domainId });
     res.status(201).json({
       success: true,
@@ -200,6 +200,21 @@ export const adminListSubjects = async (req, res, next) => {
       ? parseInt(req.query.specializationId, 10)
       : undefined;
     const list = await listSubjects(specializationId);
+    res.json({
+      success: true,
+      message: "تم جلب المواد",
+      data: serializeResponse(list)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminListSubjectsBySpecialization = async (req, res, next) => {
+  try {
+    const specializationId = parseInt(req.params.id, 10);
+    const list = await listSubjectsBySpecialization(specializationId);
     res.json({
       success: true,
       message: "تم جلب المواد",
@@ -358,6 +373,7 @@ export const adminUpdateCourse = async (req, res, next) => {
 
 export const adminDeleteCourse = async (req, res, next) => {
   try {
+    console.log(req.params.id);
     const id = parseInt(req.params.id, 10);
     await deleteCourse(id);
     res.json({
@@ -403,6 +419,7 @@ export const adminListCourses = async (req, res, next) => {
 // Public
 export const publicListCourses = async (req, res, next) => {
   try {
+    console.log(req.query);
     const skip = req.query.skip ? parseInt(req.query.skip,10): 0;
     const take = req.query.take ? parseInt(req.query.take,10): 20;
     const filters = {

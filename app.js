@@ -140,7 +140,7 @@ app.use('/api/admin', quizRoutes); // Using /api/admin prefix for quiz managemen
 app.use('/api/quizzes', studentQuizRoutes); // Routes for students to take quizzes
 app.use('/api/progress', progressRoutes); // Routes for students to track progress
 app.use('/api/catalog', catalogRoutes);
-app.use('/api/catalog', lessonRoutes);
+app.use('/api/lessons', lessonRoutes);
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 // معالجة الأخطاء 404

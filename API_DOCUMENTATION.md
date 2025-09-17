@@ -618,7 +618,7 @@ Authorization: Bearer <access_token>
 ## إدارة التخصصات (Specializations)
 
 ### 1. إنشاء تخصص جديد
-**POST** `/api/catalog/admin/domains/:domainId/specializations`
+**POST** `/api/catalog/admin/specializations`
 
 ### Request Body:
 ```json
@@ -631,7 +631,7 @@ Authorization: Bearer <access_token>
 ## إدارة المواد (Subjects)
 
 ### 1. إنشاء مادة جديدة
-**POST** `/api/catalog/admin/specializations/:specializationId/subjects`
+**POST** `/api/catalog/admin/subjects`
 
 ### Request Body:
 ```json

@@ -45,6 +45,12 @@ export const listSubjects = (specializationId) =>
     include: { specialization: true }
   });
 
+export const listSubjectsBySpecialization = (specializationId) =>
+  prisma.subject.findMany({
+    where: { specializationId },
+    orderBy: { name: "asc" }
+  });
+
 export const updateSubject = (id, data) => prisma.subject.update({ where: { id }, data, include: { specialization: true } });
 export const toggleSubject = (id, isActive) => prisma.subject.update({ where: { id }, data: { isActive }, include: { domain: true } });
 export const DeleteSubject = (id) => prisma.subject.delete({ where: { id } });
@@ -137,11 +143,12 @@ export const updateCourse = async (id, courseData, instructorIds) => {
  * @returns {Promise<Course>}
  */
 export const deleteCourse = async (id) => {
-  // Prisma will handle cascading deletes for CourseInstructor and other relations
-  return prisma.course.delete({
-    where: { id },
+  return prisma.$transaction(async (tx) => {
+    await tx.courseInstructor.deleteMany({ where: { courseId: id } });
+    return tx.course.delete({ where: { id } });
   });
 };
+
 
 export const toggleCourse = (id, isActive) => prisma.course.update({ where: { id }, data: { isActive } });
 

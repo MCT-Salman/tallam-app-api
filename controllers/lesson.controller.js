@@ -8,7 +8,7 @@ import {
 // Levels (Admin)
 export const adminCreateLevel = async (req, res, next) => {
   try { 
-    const level = await createLevel(parseInt(req.params.courseId,10), { title: req.body.title, order: req.body.order ? parseInt(req.body.order,10): 0 }); 
+    const level = await createLevel(parseInt(req.params.courseId,10), { name: req.body.title, order: req.body.order ? parseInt(req.body.order,10): 0 }); 
     res.status(201).json({ 
       success: true, 
       message: "تم إنشاء المستوى بنجاح",
@@ -34,7 +34,7 @@ export const adminListLevels = async (req, res, next) => {
 };
 export const adminUpdateLevel = async (req, res, next) => {
   try { 
-    const level = await updateLevel(parseInt(req.params.id,10), { title: req.body.title, order: req.body.order ? parseInt(req.body.order,10): undefined }); 
+    const level = await updateLevel(parseInt(req.params.id,10), { name: req.body.title, order: req.body.order ? parseInt(req.body.order,10): undefined }); 
     res.json({ 
       success: true, 
       message: "تم تحديث المستوى بنجاح",
@@ -79,10 +79,24 @@ export const adminDeleteLevel = async (req, res, next) => {
 };
 
 // Lessons (Admin)
+export const adminListLessonsByLevel = async (req, res, next) => {
+  try { 
+    const lessons = await listLessonsByLevel(parseInt(req.params.courseLevelId,10)); 
+    res.json({ 
+      success: true, 
+      message: "تم جلب قائمة الدروس بنجاح",
+      data: {
+        ...serializeResponse(lessons)
+      }
+    }); 
+  }
+  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};
 export const adminCreateLessonForCourse = async (req, res, next) => {
   try { 
     const lesson = await createLessonForCourse(parseInt(req.params.courseId,10), {
       title: req.body.title,
+      description: req.body.description,
       youtubeUrl: req.body.youtubeUrl,
       youtubeId: req.body.youtubeId,
       durationSec: req.body.durationSec? parseInt(req.body.durationSec,10): null,
@@ -103,6 +117,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
   try { 
     const lesson = await createLessonForLevel(parseInt(req.params.courseLevelId,10), {
       title: req.body.title,
+      description: req.body.description,
       youtubeUrl: req.body.youtubeUrl,
       youtubeId: req.body.youtubeId,
       durationSec: req.body.durationSec? parseInt(req.body.durationSec,10): null,
@@ -123,6 +138,7 @@ export const adminUpdateLesson = async (req, res, next) => {
   try { 
     const lesson = await updateLesson(parseInt(req.params.id,10), {
       title: req.body.title,
+      description: req.body.description,
       youtubeUrl: req.body.youtubeUrl,
       youtubeId: req.body.youtubeId,
       durationSec: req.body.durationSec? parseInt(req.body.durationSec,10): undefined,

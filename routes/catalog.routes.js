@@ -9,7 +9,7 @@ import {
 import {
   adminCreateDomain, adminListDomains, adminUpdateDomain, adminToggleDomain,adminDeleteDomain,
   adminCreateSpecialization, adminListSpecializations, publicListSpecializationsByDomain, adminUpdateSpecialization, adminToggleSpecialization, adminDeleteSpecialization,
-  adminCreateSubject, adminListSubjects, adminUpdateSubject, adminToggleSubject, adminDeleteSubject,
+  adminCreateSubject, adminListSubjects,adminListSubjectsBySpecialization, adminUpdateSubject, adminToggleSubject, adminDeleteSubject,
   adminCreateInstructor, adminListInstructors, adminUpdateInstructor, adminToggleInstructor, adminDeleteInstructor,
   adminCreateCourse, adminUpdateCourse, adminToggleCourse, adminDeleteCourse, adminListCourses,
   publicListCourses, publicGetCourse
@@ -27,13 +27,14 @@ r.delete("/admin/domains/:id", requireAuth, requireRole(["ADMIN"]), validate(idP
 // Specializations
 r.get("/admin/specializations", requireAuth, requireRole(["ADMIN"]), adminListSpecializations);
 r.get("/admin/domains/:id/specializations",validate(idParam),publicListSpecializationsByDomain);
-r.post("/admin/domains/:id/specializations",requireAuth,requireRole(["ADMIN"]),validate(specializationCreateRules),adminCreateSpecialization);
+r.post("/admin/specializations",requireAuth,requireRole(["ADMIN"]),validate(specializationCreateRules),adminCreateSpecialization);
 r.put("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(specializationCreateRules), adminUpdateSpecialization);
 r.put("/admin/specializations/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleSpecialization);
 r.delete("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteSpecialization);
 
 // Subjects
 r.get("/admin/subjects", requireAuth, requireRole(["ADMIN"]), adminListSubjects);
+r.get("/admin/specializations/:id/subjects", validate(idParam), adminListSubjectsBySpecialization);
 r.post("/admin/subjects", requireAuth, requireRole(["ADMIN"]), validate(subjectCreateRules), adminCreateSubject);
 r.put("/admin/subjects/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(subjectCreateRules), adminUpdateSubject);
 r.put("/admin/subjects/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleSubject);

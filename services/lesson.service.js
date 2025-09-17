@@ -51,6 +51,7 @@ export const createLessonForLevel = async (courseLevelId, data) => {
     }
   });
 };
+
 export const listLessonsByCourse = (courseId) => prisma.lesson.findMany({
   where: { courseId },
   orderBy: [{ courseLevelId: 'asc' }, { orderIndex: 'asc' }, { id: 'asc' }],

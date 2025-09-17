@@ -183,6 +183,7 @@ model Course {
   currency     String?          @default("USD")
   isFree       Boolean          @default(false)
   subjectId    Int
+  isActive     Boolean          @default(true)
   subject      Subject          @relation(fields: [subjectId], references: [id])
   lessons      Lesson[]
   levels       CourseLevel[]
