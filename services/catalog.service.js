@@ -241,6 +241,11 @@ export const listCoursesPublic = async (filters = {}, skip = 0, take = 20) => {
   return { items, total, skip, take };
 };
 
+export const listInstructorsForCourse = (courseId) => prisma.courseInstructor.findMany({
+  where: { courseId },
+  include: { instructor: true }
+});
+
 /**
  * List all courses for the admin dashboard with filtering and pagination.
  * @param {object} filters - { q, subjectId, instructorId }

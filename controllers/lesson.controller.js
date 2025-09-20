@@ -2,7 +2,9 @@ import { serializeResponse } from "../utils/serialize.js";
 import {
   createLevel, listLevelsByCourse, updateLevel, toggleLevel, deleteLevel,
   createLessonForCourse, createLessonForLevel, listLessonsByCourse, listLessonsByLevel,
-  updateLesson, toggleLesson, deleteLesson
+  updateLesson, toggleLesson, deleteLesson,
+  addInstructorToLevel, removeInstructorFromLevel, updateLevelInstructors,
+  getLevelInstructors, getInstructorLevels, isInstructorAssignedToLevel
 } from "../services/lesson.service.js";
 
 // Levels (Admin)
@@ -211,12 +213,96 @@ export const publicListCourseLessonsFlat = async (req, res, next) => {
   try {
     const courseId = parseInt(req.params.courseId,10);
     const lessons = await listLessonsByCourse(courseId);
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: "تم جلب قائمة الدروس بنجاح",
       data: {
         ...serializeResponse(lessons)
       }
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};
+
+// Course Level Instructors Management
+
+export const adminAddInstructorToLevel = async (req, res, next) => {
+  try {
+    const courseLevelId = parseInt(req.params.courseLevelId, 10);
+    const { instructorId } = req.body;
+
+    const relation = await addInstructorToLevel(courseLevelId, instructorId);
+    res.status(201).json({
+      success: true,
+      message: "تم إضافة المدرب إلى المستوى بنجاح",
+      data: serializeResponse(relation)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminRemoveInstructorFromLevel = async (req, res, next) => {
+  try {
+    const courseLevelId = parseInt(req.params.courseLevelId, 10);
+    const instructorId = parseInt(req.params.instructorId, 10);
+
+    await removeInstructorFromLevel(courseLevelId, instructorId);
+    res.json({
+      success: true,
+      message: "تم إزالة المدرب من المستوى بنجاح"
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminUpdateLevelInstructors = async (req, res, next) => {
+  try {
+    const courseLevelId = parseInt(req.params.courseLevelId, 10);
+    const { instructorIds } = req.body;
+
+    const result = await updateLevelInstructors(courseLevelId, instructorIds);
+    res.json({
+      success: true,
+      message: "تم تحديث مدربي المستوى بنجاح",
+      data: serializeResponse(result)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminGetLevelInstructors = async (req, res, next) => {
+  try {
+    const courseLevelId = parseInt(req.params.courseLevelId, 10);
+
+    const instructors = await getLevelInstructors(courseLevelId);
+    res.json({
+      success: true,
+      message: "تم جلب مدربي المستوى بنجاح",
+      data: serializeResponse(instructors)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminGetInstructorLevels = async (req, res, next) => {
+  try {
+    const instructorId = parseInt(req.params.instructorId, 10);
+
+    const levels = await getInstructorLevels(instructorId);
+    res.json({
+      success: true,
+      message: "تم جلب مستويات المدرب بنجاح",
+      data: serializeResponse(levels)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
 };

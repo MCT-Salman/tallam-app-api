@@ -696,12 +696,12 @@ Authorization: Bearer <access_token>
 
 ---
 
-# 📖 Lesson Management (`/api/catalog/admin`)
+# 📖 Lesson Management (`/api/lessons/admin`)
 
 ## إدارة المستويات (Course Levels)
 
 ### 1. إنشاء مستوى جديد
-**POST** `/api/catalog/admin/courses/:courseId/levels`
+**POST** `/api/lessons/admin/courses/:courseId/levels`
 
 ### Request Body:
 ```json
@@ -712,21 +712,21 @@ Authorization: Bearer <access_token>
 ```
 
 ### 2. عرض مستويات دورة
-**GET** `/api/catalog/admin/courses/:courseId/levels`
+**GET** `/api/lessons/admin/courses/:courseId/levels`
 
 ### 3. تحديث مستوى
-**PUT** `/api/catalog/admin/levels/:id`
+**PUT** `/api/lessons/admin/levels/:id`
 
 ### 4. تفعيل/إلغاء تفعيل مستوى
-**PUT** `/api/catalog/admin/levels/:id/active`
+**PUT** `/api/lessons/admin/levels/:id/active`
 
 ### 5. حذف مستوى
-**DELETE** `/api/catalog/admin/levels/:id`
+**DELETE** `/api/lessons/admin/levels/:id`
 
 ## إدارة الدروس (Lessons)
 
 ### 1. إنشاء درس في دورة
-**POST** `/api/catalog/admin/courses/:courseId/lessons`
+**POST** `/api/lessons/admin/courses/:courseId/lessons`
 
 ### Request Body:
 ```json
@@ -742,21 +742,21 @@ Authorization: Bearer <access_token>
 ```
 
 ### 2. إنشاء درس في مستوى
-**POST** `/api/catalog/admin/levels/:courseLevelId/lessons`
+**POST** `/api/lessons/admin/levels/:courseLevelId/lessons`
 
 ### 3. تحديث درس
-**PUT** `/api/catalog/admin/lessons/:id`
+**PUT** `/api/lessons/admin/lessons/:id`
 
 ### 4. تفعيل/إلغاء تفعيل درس
-**PUT** `/api/catalog/admin/lessons/:id/active`
+**PUT** `/api/lessons/admin/lessons/:id/active`
 
 ### 5. حذف درس
-**DELETE** `/api/catalog/admin/lessons/:id`
+**DELETE** `/api/lessons/admin/lessons/:id`
 
 ## عرض المحتوى (عام)
 
 ### 1. عرض مستويات ودروس دورة
-**GET** `/api/catalog/courses/:courseId/levels`
+**GET** `/api/lessons/courses/:courseId/levels`
 
 ### Response:
 ```json
@@ -783,7 +783,7 @@ Authorization: Bearer <access_token>
 ```
 
 ### 2. عرض دروس دورة (مسطح)
-**GET** `/api/catalog/courses/:courseId/lessons`
+**GET** `/api/lessons/courses/:courseId/lessons`
 
 ---
 

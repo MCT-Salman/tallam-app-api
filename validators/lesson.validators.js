@@ -20,3 +20,20 @@ export const lessonCreateRules = [
 export const toggleActiveRules = [
   body("isActive").isBoolean().withMessage("isActive غير صالح")
 ];
+
+export const instructorIdParam = [
+  param("instructorId").isInt({ min: 1 }).withMessage("معرف المدرب غير صحيح"),
+];
+
+export const addInstructorToLevelRules = [
+  body("instructorId").isInt({ min: 1 }).withMessage("معرف المدرب مطلوب ويجب أن يكون رقم صحيح"),
+];
+
+export const updateLevelInstructorsRules = [
+  body("instructorIds")
+    .isArray({ min: 0 })
+    .withMessage("قائمة المدربين يجب أن تكون مصفوفة"),
+  body("instructorIds.*")
+    .isInt({ min: 1 })
+    .withMessage("كل معرف مدرب يجب أن يكون رقم صحيح"),
+];

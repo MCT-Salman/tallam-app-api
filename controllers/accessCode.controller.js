@@ -13,10 +13,16 @@ import {
 
 export const adminGenerateCodes = async (req, res, next) => {
   try {
-    const { courseId, count, validityInMonths } = req.body;
+    const { courseId, courseLevelId, count, validityInMonths } = req.body;
     const adminId = req.user.id;
 
-    const codes = await AccessCodeService.generateAccessCodes(courseId, count, validityInMonths, adminId);
+    const codes = await AccessCodeService.generateAccessCodes({
+      courseId,
+      courseLevelId,
+      count,
+      validityInMonths,
+      issuedBy: adminId,
+    });
     res.status(SUCCESS_CREATE_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
       message: `تم توليد ${count} أكواد بنجاح.`,
@@ -57,9 +63,10 @@ export const studentActivateCode = async (req, res, next) => {
 
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
-      message: `تم تفعيل الكود بنجاح! يمكنك الآن الوصول إلى دورة "${activatedCode.course.title}".`,
+      message: `تم تفعيل الكود بنجاح! يمكنك الآن الوصول إلى دورة "${activatedCode.course.title}"${activatedCode.courseLevel ? ` (المستوى: ${activatedCode.courseLevel.name})` : ''}.`,
       data: serializeResponse({
         courseId: activatedCode.courseId,
+        ...(activatedCode.courseLevelId ? { courseLevelId: activatedCode.courseLevelId } : {}),
         expiresAt: activatedCode.expiresAt,
       }),
     });

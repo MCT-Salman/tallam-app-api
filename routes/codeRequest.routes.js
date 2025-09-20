@@ -9,34 +9,12 @@ import { idParam } from '../validators/catalog.validators.js';
 const router = Router();
 
 // --- Student Routes ---
-router.post(
-  '/',
-  requireAuth,
-  requireRole(['STUDENT']),
-  validate(createCodeRequestRules),
-  CodeRequestController.studentCreateCodeRequest
-);
-router.get(
-  '/my-requests',
-  requireAuth,
-  requireRole(['STUDENT']),
-  CodeRequestController.studentGetMyCodeRequests
-);
+router.post('/', requireAuth, requireRole(['STUDENT']), validate(createCodeRequestRules), CodeRequestController.studentCreateCodeRequest);
+router.get('/my-requests', requireAuth, requireRole(['STUDENT']), CodeRequestController.studentGetMyCodeRequests);
 
 // --- Admin Routes ---
-router.get(
-  '/admin',
-  requireAuth,
-  requireRole(['ADMIN', 'SUBADMIN']),
-  CodeRequestController.adminGetAllCodeRequests
-);
-router.patch(
-  '/admin/:id/status',
-  requireAuth,
-  requireRole(['ADMIN', 'SUBADMIN']),
-  validate(idParam),
-  validate(updateCodeRequestStatusRules),
-  CodeRequestController.adminUpdateCodeRequestStatus
-);
+router.get('/admin', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), CodeRequestController.adminGetAllCodeRequests);
+router.patch('/admin/:id/status', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), validate(updateCodeRequestStatusRules), CodeRequestController.adminUpdateCodeRequestStatus);
 
 export default router;
+ 

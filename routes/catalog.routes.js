@@ -8,11 +8,12 @@ import {
 } from "../validators/catalog.validators.js";
 import {
   adminCreateDomain, adminListDomains, adminUpdateDomain, adminToggleDomain,adminDeleteDomain,
-  adminCreateSpecialization, adminListSpecializations, publicListSpecializationsByDomain, adminUpdateSpecialization, adminToggleSpecialization, adminDeleteSpecialization,
+  adminCreateSpecialization, adminListSpecializations, adminListSpecializationsByDomain, adminUpdateSpecialization, adminToggleSpecialization, adminDeleteSpecialization,
   adminCreateSubject, adminListSubjects,adminListSubjectsBySpecialization, adminUpdateSubject, adminToggleSubject, adminDeleteSubject,
   adminCreateInstructor, adminListInstructors, adminUpdateInstructor, adminToggleInstructor, adminDeleteInstructor,
   adminCreateCourse, adminUpdateCourse, adminToggleCourse, adminDeleteCourse, adminListCourses,
-  publicListCourses, publicGetCourse
+  publicListCourses, publicGetCourse, publicListInstructorsForCourse,
+  publicListSubjects, publicListCoursesBySubject
 } from "../controllers/catalog.controller.js";
 
 const r = Router();
@@ -26,7 +27,7 @@ r.delete("/admin/domains/:id", requireAuth, requireRole(["ADMIN"]), validate(idP
 
 // Specializations
 r.get("/admin/specializations", requireAuth, requireRole(["ADMIN"]), adminListSpecializations);
-r.get("/admin/domains/:id/specializations",validate(idParam),publicListSpecializationsByDomain);
+r.get("/admin/domains/:id/specializations",validate(idParam),adminListSpecializationsByDomain);
 r.post("/admin/specializations",requireAuth,requireRole(["ADMIN"]),validate(specializationCreateRules),adminCreateSpecialization);
 r.put("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(specializationCreateRules), adminUpdateSpecialization);
 r.put("/admin/specializations/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleSpecialization);
@@ -55,7 +56,9 @@ r.put("/admin/courses/:id/active", requireAuth, requireRole(["ADMIN"]), validate
 r.delete("/admin/courses/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteCourse);
 
 // Public routes
-r.get("/courses", validate(listQueryRules), publicListCourses);
+r.get("/subjects", publicListSubjects);
+r.get("/subjects/:id/courses", validate(idParam), publicListCoursesBySubject);
 r.get("/courses/:id", optionalAuth, validate(idParam), publicGetCourse);
+r.get("/courses/:id/instructors", validate(idParam), publicListInstructorsForCourse);
 
 export default r;

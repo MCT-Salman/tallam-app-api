@@ -27,9 +27,9 @@ export const subjectCreateRules = [
     .isString()
     .isLength({ min: 2 })
     .withMessage("الاسم قصير"),
-  body("specializationId")
+/*  body("specializationId")
     .isInt({ gt: 0 })
-    .withMessage("specializationId غير صالح")
+    .withMessage("specializationId غير صالح")*/
 ];
 
 

@@ -1,4 +1,5 @@
 import prisma from "../prisma/client.js";
+import { CourseLevelInstructorModel } from "../models/index.js";
 
 // Reusable include for nested course details
 const courseInclude = {
@@ -14,7 +15,22 @@ export const createLevel = (courseId, data) => prisma.courseLevel.create({
 export const listLevelsByCourse = (courseId) => prisma.courseLevel.findMany({
   where: { courseId },
   orderBy: { order: 'asc' },
-  include: { course: { include: courseInclude } }
+  include: {
+    course: { include: courseInclude },
+    instructors: {
+      include: {
+        instructor: {
+          select: {
+            id: true,
+            name: true,
+            bio: true,
+            avatarUrl: true,
+            isActive: true
+          }
+        }
+      }
+    }
+  }
 });
 export const updateLevel = (id, data) => prisma.courseLevel.update({
   where: { id },
@@ -85,3 +101,66 @@ export const toggleLesson = (id, isActive) => prisma.lesson.update({
   }
 });
 export const deleteLesson = (id) => prisma.lesson.delete({ where: { id } });
+
+// Course Level Instructors Management
+
+/**
+ * إضافة مدرب إلى مستوى دورة
+ * @param {number} courseLevelId - معرف مستوى الدورة
+ * @param {number} instructorId - معرف المدرب
+ * @returns {Promise<object>}
+ */
+export const addInstructorToLevel = async (courseLevelId, instructorId) => {
+  return CourseLevelInstructorModel.create({
+    courseLevelId,
+    instructorId
+  });
+};
+
+/**
+ * إزالة مدرب من مستوى دورة
+ * @param {number} courseLevelId - معرف مستوى الدورة
+ * @param {number} instructorId - معرف المدرب
+ * @returns {Promise<object>}
+ */
+export const removeInstructorFromLevel = async (courseLevelId, instructorId) => {
+  return CourseLevelInstructorModel.deleteUnique(courseLevelId, instructorId);
+};
+
+/**
+ * تحديث مدربي مستوى دورة
+ * @param {number} courseLevelId - معرف مستوى الدورة
+ * @param {number[]} instructorIds - مصفوفة معرفات المدربين
+ * @returns {Promise<object>}
+ */
+export const updateLevelInstructors = async (courseLevelId, instructorIds) => {
+  return CourseLevelInstructorModel.updateCourseLevelInstructors(courseLevelId, instructorIds);
+};
+
+/**
+ * الحصول على مدربي مستوى دورة
+ * @param {number} courseLevelId - معرف مستوى الدورة
+ * @returns {Promise<object[]>}
+ */
+export const getLevelInstructors = async (courseLevelId) => {
+  return CourseLevelInstructorModel.findByCourseLevelId(courseLevelId);
+};
+
+/**
+ * الحصول على مستويات الدورات لمدرب
+ * @param {number} instructorId - معرف المدرب
+ * @returns {Promise<object[]>}
+ */
+export const getInstructorLevels = async (instructorId) => {
+  return CourseLevelInstructorModel.findByInstructorId(instructorId);
+};
+
+/**
+ * التحقق من وجود علاقة بين مدرب ومستوى دورة
+ * @param {number} courseLevelId - معرف مستوى الدورة
+ * @param {number} instructorId - معرف المدرب
+ * @returns {Promise<boolean>}
+ */
+export const isInstructorAssignedToLevel = async (courseLevelId, instructorId) => {
+  return CourseLevelInstructorModel.exists(courseLevelId, instructorId);
+};

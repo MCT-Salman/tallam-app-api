@@ -4,7 +4,8 @@ import {
   createSpecialization, listSpecializations, listSpecializationsByDomain, updateSpecialization, toggleSpecialization, DeleteSpecialization,
   createSubject, listSubjects,listSubjectsBySpecialization, updateSubject, toggleSubject, DeleteSubject,
   createInstructor, listInstructors, updateInstructor, toggleInstructor, DeleteInstructor,
-  createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic, listCoursesAdmin
+  createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic, listInstructorsForCourse ,listCoursesAdmin,
+  
 } from "../services/catalog.service.js";
 
 // Admin: Domains
@@ -112,7 +113,7 @@ export const adminListSpecializations = async (req, res, next) => {
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
-export const publicListSpecializationsByDomain = async (req, res, next) => {
+export const adminListSpecializationsByDomain = async (req, res, next) => {
   try {
     const domainId = parseInt(req.params.id, 10);
     const items = await listSpecializationsByDomain(domainId);
@@ -417,6 +418,51 @@ export const adminListCourses = async (req, res, next) => {
 };
 
 // Public
+
+export const publicListSubjects = async (req, res, next) => {
+  try { 
+    const list = await listSubjects(); 
+    res.json({ 
+      success: true, 
+      message: "تم جلب قائمة المواد بنجاح",
+      data: {
+        ...serializeResponse(list)
+      }
+    }); 
+  }
+  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};
+
+export const publicListCoursesBySubject = async (req, res, next) => {
+  try { 
+    const subjectId = parseInt(req.params.id, 10);
+    const list = await listCoursesPublic({ subjectId }); 
+    res.json({ 
+      success: true, 
+      message: "تم جلب قائمة الكورسات بنجاح",
+      data: {
+        ...serializeResponse(list)
+      }
+    }); 
+  }
+  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};
+
+export const publicListCoursesByInstructor = async (req, res, next) => {
+  try { 
+    const instructorId = parseInt(req.params.id, 10);
+    const list = await listCoursesPublic({ instructorId }); 
+    res.json({ 
+      success: true, 
+      message: "تم جلب قائمة الكورسات بنجاح",
+      data: {
+        ...serializeResponse(list)
+      }
+    }); 
+  }
+  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};
+
 export const publicListCourses = async (req, res, next) => {
   try {
     console.log(req.query);
@@ -435,6 +481,21 @@ export const publicListCourses = async (req, res, next) => {
       data: serializeResponse(result)
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};
+
+export const publicListInstructorsForCourse = async (req, res, next) => {
+  try { 
+    const courseId = parseInt(req.params.id, 10);
+    const instructors = await listInstructorsForCourse(courseId);
+    res.json({ 
+      success: true, 
+      message: "تم جلب قائمة المدربين بنجاح",
+      data: {
+        ...serializeResponse(instructors)
+      }
+    }); 
+  }
+  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
 export const publicGetCourse = async (req, res, next) => {
