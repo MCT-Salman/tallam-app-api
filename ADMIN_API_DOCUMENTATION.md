@@ -254,8 +254,8 @@ http://localhost:5000
 {
   "name": "د. محمد أحمد",
   "bio": "خبير في البرمجة مع 10 سنوات خبرة",
-  "email": "mohamed@example.com",
-  "phone": "+963933528478"
+  "avatarUrl": "https://example.com/avatar.jpg",
+  "subjectId": 1
 }
 ```
 
@@ -268,8 +268,12 @@ http://localhost:5000
     "id": 1,
     "name": "د. محمد أحمد",
     "bio": "خبير في البرمجة مع 10 سنوات خبرة",
-    "email": "mohamed@example.com",
-    "phone": "+963933528478",
+    "avatarUrl": "https://example.com/avatar.jpg",
+    "subjectId": 1,
+    "subject": {
+      "id": 1,
+      "name": "البرمجة الأساسية"
+    },
     "isActive": true,
     "createdAt": "2024-01-15T10:00:00Z"
   }
@@ -300,11 +304,7 @@ http://localhost:5000
 {
   "title": "دورة البرمجة الأساسية",
   "description": "تعلم أساسيات البرمجة من الصفر",
-  "price": 299.99,
-  "currency": "USD",
-  "isFree": false,
-  "subjectId": 1,
-  "instructorIds": [1, 2]
+  "subjectId": 1
 }
 ```
 
@@ -333,14 +333,6 @@ http://localhost:5000
         }
       }
     },
-    "instructors": [
-      {
-        "instructor": {
-          "id": 1,
-          "name": "د. محمد أحمد"
-        }
-      }
-    ],
     "createdAt": "2024-01-15T10:00:00Z"
   }
 }
@@ -398,7 +390,8 @@ http://localhost:5000
 ```json
 {
   "title": "المستوى الأول - الأساسيات",
-  "order": 1
+  "order": 1,
+  "instructorId": 1
 }
 ```
 
@@ -1015,7 +1008,12 @@ http://localhost:5000
 
 ---
 
-# 🔐 Security Notes
+# 📝 Additional Notes
+
+## Recent Updates
+- **Instructors**: Now require `subjectId` for creation and updates. Instructors are directly associated with subjects.
+- **Courses**: No longer require `instructorIds` as instructor assignment is handled at the level stage.
+- **Levels**: Include `instructorId` to assign instructors to course levels.
 
 ## ملاحظات الأمان
 

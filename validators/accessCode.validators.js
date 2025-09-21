@@ -1,19 +1,11 @@
-import { body, oneOf } from 'express-validator';
+import { body } from 'express-validator';
 
 export const generateCodesRules = [
-  // Either courseLevelId or courseId must be provided
-  oneOf([
-    body('courseLevelId').exists().isInt({ gt: 0 }),
-    body('courseId').exists().isInt({ gt: 0 }),
-  ], 'يجب توفير courseLevelId أو courseId على الأقل'),
   body('courseLevelId')
-    .optional()
+    .exists()
+    .withMessage('courseLevelId مطلوب')
     .isInt({ gt: 0 })
     .withMessage('courseLevelId غير صالح'),
-  body('courseId')
-    .optional()
-    .isInt({ gt: 0 })
-    .withMessage('courseId غير صالح'),
   body('count')
     .isInt({ gt: 0, lt: 101 })
     .withMessage('العدد يجب أن يكون بين 1 و 100'),

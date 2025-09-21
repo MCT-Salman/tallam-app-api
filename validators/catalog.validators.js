@@ -36,8 +36,11 @@ export const subjectCreateRules = [
 export const instructorCreateRules = [
   body("name").exists({ checkFalsy: true }).withMessage("الاسم مطلوب").isString().isLength({ min: 2 }).withMessage("الاسم قصير"),
   body("bio").optional().isString(),
-  body("avatarUrl").optional().isString()
+  body("avatarUrl").optional().isString(),
+  body("subjectId").isInt({ gt: 0 }).withMessage("subjectId غير صالح")
 ];
+
+export const instructorUpdateRules = instructorCreateRules.map(rule => rule.optional());
 
 export const courseCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
@@ -45,9 +48,7 @@ export const courseCreateRules = [
   body("price").optional().isFloat({ min: 0 }).withMessage("السعر يجب أن يكون رقماً"),
   body("currency").optional().isString().withMessage("العملة يجب أن تكون نصاً"),
   body("isFree").optional().isBoolean().withMessage("isFree يجب أن يكون قيمة منطقية"),
-  body("subjectId").isInt({ gt: 0 }).withMessage("subjectId غير صالح"),
-  body("instructorIds").exists({ checkFalsy: true }).withMessage("يجب تحديد مدرب واحد على الأقل").isArray({ min: 1 }).withMessage("يجب تحديد مدرب واحد على الأقل"),
-  body("instructorIds.*").isInt({ gt: 0 }).withMessage("معرفات المدربين غير صالحة")
+  body("subjectId").isInt({ gt: 0 }).withMessage("subjectId غير صالح")
 ];
 
 export const courseUpdateRules = courseCreateRules.map(rule => rule.optional());

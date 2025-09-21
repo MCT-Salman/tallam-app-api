@@ -4,8 +4,8 @@ import {
   createSpecialization, listSpecializations, listSpecializationsByDomain, updateSpecialization, toggleSpecialization, DeleteSpecialization,
   createSubject, listSubjects,listSubjectsBySpecialization, updateSubject, toggleSubject, DeleteSubject,
   createInstructor, listInstructors, updateInstructor, toggleInstructor, DeleteInstructor,
-  createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic, listInstructorsForCourse ,listCoursesAdmin,
-  
+  createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic ,listCoursesAdmin,
+  listInstructorsForCourse,
 } from "../services/catalog.service.js";
 
 // Admin: Domains
@@ -277,7 +277,7 @@ export const adminDeleteSubject = async (req, res, next) => {
 // Admin: Instructors
 export const adminCreateInstructor = async (req, res, next) => {
   try { 
-    const i = await createInstructor({ name: req.body.name, bio: req.body.bio, avatarUrl: req.body.avatarUrl }); 
+    const i = await createInstructor({ name: req.body.name, bio: req.body.bio, avatarUrl: req.body.avatarUrl, subjectId: parseInt(req.body.subjectId, 10) }); 
     res.status(201).json({ 
       success: true, 
       data: {
@@ -303,7 +303,7 @@ export const adminListInstructors = async (req, res, next) => {
 };
 export const adminUpdateInstructor = async (req, res, next) => {
   try { 
-    const i = await updateInstructor(parseInt(req.params.id,10), { name: req.body.name, bio: req.body.bio, avatarUrl: req.body.avatarUrl }); 
+    const i = await updateInstructor(parseInt(req.params.id,10), { name: req.body.name, bio: req.body.bio, avatarUrl: req.body.avatarUrl, subjectId: req.body.subjectId ? parseInt(req.body.subjectId, 10) : undefined }); 
     res.json({ 
       success: true, 
       data: {
@@ -495,7 +495,15 @@ export const publicListInstructorsForCourse = async (req, res, next) => {
       }
     }); 
   }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+  catch (e) { 
+    if (e.message === "Course not found") {
+      e.statusCode = 404;
+      e.message = "الكورس غير موجود";
+    } else {
+      e.statusCode = e.statusCode || 400;
+    }
+    next(e); 
+  }
 };
 
 export const publicGetCourse = async (req, res, next) => {

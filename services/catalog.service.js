@@ -52,7 +52,7 @@ export const listSubjectsBySpecialization = (specializationId) =>
   });
 
 export const updateSubject = (id, data) => prisma.subject.update({ where: { id }, data, include: { specialization: true } });
-export const toggleSubject = (id, isActive) => prisma.subject.update({ where: { id }, data: { isActive }, include: { domain: true } });
+export const toggleSubject = (id, isActive) => prisma.subject.update({ where: { id }, data: { isActive }});
 export const DeleteSubject = (id) => prisma.subject.delete({ where: { id } });
 
 // Instructors
@@ -74,21 +74,11 @@ export const createCourse = async (courseData, instructorIds) => {
       data: courseData,
     });
 
-    if (instructorIds && instructorIds.length > 0) {
-      await tx.courseInstructor.createMany({
-        data: instructorIds.map((instructorId) => ({
-          courseId: course.id,
-          instructorId,
-        })),
-      });
-    }
-
     // Return the full course object with instructors
     return tx.course.findUnique({
       where: { id: course.id },
       include: {
-        subject: { include: { specialization: { include: { domain: true } } } },
-        instructors: { include: { instructor: true } },
+        subject: { include: { specialization: { include: { domain: true } } } }
       },
     });
   });
@@ -101,7 +91,7 @@ export const createCourse = async (courseData, instructorIds) => {
  * @param {number[]} [instructorIds] - Optional array of new instructor IDs.
  * @returns {Promise<Course>}
  */
-export const updateCourse = async (id, courseData, instructorIds) => {
+export const updateCourse = async (id, courseData) => {
   return prisma.$transaction(async (tx) => {
     // Update course details
     const course = await tx.course.update({
@@ -109,29 +99,12 @@ export const updateCourse = async (id, courseData, instructorIds) => {
       data: courseData,
     });
 
-    // If instructorIds are provided, update the associations
-    if (instructorIds) {
-      // Delete existing associations
-      await tx.courseInstructor.deleteMany({
-        where: { courseId: id },
-      });
-      // Create new associations
-      if (instructorIds.length > 0) {
-        await tx.courseInstructor.createMany({
-          data: instructorIds.map((instructorId) => ({
-            courseId: id,
-            instructorId,
-          })),
-        });
-      }
-    }
 
     // Return the full course object with instructors
     return tx.course.findUnique({
       where: { id: course.id },
       include: {
-        subject: { include: { specialization: { include: { domain: true } } } },
-        instructors: { include: { instructor: true } },
+        subject: { include: { specialization: { include: { domain: true } } } }
       },
     });
   });
@@ -144,7 +117,6 @@ export const updateCourse = async (id, courseData, instructorIds) => {
  */
 export const deleteCourse = async (id) => {
   return prisma.$transaction(async (tx) => {
-    await tx.courseInstructor.deleteMany({ where: { courseId: id } });
     return tx.course.delete({ where: { id } });
   });
 };
@@ -161,10 +133,7 @@ export const getCourseById = (id) => prisma.course.findUnique({
   where: { id },
   include: {
     subject: { include: { specialization: { include: { domain: true } } } },
-    instructors: { include: { instructor: true } },
-    levels: { where: { isActive: true }, orderBy: { order: 'asc' } },
-    lessons: { where: { isFreePreview: true, isActive: true }, orderBy: { orderIndex: 'asc' } }
-  }
+    levels: { where: { isActive: true }, orderBy: { order: 'asc' } }  }
 });
 
 /**
@@ -177,7 +146,7 @@ export const getCourseByIdForUser = async (id, userId) => {
   // Check if user has access (owns an access code for this course)
   const hasAccess = await prisma.accessCode.findFirst({
     where: {
-      courseId: id,
+      courseLevel: { courseId: id },
       usedBy: userId,
       isActive: true,
       OR: [
@@ -191,10 +160,16 @@ export const getCourseByIdForUser = async (id, userId) => {
     where: { id },
     include: {
       subject: { include: { specialization: { include: { domain: true } } } },
-      instructors: { include: { instructor: true } },
-      levels: { where: { isActive: true }, orderBy: { order: 'asc' } },
-      // If user has access, show all active lessons, otherwise only free ones
-      lessons: hasAccess ? { where: { isActive: true }, orderBy: { orderIndex: 'asc' } } : { where: { isFreePreview: true, isActive: true }, orderBy: { orderIndex: 'asc' } }
+      // Include levels with lessons; filter lessons depending on access
+      levels: {
+        where: { isActive: true },
+        orderBy: { order: 'asc' },
+        include: {
+          lessons: hasAccess
+            ? { where: { isActive: true }, orderBy: { orderIndex: 'asc' } }
+            : { where: { isFreePreview: true, isActive: true }, orderBy: { orderIndex: 'asc' } }
+        }
+      }
     }
   });
 
@@ -217,12 +192,10 @@ export const listCoursesPublic = async (filters = {}, skip = 0, take = 20) => {
   if (q) {
     where.OR = [
       { title: { contains: q, mode: "insensitive" } },
-      { description: { contains: q, mode: "insensitive" } },
-      { instructors: { some: { instructor: { name: { contains: q, mode: "insensitive" } } } } }
+      { description: { contains: q, mode: "insensitive" } }
     ];
   }
   if (subjectId) where.subjectId = subjectId;
-  if (instructorId) where.instructors = { some: { instructorId } };
   if (domainId) where.subject = { specialization: { domainId } };
 
   const [items, total] = await Promise.all([
@@ -232,19 +205,13 @@ export const listCoursesPublic = async (filters = {}, skip = 0, take = 20) => {
       skip,
       take,
       include: {
-        subject: { select: { id: true, name: true } },
-        instructors: { select: { instructor: { select: { id: true, name: true, avatarUrl: true } } } }
+        subject: { select: { id: true, name: true } }
       }
     }),
     prisma.course.count({ where })
   ]);
   return { items, total, skip, take };
 };
-
-export const listInstructorsForCourse = (courseId) => prisma.courseInstructor.findMany({
-  where: { courseId },
-  include: { instructor: true }
-});
 
 /**
  * List all courses for the admin dashboard with filtering and pagination.
@@ -259,11 +226,43 @@ export const listCoursesAdmin = async (filters = {}, skip = 0, take = 20) => {
 
   if (q) where.title = { contains: q };
   if (subjectId) where.subjectId = subjectId;
-  if (instructorId) where.instructors = { some: { instructorId } };
 
   const [items, total] = await Promise.all([
-    prisma.course.findMany({ where, skip, take, orderBy: { createdAt: 'desc' }, include: { subject: true, instructors: { include: { instructor: true } } } }),
+    prisma.course.findMany({ where, skip, take, orderBy: { createdAt: 'desc' }, include: { subject: true } }),
     prisma.course.count({ where })
   ]);
   return { items, total, skip, take };
+};
+
+/**
+ * List instructors for a specific course by aggregating from its levels.
+ * @param {number} courseId - The ID of the course.
+ * @returns {Promise<Array>} - Array of instructor objects.
+ */
+export const listInstructorsForCourse = async (courseId) => {
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    include: {
+      levels: {
+        where: { isActive: true },
+        include: {
+          instructor: true
+        }
+      }
+    }
+  });
+
+  if (!course) {
+    throw new Error("Course not found");
+  }
+
+  // Aggregate unique instructors
+  const instructorsMap = new Map();
+  course.levels.forEach(level => {
+    if (level.instructor) {
+      instructorsMap.set(level.instructor.id, level.instructor);
+    }
+  });
+
+  return Array.from(instructorsMap.values());
 };

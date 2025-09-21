@@ -156,6 +156,7 @@ model Subject {
   isActive         Boolean        @default(true)
   specializationId Int?
   specialization   Specialization? @relation(fields: [specializationId], references: [id])
+  instructors      Instructor[]
   courses          Course[]
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
@@ -168,11 +169,12 @@ model Instructor {
   name      String
   bio       String?
   avatarUrl String?
+  subjectId    Int
+  subject      Subject          @relation(fields: [subjectId], references: [id])
   isActive  Boolean  @default(true)
-  courses   CourseInstructor[]
-  levels    CourseLevelInstructor[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  courseLevels CourseLevel[]
 }
 
 model Course {
@@ -180,23 +182,17 @@ model Course {
   title        String
   slug         String?          @unique
   description  String?
-  price        Float?
-  currency     String?          @default("USD")
-  isFree       Boolean          @default(false)
   subjectId    Int
   isActive     Boolean          @default(true)
   subject      Subject          @relation(fields: [subjectId], references: [id])
-  lessons      Lesson[]
   levels       CourseLevel[]
   quizzes      Quiz[]
-  accessCodes  AccessCode[]
   progress     CourseProgress[]
   reviews      Review[]
   createdAt    DateTime         @default(now())
   updatedAt    DateTime         @updatedAt
   Transaction  Transaction[]
   CodeRequest  CodeRequest[]
-  instructors  CourseInstructor[]
 
   @@index([subjectId])
 }
@@ -205,15 +201,21 @@ model CourseLevel {
   id          Int      @id @default(autoincrement())
   name        String
   order       Int?
-  courseId    Int
+  priceUSD    Float?
+  priceSAR    Float?
+  isFree      Boolean          @default(false)
   isActive    Boolean  @default(true)
+  courseId    Int
   course      Course   @relation(fields: [courseId], references: [id])
+  instructorId  Int
+  instructor    Instructor  @relation(fields: [instructorId], references: [id])
   lessons     Lesson[]
-  instructors CourseLevelInstructor[]
+  accessCodes  AccessCode[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@index([courseId])
+  @@index([instructorId])
 }
 
 model Lesson {
@@ -227,16 +229,13 @@ model Lesson {
   orderIndex     Int?
   isFreePreview  Boolean          @default(false)
   isActive       Boolean          @default(true)
-  courseId       Int
-  course         Course           @relation(fields: [courseId], references: [id])
-  courseLevelId  Int?
-  courseLevel    CourseLevel?     @relation(fields: [courseLevelId], references: [id])
+  courseLevelId  Int
+  courseLevel    CourseLevel     @relation(fields: [courseLevelId], references: [id])
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   VideoLinkCheck VideoLinkCheck[]
   progress       LessonProgress[]
 
-  @@index([courseId])
   @@index([courseLevelId])
 }
 
@@ -262,10 +261,8 @@ model Transaction {
 model AccessCode {
   id        Int       @id @default(autoincrement())
   code      String    @unique
-  courseId  Int
-  course    Course    @relation(fields: [courseId], references: [id])
-  courseLevelId Int?
-  courseLevel   CourseLevel? @relation(fields: [courseLevelId], references: [id])
+  courseLevelId Int
+  courseLevel CourseLevel @relation(fields: [courseLevelId], references: [id])
   validityInMonths Int? 
   issuedBy  Int?
   issuedAt  DateTime  @default(now())
@@ -275,33 +272,8 @@ model AccessCode {
   expiresAt DateTime?
   isActive  Boolean   @default(true)
 
-  @@index([courseId])
   @@index([courseLevelId])
   @@index([usedBy])
-}
-
-model CourseInstructor {
-  courseId     Int
-  course       Course     @relation(fields: [courseId], references: [id])
-  instructorId Int
-  instructor   Instructor @relation(fields: [instructorId], references: [id])
-  createdAt    DateTime   @default(now())
-
-  @@id([courseId, instructorId])
-  @@index([courseId])
-  @@index([instructorId])
-}
-
-model CourseLevelInstructor {
-  courseLevelId Int
-  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
-  instructorId  Int
-  instructor    Instructor  @relation(fields: [instructorId], references: [id])
-  createdAt     DateTime    @default(now())
-
-  @@id([courseLevelId, instructorId])
-  @@index([courseLevelId])
-  @@index([instructorId])
 }
 
 model CodeRequest {

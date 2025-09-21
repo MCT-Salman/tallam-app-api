@@ -9,7 +9,6 @@ import * as SpecializationModel from './specialization.model.js';
 import * as InstructorModel from './instructor.model.js';
 import * as CourseModel from './course.model.js';
 import * as CourseLevelModel from './courseLevel.model.js';
-import * as CourseLevelInstructorModel from './courseLevelInstructor.model.js';
 import * as LessonModel from './lesson.model.js';
 import * as AccessCodeModel from './accessCode.model.js';
 import * as CodeRequestModel from './codeRequest.model.js';
@@ -32,7 +31,6 @@ export {
   InstructorModel,
   CourseModel,
   CourseLevelModel,
-  CourseLevelInstructorModel,
   LessonModel,
   AccessCodeModel,
   CodeRequestModel,

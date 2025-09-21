@@ -13,7 +13,7 @@ export const deleteOption = async (optionId) => {
 const checkCourseAccess = async (userId, courseId) => {
   const access = await prisma.accessCode.findFirst({
     where: {
-      courseId,
+      courseLevel: { courseId },
       usedBy: userId,
       // isActive is false after use, but we check expiresAt
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],

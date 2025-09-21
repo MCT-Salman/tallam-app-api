@@ -14,7 +14,7 @@ export const createCodeRequest = async (userId, courseId, contact) => {
   // Check if the user already has an active access code
   const existingAccess = await prisma.accessCode.findFirst({
     where: {
-      courseId,
+      courseLevel: { courseId },
       usedBy: userId,
       isActive: true,
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],

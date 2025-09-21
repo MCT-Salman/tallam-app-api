@@ -3,7 +3,7 @@ import { validate } from "../middlewares/validate.middleware.js";
 import { requireAuth, optionalAuth } from "../middlewares/auth.middleware.js";
 import { requireRole } from "../middlewares/role.middleware.js";
 import {
-  domainCreateRules, specializationCreateRules, subjectCreateRules, instructorCreateRules, courseCreateRules, courseUpdateRules,
+  domainCreateRules, specializationCreateRules, subjectCreateRules, instructorCreateRules, instructorUpdateRules, courseCreateRules, courseUpdateRules,
   toggleActiveRules, idParam, listQueryRules
 } from "../validators/catalog.validators.js";
 import {
@@ -44,7 +44,7 @@ r.delete("/admin/subjects/:id", requireAuth, requireRole(["ADMIN"]), validate(id
 // Instructors
 r.get("/admin/instructors", requireAuth, requireRole(["ADMIN"]), adminListInstructors);
 r.post("/admin/instructors", requireAuth, requireRole(["ADMIN"]), validate(instructorCreateRules), adminCreateInstructor);
-r.put("/admin/instructors/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(instructorCreateRules), adminUpdateInstructor);
+r.put("/admin/instructors/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(instructorUpdateRules), adminUpdateInstructor);
 r.put("/admin/instructors/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleInstructor);
 r.delete("/admin/instructors/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteInstructor);
 

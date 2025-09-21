@@ -26,7 +26,7 @@ export const createMany = (data) => {
 export const findByCode = (code) => {
   return prisma.accessCode.findUnique({
     where: { code },
-    include: { course: true, courseLevel: true },
+    include: { courseLevel: { include: { course: true } } },
   });
 };
 

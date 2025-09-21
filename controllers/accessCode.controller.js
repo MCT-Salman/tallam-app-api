@@ -63,9 +63,9 @@ export const studentActivateCode = async (req, res, next) => {
 
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
-      message: `تم تفعيل الكود بنجاح! يمكنك الآن الوصول إلى دورة "${activatedCode.course.title}"${activatedCode.courseLevel ? ` (المستوى: ${activatedCode.courseLevel.name})` : ''}.`,
+      message: `تم تفعيل الكود بنجاح! يمكنك الآن الوصول إلى دورة "${activatedCode.courseLevel?.course?.title || ''}"${activatedCode.courseLevel ? ` (المستوى: ${activatedCode.courseLevel.name})` : ''}.`,
       data: serializeResponse({
-        courseId: activatedCode.courseId,
+        courseId: activatedCode.courseLevel?.course?.id,
         ...(activatedCode.courseLevelId ? { courseLevelId: activatedCode.courseLevelId } : {}),
         expiresAt: activatedCode.expiresAt,
       }),

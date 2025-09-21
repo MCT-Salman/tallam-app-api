@@ -1,6 +1,5 @@
 import { customAlphabet } from 'nanoid';
 import * as AccessCodeModel from '../models/accessCode.model.js';
-import * as CourseModel from '../models/course.model.js';
 import * as CourseLevelModel from '../models/courseLevel.model.js';
 import { COURSE_NOT_FOUND } from '../validators/messagesResponse.js';
 
@@ -19,37 +18,17 @@ const nanoid = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 10);
  * @param {number} params.issuedBy - The ID of the admin who issued the codes.
  * @returns {Promise<string[]>} - Array of generated codes.
  */
-export const generateAccessCodes = async ({ courseId, courseLevelId, count, validityInMonths, issuedBy }) => {
-  let resolvedCourseId = courseId;
+export const generateAccessCodes = async ({ courseLevelId, count, validityInMonths, issuedBy }) => {
+  // Validate level exists and implicitly validate course via level
+  const level = await CourseLevelModel.findById(courseLevelId, { id: true, courseId: true });
+  if (!level) throw new Error('المستوى غير موجود');
 
-  // If courseLevelId provided, validate it and resolve courseId from it
-  if (courseLevelId) {
-    const level = await CourseLevelModel.findById(courseLevelId, { id: true, courseId: true });
-    if (!level) throw new Error('المستوى غير موجود');
-    // If both provided, ensure consistency
-    if (resolvedCourseId && resolvedCourseId !== level.courseId) {
-      throw new Error('المستوى لا ينتمي إلى الدورة المحددة');
-    }
-    resolvedCourseId = level.courseId;
-  }
-
-  if (!resolvedCourseId) {
-    throw new Error(COURSE_NOT_FOUND);
-  }
-
-  const course = await CourseModel.findById(resolvedCourseId);
-  if (!course) throw new Error(COURSE_NOT_FOUND);
-
-  const codesToCreate = Array.from({ length: count }, () => {
-    const base = {
-      code: nanoid(),
-      courseId: resolvedCourseId,
-      issuedBy,
-      validityInMonths,
-    };
-    if (courseLevelId) base.courseLevelId = courseLevelId;
-    return base;
-  });
+  const codesToCreate = Array.from({ length: count }, () => ({
+    code: nanoid(),
+    courseLevelId,
+    issuedBy,
+    validityInMonths,
+  }));
 
   await AccessCodeModel.createMany(codesToCreate);
 
@@ -100,10 +79,9 @@ export const activateCode = async (code, userId) => {
  */
 export const getAccessCodesByCourse = async (courseId) => {
   return AccessCodeModel.findAll({
-    where: { courseId },
+    where: { courseLevel: { courseId } },
     include: {
-      course: { select: { id: true, title: true } },
-      courseLevel: { select: { id: true, name: true } },
+      courseLevel: { select: { id: true, name: true, courseId: true, course: { select: { id: true, title: true } } } },
       // Include user info if the code is used
       user: { select: { id: true, name: true, phone: true } },
     },

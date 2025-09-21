@@ -10,7 +10,7 @@ import { CourseProgressModel, LessonProgressModel } from '../models/index.js';
 const checkCourseAccess = async (userId, courseId) => {
   const access = await prisma.accessCode.findFirst({
     where: {
-      courseId,
+      courseLevel: { courseId },
       usedBy: userId,
       OR: [{ expiresAt: null }, { expiresAt: { gt: new Date() } }],
     },
@@ -25,12 +25,12 @@ const checkCourseAccess = async (userId, courseId) => {
  * @returns {Promise<object>}
  */
 export const markLessonAsComplete = async (userId, lessonId) => {
-  const lesson = await prisma.lesson.findUnique({ where: { id: lessonId } });
+  const lesson = await prisma.lesson.findUnique({ where: { id: lessonId }, include: { courseLevel: true } });
   if (!lesson) {
     throw new Error('الدرس غير موجود');
   }
 
-  const hasAccess = await checkCourseAccess(userId, lesson.courseId);
+  const hasAccess = await checkCourseAccess(userId, lesson.courseLevel.courseId);
   if (!hasAccess) {
     throw new Error('ليس لديك صلاحية الوصول لهذه الدورة');
   }
@@ -43,14 +43,14 @@ export const markLessonAsComplete = async (userId, lessonId) => {
   });
 
   // Recalculate course progress
-  const courseId = lesson.courseId;
+  const courseId = lesson.courseLevel.courseId;
   const { _count: { id: totalLessons } } = await prisma.lesson.aggregate({
-    where: { courseId },
+    where: { courseLevel: { courseId } },
     _count: { id: true },
   });
 
   const { _count: { id: completedLessons } } = await prisma.lessonProgress.aggregate({
-    where: { userId, lesson: { courseId } },
+    where: { userId, lesson: { courseLevel: { courseId } } },
     _count: { id: true },
   });
 
@@ -83,7 +83,7 @@ export const getCourseProgressForUser = async (userId, courseId) => {
   });
 
   const completedLessons = await LessonProgressModel.findFirst({
-    where: { userId, lesson: { courseId } },
+    where: { userId, lesson: { courseLevel: { courseId } } },
   });
 
   return { courseProgress, completedLessons: completedLessons || [] };
