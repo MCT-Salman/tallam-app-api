@@ -129,24 +129,9 @@ model Domain {
   name            String
   slug            String?          @unique
   isActive        Boolean          @default(true)
-  specializations Specialization[]
+  subjects        Subject[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
-}
-
-
-model Specialization {
-  id        Int      @id @default(autoincrement())
-  name      String
-  slug      String?   @unique
-  isActive  Boolean   @default(true)
-  domainId  Int
-  domain    Domain    @relation(fields: [domainId], references: [id])
-  subjects  Subject[]
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-
-  @@index([domainId])
 }
 
 model Subject {
@@ -154,14 +139,28 @@ model Subject {
   name             String
   slug             String?        @unique
   isActive         Boolean        @default(true)
-  specializationId Int?
-  specialization   Specialization? @relation(fields: [specializationId], references: [id])
-  instructors      Instructor[]
-  courses          Course[]
+  domainId         Int?
+  domain           Domain?         @relation(fields: [domainId], references: [id])
+  specialization   Specialization[]
   createdAt        DateTime       @default(now())
   updatedAt        DateTime       @updatedAt
 
-  @@index([specializationId])
+  @@index([domainId])
+}
+
+model Specialization {
+  id           Int      @id @default(autoincrement())
+  name         String
+  slug         String?   @unique
+  isActive     Boolean   @default(true)
+  subjectId    Int?
+  subject      Subject?         @relation(fields: [subjectId], references: [id])
+  instructors  Instructor[]
+  courses      Course[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([subjectId])
 }
 
 model Instructor {
@@ -169,32 +168,29 @@ model Instructor {
   name      String
   bio       String?
   avatarUrl String?
-  subjectId    Int
-  subject      Subject          @relation(fields: [subjectId], references: [id])
+  specializationId Int
+  specialization   Specialization @relation(fields: [specializationId], references: [id])
   isActive  Boolean  @default(true)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   courseLevels CourseLevel[]
+
+  @@index([specializationId])
 }
 
 model Course {
-  id           Int              @id @default(autoincrement())
-  title        String
-  slug         String?          @unique
-  description  String?
-  subjectId    Int
-  isActive     Boolean          @default(true)
-  subject      Subject          @relation(fields: [subjectId], references: [id])
-  levels       CourseLevel[]
-  quizzes      Quiz[]
-  progress     CourseProgress[]
-  reviews      Review[]
-  createdAt    DateTime         @default(now())
-  updatedAt    DateTime         @updatedAt
-  Transaction  Transaction[]
-  CodeRequest  CodeRequest[]
+  id                   Int              @id @default(autoincrement())
+  title                String
+  slug                 String?          @unique
+  description          String?
+  specializationId     Int
+  specialization       Specialization @relation(fields: [specializationId], references: [id])
+  isActive             Boolean          @default(true)
+  levels               CourseLevel[]
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
 
-  @@index([subjectId])
+  @@index([specializationId])
 }
 
 model CourseLevel {
@@ -204,13 +200,18 @@ model CourseLevel {
   priceUSD    Float?
   priceSAR    Float?
   isFree      Boolean          @default(false)
-  isActive    Boolean  @default(true)
+  isActive    Boolean          @default(true)
   courseId    Int
   course      Course   @relation(fields: [courseId], references: [id])
   instructorId  Int
   instructor    Instructor  @relation(fields: [instructorId], references: [id])
-  lessons     Lesson[]
+  lessons      Lesson[]
+  quizzes      Quiz[]
+  progress     CourseProgress[]
+  reviews      Review[]
   accessCodes  AccessCode[]
+  Transaction  Transaction[]
+  CodeRequest  CodeRequest[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -224,7 +225,7 @@ model Lesson {
   description    String?
   youtubeUrl     String?
   youtubeId      String?
-  contentUrl     String?
+  googleDriveUrl     String?
   durationSec    Int?
   orderIndex     Int?
   isFreePreview  Boolean          @default(false)
@@ -244,8 +245,8 @@ model Transaction {
   id         Int               @id @default(autoincrement())
   userId     Int?
   user       User?             @relation(fields: [userId], references: [id])
-  courseId   Int?
-  course     Course?           @relation(fields: [courseId], references: [id])
+  courseLevelId   Int?
+  courseLevel     CourseLevel?           @relation(fields: [courseLevelId], references: [id])
   amount     Decimal           @db.Decimal(12, 2)
   currency   String
   status     TransactionStatus @default(PENDING)
@@ -254,7 +255,7 @@ model Transaction {
   createdAt  DateTime          @default(now())
 
   @@index([userId])
-  @@index([courseId])
+  @@index([courseLevelId])
   @@index([status])
 }
 
@@ -280,15 +281,15 @@ model CodeRequest {
   id        Int      @id @default(autoincrement())
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
-  courseId  Int
-  course    Course   @relation(fields: [courseId], references: [id])
+  courseLevelId  Int
+  courseLevel    CourseLevel   @relation(fields: [courseLevelId], references: [id])
   status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
   contact   String? // رقم واتساب أو تيليغرام المستخدم
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
-  @@index([courseId])
+  @@index([courseLevelId])
 }
 
 model Coupon {
@@ -308,8 +309,8 @@ model Coupon {
 // ---------- Quizzes & Results ----------
 model Quiz {
   id         Int          @id @default(autoincrement())
-  courseId   Int
-  course     Course       @relation(fields: [courseId], references: [id])
+  courseLevelId   Int
+  courseLevel     CourseLevel       @relation(fields: [courseLevelId], references: [id])
   title      String?
   questions  Question[]
   createdAt  DateTime     @default(now())
@@ -351,15 +352,15 @@ model CourseProgress {
   id        Int      @id @default(autoincrement())
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
-  courseId  Int
-  course    Course   @relation(fields: [courseId], references: [id])
+  courseLevelId  Int
+  courseLevel    CourseLevel   @relation(fields: [courseLevelId], references: [id])
   progress  Float    @default(0)
   completed Boolean  @default(false)
   score     Float?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([userId, courseId])
+  @@unique([userId, courseLevelId])
 }
 
 model LessonProgress {
@@ -419,14 +420,14 @@ model Review {
   id        Int      @id @default(autoincrement())
   userId    Int
   user      User     @relation(fields: [userId], references: [id])
-  courseId  Int
-  course    Course   @relation(fields: [courseId], references: [id])
+  courseLevelId  Int
+  courseLevel    CourseLevel   @relation(fields: [courseLevelId], references: [id])
   rating    Int
   comment   String?
   createdAt DateTime @default(now())
 
   @@index([userId])
-  @@index([courseId])
+  @@index([courseLevelId])
 }
 
 model SupportMessage {

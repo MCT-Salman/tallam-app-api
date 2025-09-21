@@ -8,8 +8,8 @@ import {
 } from "../validators/catalog.validators.js";
 import {
   adminCreateDomain, adminListDomains, adminUpdateDomain, adminToggleDomain,adminDeleteDomain,
-  adminCreateSpecialization, adminListSpecializations, adminListSpecializationsByDomain, adminUpdateSpecialization, adminToggleSpecialization, adminDeleteSpecialization,
-  adminCreateSubject, adminListSubjects,adminListSubjectsBySpecialization, adminUpdateSubject, adminToggleSubject, adminDeleteSubject,
+  adminCreateSpecialization, adminListSpecializations, adminListSubjectsByDomain, adminUpdateSpecialization, adminToggleSpecialization, adminDeleteSpecialization,
+  adminCreateSubject, adminListSubjects,adminListSpecializationsBySubject, adminUpdateSubject, adminToggleSubject, adminDeleteSubject,
   adminCreateInstructor, adminListInstructors, adminUpdateInstructor, adminToggleInstructor, adminDeleteInstructor,
   adminCreateCourse, adminUpdateCourse, adminToggleCourse, adminDeleteCourse, adminListCourses,
   publicListCourses, publicGetCourse, publicListInstructorsForCourse,
@@ -25,21 +25,21 @@ r.put("/admin/domains/:id", requireAuth, requireRole(["ADMIN"]), validate(idPara
 r.put("/admin/domains/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleDomain);
 r.delete("/admin/domains/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteDomain);
 
-// Specializations
-r.get("/admin/specializations", requireAuth, requireRole(["ADMIN"]), adminListSpecializations);
-r.get("/admin/domains/:id/specializations",validate(idParam),adminListSpecializationsByDomain);
-r.post("/admin/specializations",requireAuth,requireRole(["ADMIN"]),validate(specializationCreateRules),adminCreateSpecialization);
-r.put("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(specializationCreateRules), adminUpdateSpecialization);
-r.put("/admin/specializations/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleSpecialization);
-r.delete("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteSpecialization);
-
 // Subjects
 r.get("/admin/subjects", requireAuth, requireRole(["ADMIN"]), adminListSubjects);
-r.get("/admin/specializations/:id/subjects", validate(idParam), adminListSubjectsBySpecialization);
+r.get("/admin/domains/:id/subjects", validate(idParam), adminListSubjectsByDomain);
 r.post("/admin/subjects", requireAuth, requireRole(["ADMIN"]), validate(subjectCreateRules), adminCreateSubject);
 r.put("/admin/subjects/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(subjectCreateRules), adminUpdateSubject);
 r.put("/admin/subjects/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleSubject);
 r.delete("/admin/subjects/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteSubject);
+
+// Specializations
+r.get("/admin/specializations", requireAuth, requireRole(["ADMIN"]), adminListSpecializations);
+r.get("/admin/subjects/:id/specializations",validate(idParam),adminListSpecializationsBySubject);
+r.post("/admin/specializations",requireAuth,requireRole(["ADMIN"]),validate(specializationCreateRules),adminCreateSpecialization);
+r.put("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(specializationCreateRules), adminUpdateSpecialization);
+r.put("/admin/specializations/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleSpecialization);
+r.delete("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteSpecialization);
 
 // Instructors
 r.get("/admin/instructors", requireAuth, requireRole(["ADMIN"]), adminListInstructors);

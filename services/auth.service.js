@@ -21,8 +21,8 @@ export const registerUser = async (phone, password, name, birthDate, sex, avatar
     if (exists) throw new Error(NUMBER_ALREADY_EXIST);
 
     // التحقق من OTP
-    const otp = await OtpCodeModel.findForVerifeidNumber(phone);
-    if (!otp) throw new Error(THIS_NUMBER_NOT_VERIFIED_BY_OTP);
+    //const otp = await OtpCodeModel.findForVerifeidNumber(phone);
+    //if (!otp) throw new Error(THIS_NUMBER_NOT_VERIFIED_BY_OTP);
 
     // تحليل رقم الهاتف لاستخراج معلومات الدولة
     const phoneInfo = getCountryFromPhone(phone);

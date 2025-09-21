@@ -163,7 +163,7 @@ http://localhost:5000
 ```json
 {
   "name": "تطوير الويب",
-  "domainId": 1
+  "subjectId": 1
 }
 ```
 
@@ -175,7 +175,15 @@ http://localhost:5000
   "data": {
     "id": 1,
     "name": "تطوير الويب",
-    "domainId": 1,
+    "subjectId": 1,
+    "subject": {
+      "id": 1,
+      "name": "البرمجة الأساسية",
+      "domain": {
+        "id": 1,
+        "name": "التكنولوجيا والبرمجة"
+      }
+    },
     "isActive": true,
     "createdAt": "2024-01-15T10:00:00Z"
   }
@@ -185,8 +193,8 @@ http://localhost:5000
 ### 2. عرض جميع التخصصات
 **GET** `/api/catalog/admin/specializations`
 
-### 3. عرض تخصصات مجال محدد
-**GET** `/api/catalog/admin/domains/:domainId/specializations`
+### 3. عرض تخصصات مادة محددة
+**GET** `/api/catalog/admin/subjects/:subjectId/specializations`
 
 ### 4. تحديث تخصص
 **PUT** `/api/catalog/admin/specializations/:id`
@@ -208,7 +216,7 @@ http://localhost:5000
 ```json
 {
   "name": "البرمجة الأساسية",
-  "specializationId": 1
+  "domainId": 1
 }
 ```
 
@@ -220,7 +228,11 @@ http://localhost:5000
   "data": {
     "id": 1,
     "name": "البرمجة الأساسية",
-    "specializationId": 1,
+    "domainId": 1,
+    "domain": {
+      "id": 1,
+      "name": "التكنولوجيا والبرمجة"
+    },
     "isActive": true,
     "createdAt": "2024-01-15T10:00:00Z"
   }
@@ -230,8 +242,8 @@ http://localhost:5000
 ### 2. عرض جميع المواد
 **GET** `/api/catalog/admin/subjects`
 
-### 3. عرض مواد تخصص محدد
-**GET** `/api/catalog/admin/specializations/:specializationId/subjects`
+### 3. عرض مواد مجال محدد
+**GET** `/api/catalog/admin/domains/:domainId/subjects`
 
 ### 4. تحديث مادة
 **PUT** `/api/catalog/admin/subjects/:id`
@@ -255,7 +267,7 @@ http://localhost:5000
   "name": "د. محمد أحمد",
   "bio": "خبير في البرمجة مع 10 سنوات خبرة",
   "avatarUrl": "https://example.com/avatar.jpg",
-  "subjectId": 1
+  "specializationId": 1
 }
 ```
 
@@ -269,10 +281,18 @@ http://localhost:5000
     "name": "د. محمد أحمد",
     "bio": "خبير في البرمجة مع 10 سنوات خبرة",
     "avatarUrl": "https://example.com/avatar.jpg",
-    "subjectId": 1,
-    "subject": {
+    "specializationId": 1,
+    "specialization": {
       "id": 1,
-      "name": "البرمجة الأساسية"
+      "name": "تطوير الويب",
+      "subject": {
+        "id": 1,
+        "name": "البرمجة الأساسية",
+        "domain": {
+          "id": 1,
+          "name": "التكنولوجيا والبرمجة"
+        }
+      }
     },
     "isActive": true,
     "createdAt": "2024-01-15T10:00:00Z"
@@ -304,7 +324,7 @@ http://localhost:5000
 {
   "title": "دورة البرمجة الأساسية",
   "description": "تعلم أساسيات البرمجة من الصفر",
-  "subjectId": 1
+  "specializationId": 1
 }
 ```
 
@@ -317,16 +337,13 @@ http://localhost:5000
     "id": 1,
     "title": "دورة البرمجة الأساسية",
     "description": "تعلم أساسيات البرمجة من الصفر",
-    "price": 299.99,
-    "currency": "USD",
-    "isFree": false,
     "isActive": true,
-    "subject": {
+    "specialization": {
       "id": 1,
-      "name": "البرمجة الأساسية",
-      "specialization": {
+      "name": "تطوير الويب",
+      "subject": {
         "id": 1,
-        "name": "تطوير الويب",
+        "name": "البرمجة الأساسية",
         "domain": {
           "id": 1,
           "name": "التكنولوجيا والبرمجة"
@@ -351,10 +368,9 @@ http://localhost:5000
         "id": 1,
         "title": "دورة البرمجة الأساسية",
         "description": "تعلم أساسيات البرمجة من الصفر",
-        "price": 299.99,
         "isActive": true,
-        "subject": {
-          "name": "البرمجة الأساسية"
+        "specialization": {
+          "name": "تطوير الويب"
         }
       }
     ],
@@ -1008,12 +1024,40 @@ http://localhost:5000
 
 ---
 
+# 📚 Content Hierarchy
+
+## Updated Structure
+The content management system now follows this hierarchy:
+```
+Domain
+├── Subjects
+    └── Specializations
+        ├── Instructors
+        └── Courses
+            └── CourseLevels
+                ├── Instructor
+                └── Lessons
+```
+
+## Key Changes
+- **Domains**: Top-level categories
+- **Subjects**: Belong to Domains
+- **Specializations**: Belong to Subjects
+- **Instructors & Courses**: Belong to Specializations
+- **CourseLevels**: Belong to Courses with pricing and instructor assignment
+- **Lessons**: Belong to CourseLevels
+
+All API endpoints have been updated to reflect this structure.
+
+---
+
 # 📝 Additional Notes
 
 ## Recent Updates
-- **Instructors**: Now require `subjectId` for creation and updates. Instructors are directly associated with subjects.
-- **Courses**: No longer require `instructorIds` as instructor assignment is handled at the level stage.
-- **Levels**: Include `instructorId` to assign instructors to course levels.
+- **Hierarchy**: Updated to Domain → Subject → Specialization → (Instructors, Courses)
+- **Instructors**: Now require `specializationId` for creation and updates.
+- **Courses**: Now require `specializationId` and no longer have direct pricing (handled at CourseLevel).
+- **Levels**: Include `instructorId` and pricing fields for course levels.
 
 ## ملاحظات الأمان
 

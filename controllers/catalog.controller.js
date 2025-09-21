@@ -1,8 +1,8 @@
 import { serializeResponse } from "../utils/serialize.js";
 import { 
   createDomain, listDomains, updateDomain, toggleDomain, DeleteDomain,
-  createSpecialization, listSpecializations, listSpecializationsByDomain, updateSpecialization, toggleSpecialization, DeleteSpecialization,
-  createSubject, listSubjects,listSubjectsBySpecialization, updateSubject, toggleSubject, DeleteSubject,
+  createSpecialization, listSpecializations, listSpecializationsBySubject, updateSpecialization, toggleSpecialization, DeleteSpecialization,
+  createSubject, listSubjects, listSubjectsByDomain, updateSubject, toggleSubject, DeleteSubject,
   createInstructor, listInstructors, updateInstructor, toggleInstructor, DeleteInstructor,
   createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic ,listCoursesAdmin,
   listInstructorsForCourse,
@@ -82,12 +82,122 @@ export const adminDeleteDomain = async (req, res, next) => {
   }
 };
 
+// Admin: Subjects
+export const adminCreateSubject = async (req, res, next) => {
+  try {
+    const s = await createSubject({
+      name: req.body.name,
+      domainId: parseInt(req.body.domainId, 10)
+    });
+    res.status(201).json({
+      success: true,
+      message: "تم إنشاء المادة بنجاح",
+      data: serializeResponse(s)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+}; 
+
+export const adminListSubjectsByDomain = async (req, res, next) => {
+  try {
+    const domainId = parseInt(req.params.id, 10);
+    const items = await listSubjectsByDomain(domainId);
+    res.json({
+      success: true,
+      message: "تم جلب المواد بنجاح",
+      data: serializeResponse(items)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminUpdateSubject = async (req, res, next) => {
+  try {
+    const s = await updateSubject(parseInt(req.params.id, 10), {
+      name: req.body.name,
+      domainId: req.body.domainId ? parseInt(req.body.domainId, 10) : undefined
+    });
+    res.json({
+      success: true,
+      message: "تم تحديث المادة بنجاح",
+      data: serializeResponse(s)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminListSubjects = async (req, res, next) => {
+  try {
+    const list = await listSubjects();
+    res.json({
+      success: true,
+      message: "تم جلب المواد",
+      data: serializeResponse(list)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminListSubjectsBySpecialization = async (req, res, next) => {
+  try {
+    const specializationId = parseInt(req.params.id, 10);
+    const list = await listSubjectsBySpecialization(specializationId);
+    res.json({
+      success: true,
+      message: "تم جلب المواد",
+      data: serializeResponse(list)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+export const adminToggleSubject = async (req, res, next) => {
+  try {
+    const s = await toggleSubject(parseInt(req.params.id,10), !!req.body.isActive);
+    const message = !!req.body.isActive ? "تم تفعيل الموضوع بنجاح" : "تم تعطيل الموضوع بنجاح";
+    res.json({
+      success: true,
+      message,
+      data: serializeResponse(s)
+    });
+  }
+  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+};
+
+export const adminDeleteSubject = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    await DeleteSubject(id);
+    res.json({
+      success: true,
+      message: "تم حذف الموضوع بنجاح"
+    });
+  } catch (e) {
+    if (e.code === 'P2025') { // Prisma record not found
+      e.statusCode = 404;
+      e.message = "الحقل غير موجود";
+    } else {
+      e.statusCode = e.statusCode || 400;
+    }
+    next(e);
+  }
+};
+
 // Admin: Specializations
 export const adminCreateSpecialization = async (req, res, next) => {
   try {
     const { name } = req.body;
-    const domainId = parseInt(req.body.domainId, 10);
-    const specialization = await createSpecialization({ name, domainId });
+    const subjectId = parseInt(req.body.subjectId, 10);
+    const specialization = await createSpecialization({ name, subjectId });
     res.status(201).json({
       success: true,
       message: "تم إنشاء التخصص بنجاح",
@@ -113,13 +223,13 @@ export const adminListSpecializations = async (req, res, next) => {
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
-export const adminListSpecializationsByDomain = async (req, res, next) => {
+export const adminListSpecializationsBySubject = async (req, res, next) => {
   try {
-    const domainId = parseInt(req.params.id, 10);
-    const items = await listSpecializationsByDomain(domainId);
+    const subjectId = parseInt(req.params.id, 10);
+    const items = await listSpecializationsBySubject(subjectId);
     res.json({
       success: true,
-      message: "تم جلب التخصصات",
+      message: "تم جلب التخصصات بنجاح",
       data: serializeResponse(items)
     });
   } catch (e) {
@@ -130,7 +240,7 @@ export const adminListSpecializationsByDomain = async (req, res, next) => {
 
 export const adminUpdateSpecialization = async (req, res, next) => {
   try { 
-    const s = await updateSpecialization(parseInt(req.params.id,10), { name: req.body.name, domainId: req.body.domainId? parseInt(req.body.domainId,10): undefined }); 
+    const s = await updateSpecialization(parseInt(req.params.id,10), { name: req.body.name, subjectId: req.body.subjectId? parseInt(req.body.subjectId,10): undefined }); 
     res.json({ 
       success: true, 
       message: "تم تحديث التخصص بنجاح",
@@ -177,107 +287,10 @@ export const adminDeleteSpecialization = async (req, res, next) => {
 };
 
 
-// Admin: Subjects
-export const adminCreateSubject = async (req, res, next) => {
-  try {
-    const s = await createSubject(
-      req.body.name,
-      parseInt(req.body.specializationId, 10)
-    );
-    res.status(201).json({
-      success: true,
-      message: "تم إنشاء المادة بنجاح",
-      data: serializeResponse(s)
-    });
-  } catch (e) {
-    e.statusCode = e.statusCode || 400;
-    next(e);
-  }
-};
-
-export const adminListSubjects = async (req, res, next) => {
-  try {
-    const specializationId = req.query.specializationId
-      ? parseInt(req.query.specializationId, 10)
-      : undefined;
-    const list = await listSubjects(specializationId);
-    res.json({
-      success: true,
-      message: "تم جلب المواد",
-      data: serializeResponse(list)
-    });
-  } catch (e) {
-    e.statusCode = e.statusCode || 400;
-    next(e);
-  }
-};
-
-export const adminListSubjectsBySpecialization = async (req, res, next) => {
-  try {
-    const specializationId = parseInt(req.params.id, 10);
-    const list = await listSubjectsBySpecialization(specializationId);
-    res.json({
-      success: true,
-      message: "تم جلب المواد",
-      data: serializeResponse(list)
-    });
-  } catch (e) {
-    e.statusCode = e.statusCode || 400;
-    next(e);
-  }
-};
-
-export const adminUpdateSubject = async (req, res, next) => {
-  try { 
-    const s = await updateSubject(parseInt(req.params.id,10), { name: req.body.name, domainId: req.body.domainId? parseInt(req.body.domainId,10): undefined }); 
-    res.json({ 
-      success: true, 
-      message: "تم تحديث الموضوع بنجاح",
-      data: {
-        ...serializeResponse(s)
-      }
-    }); 
-  }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
-};
-export const adminToggleSubject = async (req, res, next) => {
-  try { 
-    const s = await toggleSubject(parseInt(req.params.id,10), !!req.body.isActive); 
-    const message = !!req.body.isActive ? "تم تفعيل الموضوع بنجاح" : "تم تعطيل الموضوع بنجاح";
-    res.json({ 
-      success: true, 
-      data: {
-        message,
-        ...serializeResponse(s)
-      }
-    }); 
-  }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
-};
-
-export const adminDeleteSubject = async (req, res, next) => {
-  try {
-    const id = parseInt(req.params.id, 10);
-    await DeleteSubject(id);
-    res.json({
-      success: true,
-      message: "تم حذف الموضوع بنجاح"
-    });
-  } catch (e) {
-    if (e.code === 'P2025') { // Prisma record not found
-      e.statusCode = 404;
-      e.message = "الحقل غير موجود";
-    } else {
-      e.statusCode = e.statusCode || 400;
-    }
-    next(e);
-  }
-};
-
 // Admin: Instructors
 export const adminCreateInstructor = async (req, res, next) => {
   try { 
-    const i = await createInstructor({ name: req.body.name, bio: req.body.bio, avatarUrl: req.body.avatarUrl, subjectId: parseInt(req.body.subjectId, 10) }); 
+    const i = await createInstructor({ name: req.body.name, bio: req.body.bio, avatarUrl: req.body.avatarUrl, specializationId: parseInt(req.body.specializationId, 10) }); 
     res.status(201).json({ 
       success: true, 
       data: {
@@ -303,7 +316,7 @@ export const adminListInstructors = async (req, res, next) => {
 };
 export const adminUpdateInstructor = async (req, res, next) => {
   try { 
-    const i = await updateInstructor(parseInt(req.params.id,10), { name: req.body.name, bio: req.body.bio, avatarUrl: req.body.avatarUrl, subjectId: req.body.subjectId ? parseInt(req.body.subjectId, 10) : undefined }); 
+    const i = await updateInstructor(parseInt(req.params.id,10), { name: req.body.name, bio: req.body.bio, avatarUrl: req.body.avatarUrl, specializationId: req.body.specializationId ? parseInt(req.body.specializationId, 10) : undefined }); 
     res.json({ 
       success: true, 
       data: {
@@ -350,8 +363,8 @@ export const adminDeleteInstructor = async (req, res, next) => {
 // Admin: Courses
 export const adminCreateCourse = async (req, res, next) => {
   try {
-    const { instructorIds, ...courseData } = req.body;
-    const c = await createCourse(courseData, instructorIds);
+    const { ...courseData } = req.body;
+    const c = await createCourse(courseData);
     res.status(201).json({ 
       success: true, 
       message: "تم إنشاء الكورس بنجاح",
@@ -362,8 +375,8 @@ export const adminCreateCourse = async (req, res, next) => {
 export const adminUpdateCourse = async (req, res, next) => {
   try { 
     const id = parseInt(req.params.id, 10);
-    const { instructorIds, ...courseData } = req.body;
-    const c = await updateCourse(id, courseData, instructorIds);
+    const { ...courseData } = req.body;
+    const c = await updateCourse(id, courseData);
     res.json({ 
       success: true, 
       message: "تم تحديث الكورس بنجاح",
