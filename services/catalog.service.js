@@ -12,14 +12,12 @@ export const DeleteDomain = (id) => prisma.domain.delete({ where: { id } });
 export const createSpecialization = (data) => prisma.specialization.create({ data });
 
 export const listSpecializations = () => prisma.specialization.findMany({
-  orderBy: { name: "asc" },
-  include: { subject: { include: { domain: true } } }
+  orderBy: { name: "asc" }
 });
 
 export const listSpecializationsBySubject = (subjectId) => prisma.specialization.findMany({
   where: { subjectId },
   orderBy: { name: "asc" },
-  include: { subject: { include: { domain: true } } }
 });
 
 export const updateSpecialization = (id, data) => prisma.specialization.update({ where: { id }, data });
@@ -181,7 +179,7 @@ export const getCourseByIdForUser = async (id, userId) => {
  */
 export const listCoursesPublic = async (filters = {}, skip = 0, take = 20) => {
   const where = { isActive: true };
-  const { q, domainId, subjectId } = filters;
+  const { q, specializationId } = filters;
 
   if (q) {
     where.OR = [
@@ -189,9 +187,7 @@ export const listCoursesPublic = async (filters = {}, skip = 0, take = 20) => {
       { description: { contains: q, mode: "insensitive" } }
     ];
   }
-  if (subjectId) where.subjectId = subjectId;
-  if (domainId) where.subject = { specialization: { domainId } };
-
+  if (specializationId) where.specializationId = specializationId;
   const [items, total] = await Promise.all([
     prisma.course.findMany({
       where,
@@ -234,25 +230,16 @@ export const listCoursesAdmin = async (filters = {}, skip = 0, take = 20) => {
  * @returns {Promise<Array>} - Array of instructor objects.
  */
 export const listInstructorsForCourse = async (courseId) => {
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
-    include: {
-      levels: {
-        where: { isActive: true },
-        include: {
-          instructor: true
-        }
-      }
+  const levels = await prisma.courseLevel.findMany({
+    where: { courseId, isActive: true },
+    select: {
+      instructor: true
     }
   });
+  console.log(levels)
 
-  if (!course) {
-    throw new Error("Course not found");
-  }
-
-  // Aggregate unique instructors
   const instructorsMap = new Map();
-  course.levels.forEach(level => {
+  levels.forEach(level => {
     if (level.instructor) {
       instructorsMap.set(level.instructor.id, level.instructor);
     }
@@ -260,3 +247,4 @@ export const listInstructorsForCourse = async (courseId) => {
 
   return Array.from(instructorsMap.values());
 };
+

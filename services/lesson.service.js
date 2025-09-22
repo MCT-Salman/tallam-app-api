@@ -1,13 +1,17 @@
 import prisma from "../prisma/client.js";
 
 // Reusable include for nested course details
+/*
 export const courseInclude = {
-  subject: true,
+  specialization: true,
   levels: {
     include: {
       instructor: true
     }
   },
+};*/
+export const courseInclude = {
+  specialization: true,
 };
 // Levels
 export const createLevel = (courseId, data) => prisma.courseLevel.create({
@@ -25,14 +29,7 @@ export const listLevelsByCourse = (courseId) => prisma.courseLevel.findMany({
   orderBy: { order: "asc" },
   include: {
     course: {
-      include: {
-        subject: true,
-        levels: {
-          include: {
-            instructor: true
-          }
-        }
-      }
+      include: courseInclude
     },
     instructor:  true
   }

@@ -198,16 +198,11 @@ export const publicListLevelsWithLessons = async (req, res, next) => {
   try {
     const courseId = parseInt(req.params.courseId,10);
     const levels = await listLevelsByCourse(courseId);
-    // نجلب دروس كل مستوى
-    const full = await Promise.all(levels.map(async (lvl) => ({
-      ...lvl,
-      lessons: await listLessonsByLevel(lvl.id)
-    })));
     res.json({ 
       success: true, 
       data: {
-        message: "تم جلب قائمة المستويات والدروس بنجاح",
-        ...serializeResponse(full)
+        message: "تم جلب قائمة المستويات  بنجاح",
+        ...serializeResponse(levels)
       }
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }

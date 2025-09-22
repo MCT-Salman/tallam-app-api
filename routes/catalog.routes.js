@@ -13,7 +13,7 @@ import {
   adminCreateInstructor, adminListInstructors, adminUpdateInstructor, adminToggleInstructor, adminDeleteInstructor,
   adminCreateCourse, adminUpdateCourse, adminToggleCourse, adminDeleteCourse, adminListCourses,
   publicListCourses, publicGetCourse, publicListInstructorsForCourse,
-  publicListSubjects, publicListCoursesBySubject
+  publicListSpecializations, publicListCoursesBySpecialization
 } from "../controllers/catalog.controller.js";
 
 const r = Router();
@@ -56,8 +56,8 @@ r.put("/admin/courses/:id/active", requireAuth, requireRole(["ADMIN"]), validate
 r.delete("/admin/courses/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteCourse);
 
 // Public routes
-r.get("/subjects", publicListSubjects);
-r.get("/subjects/:id/courses", validate(idParam), publicListCoursesBySubject);
+r.get("/specializations", publicListSpecializations);
+r.get("/specializations/:id/courses", validate(idParam), publicListCoursesBySpecialization);
 r.get("/courses/:id", optionalAuth, validate(idParam), publicGetCourse);
 r.get("/courses/:id/instructors", validate(idParam), publicListInstructorsForCourse);
 

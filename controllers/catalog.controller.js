@@ -432,12 +432,12 @@ export const adminListCourses = async (req, res, next) => {
 
 // Public
 
-export const publicListSubjects = async (req, res, next) => {
+export const publicListSpecializations = async (req, res, next) => {
   try { 
-    const list = await listSubjects(); 
+    const list = await listSpecializations(); 
     res.json({ 
       success: true, 
-      message: "تم جلب قائمة المواد بنجاح",
+      message: "تم جلب قائمة التخصصات بنجاح",
       data: {
         ...serializeResponse(list)
       }
@@ -446,10 +446,10 @@ export const publicListSubjects = async (req, res, next) => {
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
-export const publicListCoursesBySubject = async (req, res, next) => {
+export const publicListCoursesBySpecialization = async (req, res, next) => {
   try { 
-    const subjectId = parseInt(req.params.id, 10);
-    const list = await listCoursesPublic({ subjectId }); 
+    const specializationId = parseInt(req.params.id, 10);
+    const list = await listCoursesPublic({ specializationId }); 
     res.json({ 
       success: true, 
       message: "تم جلب قائمة الكورسات بنجاح",
