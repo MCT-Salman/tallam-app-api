@@ -6,9 +6,11 @@ export const generateCodesRules = [
     .withMessage('courseLevelId مطلوب')
     .isInt({ gt: 0 })
     .withMessage('courseLevelId غير صالح'),
-  body('count')
-    .isInt({ gt: 0, lt: 101 })
-    .withMessage('العدد يجب أن يكون بين 1 و 100'),
+  body('userId')
+    .exists()
+    .withMessage('userId مطلوب')
+    .isInt({ gt: 0 })
+    .withMessage('userId غير صالح'),
   body('validityInMonths')
     .optional()
     .isInt({ gt: 0 })

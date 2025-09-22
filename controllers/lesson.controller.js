@@ -3,7 +3,7 @@ import {
   createLevel, listLevelsByCourse, updateLevel, toggleLevel, deleteLevel,
    createLessonForLevel, listLessonsByLevel,
   updateLesson, toggleLesson, deleteLesson,
-  listLevelsByCourseAndInstructor
+  listLevelsByCourseAndInstructor ,DetailLevel
 } from "../services/lesson.service.js";
 
 // Levels (Admin)
@@ -25,31 +25,13 @@ export const adminCreateLevel = async (req, res, next) => {
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
-// Public: list levels for a course by selected instructor
-export const publicListLevelsByCourseAndInstructor = async (req, res, next) => {
-  try {
-    const courseId = parseInt(req.params.courseId, 10);
-    const instructorId = parseInt(req.params.instructorId, 10);
-    const levels = await listLevelsByCourseAndInstructor(courseId, instructorId);
-    res.json({
-      success: true,
-      message: "تم جلب مستويات هذا المدرب للدورة",
-      data: serializeResponse(levels)
-    });
-  } catch (e) {
-    e.statusCode = e.statusCode || 400;
-    next(e);
-  }
-};
 export const adminListLevels = async (req, res, next) => {
   try { 
     const levels = await listLevelsByCourse(parseInt(req.params.courseId,10)); 
     res.json({ 
       success: true, 
       message: "تم جلب قائمة المستويات بنجاح",
-      data: {
-        ...serializeResponse(levels)
-      }
+      data: levels
     }); 
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
@@ -199,11 +181,9 @@ export const publicListLevelsWithLessons = async (req, res, next) => {
     const courseId = parseInt(req.params.courseId,10);
     const levels = await listLevelsByCourse(courseId);
     res.json({ 
-      success: true, 
-      data: {
-        message: "تم جلب قائمة المستويات  بنجاح",
-        ...serializeResponse(levels)
-      }
+      success: true,
+      message: "تم جلب قائمة المستويات  بنجاح", 
+      data: levels
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
@@ -215,10 +195,40 @@ export const publicListLessonsByLevel = async (req, res, next) => {
     res.json({
       success: true,
       message: "تم جلب قائمة الدروس بنجاح",
-      data: {
-        ...serializeResponse(lessons)
-      }
+      data: lessons
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
+// Public: list levels for a course by selected instructor
+export const publicListLevelsByCourseAndInstructor = async (req, res, next) => {
+  try {
+    const courseId = parseInt(req.params.courseId, 10);
+    const instructorId = parseInt(req.params.instructorId, 10);
+    const levels = await listLevelsByCourseAndInstructor(courseId, instructorId);
+    res.json({
+      success: true,
+      message: "تم جلب مستويات هذا المدرب للدورة",
+      data: levels
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const publicDetailLevel = async (req, res, next) => {
+  try {
+    const courseLevelId = parseInt(req.params.courseLevelId, 10);
+    const userId = req.user ? req.user.id : null; // Check if user is logged in
+    const level = await DetailLevel(courseLevelId, userId);
+    res.json({
+      success: true,
+      message: "تم جلب تفاصيل المستوى بنجاح",
+      data: level
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};

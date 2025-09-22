@@ -12,12 +12,22 @@ export const DeleteDomain = (id) => prisma.domain.delete({ where: { id } });
 export const createSpecialization = (data) => prisma.specialization.create({ data });
 
 export const listSpecializations = () => prisma.specialization.findMany({
-  orderBy: { name: "asc" }
+  orderBy: { name: "asc" },
+  select: {
+    id: true,
+    name: true,
+    imageUrl: true
+  }
 });
 
 export const listSpecializationsBySubject = (subjectId) => prisma.specialization.findMany({
   where: { subjectId },
   orderBy: { name: "asc" },
+  select: {
+    id: true,
+    name: true,
+    imageUrl: true
+  }
 });
 
 export const updateSpecialization = (id, data) => prisma.specialization.update({ where: { id }, data });
@@ -194,8 +204,11 @@ export const listCoursesPublic = async (filters = {}, skip = 0, take = 20) => {
       orderBy: { createdAt: 'desc' },
       skip,
       take,
-      include: {
-        specialization: { select: { id: true, name: true } }
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        imageUrl: true
       }
     }),
     prisma.course.count({ where })
@@ -233,7 +246,14 @@ export const listInstructorsForCourse = async (courseId) => {
   const levels = await prisma.courseLevel.findMany({
     where: { courseId, isActive: true },
     select: {
-      instructor: true
+      instructor: {
+        select: {
+          id: true,
+          name: true,
+          bio: true,
+          avatarUrl: true
+        }
+      }
     }
   });
   console.log(levels)

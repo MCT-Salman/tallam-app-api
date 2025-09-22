@@ -197,7 +197,8 @@ export const adminCreateSpecialization = async (req, res, next) => {
   try {
     const { name } = req.body;
     const subjectId = parseInt(req.body.subjectId, 10);
-    const specialization = await createSpecialization({ name, subjectId });
+    const imageUrl = req.file ? `/uploads/images/specializations/${req.file.filename}` : undefined;
+    const specialization = await createSpecialization({ name, subjectId, imageUrl });
     res.status(201).json({
       success: true,
       message: "تم إنشاء التخصص بنجاح",
@@ -239,17 +240,20 @@ export const adminListSpecializationsBySubject = async (req, res, next) => {
 };
 
 export const adminUpdateSpecialization = async (req, res, next) => {
-  try { 
-    const s = await updateSpecialization(parseInt(req.params.id,10), { name: req.body.name, subjectId: req.body.subjectId? parseInt(req.body.subjectId,10): undefined }); 
-    res.json({ 
-      success: true, 
+  try {
+    const updateData = { name: req.body.name };
+    if (req.body.subjectId) updateData.subjectId = parseInt(req.body.subjectId, 10);
+    if (req.file) updateData.imageUrl = `/uploads/images/specializations/${req.file.filename}`;
+    const s = await updateSpecialization(parseInt(req.params.id, 10), updateData);
+    res.json({
+      success: true,
       message: "تم تحديث التخصص بنجاح",
-      data: {
-        ...serializeResponse(s)
-      }
-    }); 
+      data: serializeResponse(s)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
   }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };  
 
 export const adminToggleSpecialization = async (req, res, next) => {
@@ -289,17 +293,19 @@ export const adminDeleteSpecialization = async (req, res, next) => {
 
 // Admin: Instructors
 export const adminCreateInstructor = async (req, res, next) => {
-  try { 
-    const i = await createInstructor({ name: req.body.name, bio: req.body.bio, avatarUrl: req.body.avatarUrl, specializationId: parseInt(req.body.specializationId, 10) }); 
-    res.status(201).json({ 
-      success: true, 
-      data: {
-        message: "تم إنشاء المدرب بنجاح",
-        ...serializeResponse(i)
-      }
-    }); 
+  try {
+    const { name, bio, specializationId } = req.body;
+    const avatarUrl = req.file ? `/uploads/images/instructors/${req.file.filename}` : undefined;
+    const i = await createInstructor({ name, bio, avatarUrl, specializationId: parseInt(specializationId, 10) });
+    res.status(201).json({
+      success: true,
+      message: "تم إنشاء المدرب بنجاح",
+      data: serializeResponse(i)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
   }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 export const adminListInstructors = async (req, res, next) => {
   try { 
@@ -315,17 +321,20 @@ export const adminListInstructors = async (req, res, next) => {
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 export const adminUpdateInstructor = async (req, res, next) => {
-  try { 
-    const i = await updateInstructor(parseInt(req.params.id,10), { name: req.body.name, bio: req.body.bio, avatarUrl: req.body.avatarUrl, specializationId: req.body.specializationId ? parseInt(req.body.specializationId, 10) : undefined }); 
-    res.json({ 
-      success: true, 
-      data: {
-        message: "تم تحديث المدرب بنجاح",
-        ...serializeResponse(i)
-      }
-    }); 
+  try {
+    const updateData = { name: req.body.name, bio: req.body.bio };
+    if (req.body.specializationId) updateData.specializationId = parseInt(req.body.specializationId, 10);
+    if (req.file) updateData.avatarUrl = `/uploads/images/instructors/${req.file.filename}`;
+    const i = await updateInstructor(parseInt(req.params.id, 10), updateData);
+    res.json({
+      success: true,
+      message: "تم تحديث المدرب بنجاح",
+      data: serializeResponse(i)
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
   }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 export const adminToggleInstructor = async (req, res, next) => {
   try { 
@@ -363,28 +372,31 @@ export const adminDeleteInstructor = async (req, res, next) => {
 // Admin: Courses
 export const adminCreateCourse = async (req, res, next) => {
   try {
-    const { ...courseData } = req.body;
+    const { title, description, specializationId } = req.body;
+    const imageUrl = req.file ? `/uploads/images/course/${req.file.filename}` : undefined;
+    const courseData = { title, description, specializationId: parseInt(specializationId, 10), imageUrl };
     const c = await createCourse(courseData);
-    res.status(201).json({ 
-      success: true, 
+    res.status(201).json({
+      success: true,
       message: "تم إنشاء الكورس بنجاح",
       data: serializeResponse(c)
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 export const adminUpdateCourse = async (req, res, next) => {
-  try { 
+  try {
     const id = parseInt(req.params.id, 10);
-    const { ...courseData } = req.body;
-    const c = await updateCourse(id, courseData);
-    res.json({ 
-      success: true, 
+    const updateData = { title: req.body.title, description: req.body.description };
+    if (req.body.specializationId) updateData.specializationId = parseInt(req.body.specializationId, 10);
+    if (req.file) updateData.imageUrl = `/uploads/images/course/${req.file.filename}`;
+    const c = await updateCourse(id, updateData);
+    res.json({
+      success: true,
       message: "تم تحديث الكورس بنجاح",
       data: serializeResponse(c)
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
-
 export const adminDeleteCourse = async (req, res, next) => {
   try {
     console.log(req.params.id);
@@ -438,9 +450,8 @@ export const publicListSpecializations = async (req, res, next) => {
     res.json({ 
       success: true, 
       message: "تم جلب قائمة التخصصات بنجاح",
-      data: {
-        ...serializeResponse(list)
-      }
+      data: list
+      
     }); 
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
@@ -453,9 +464,7 @@ export const publicListCoursesBySpecialization = async (req, res, next) => {
     res.json({ 
       success: true, 
       message: "تم جلب قائمة الكورسات بنجاح",
-      data: {
-        ...serializeResponse(list)
-      }
+      data: list
     }); 
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
@@ -468,9 +477,7 @@ export const publicListCoursesByInstructor = async (req, res, next) => {
     res.json({ 
       success: true, 
       message: "تم جلب قائمة الكورسات بنجاح",
-      data: {
-        ...serializeResponse(list)
-      }
+      data: list
     }); 
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
@@ -491,7 +498,7 @@ export const publicListCourses = async (req, res, next) => {
     res.json({ 
       success: true,
       message: "تم جلب قائمة الكورسات بنجاح",
-      data: serializeResponse(result)
+      data: result
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
@@ -503,9 +510,7 @@ export const publicListInstructorsForCourse = async (req, res, next) => {
     res.json({ 
       success: true, 
       message: "تم جلب قائمة المدربين بنجاح",
-      data: {
-        ...serializeResponse(instructors)
-      }
+      data: instructors
     }); 
   }
   catch (e) { 
@@ -533,7 +538,7 @@ export const publicGetCourse = async (req, res, next) => {
     res.json({ 
       success: true, 
       message: "تم جلب الكورس بنجاح",
-      data: serializeResponse(course)
+      data: course
     }); 
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }

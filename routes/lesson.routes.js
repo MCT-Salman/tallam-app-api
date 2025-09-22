@@ -7,7 +7,7 @@ import { courseIdParam } from "../validators/catalog.validators.js";
 import {
   adminCreateLevel, adminListLevels, adminUpdateLevel, adminToggleLevel, adminDeleteLevel,
   adminListLessonsByLevel, adminCreateLessonForLevel, adminUpdateLesson, adminToggleLesson, adminDeleteLesson,
-  publicListLevelsWithLessons, publicListLevelsByCourseAndInstructor, publicListLessonsByLevel
+  publicListLevelsWithLessons, publicListLevelsByCourseAndInstructor,publicDetailLevel, publicListLessonsByLevel
 } from "../controllers/lesson.controller.js";
 
  
@@ -30,6 +30,7 @@ r.delete("/admin/lessons/:id", requireAuth, requireRole(["ADMIN"]), validate(idP
 // Public
 r.get("/courses/:courseId/levels", validate(courseIdParam), publicListLevelsWithLessons);
 r.get("/courses/:courseId/instructors/:instructorId/levels", validate(courseIdParam), validate(instructorIdParam), publicListLevelsByCourseAndInstructor);
+r.get("/levels/:courseLevelId", requireAuth ,validate(courseLevelIdParam), publicDetailLevel);
 r.get("/levels/:courseLevelId/lessons", validate(courseLevelIdParam), publicListLessonsByLevel);
 
 export default r;

@@ -1,7 +1,5 @@
 import { customAlphabet } from 'nanoid';
-import * as AccessCodeModel from '../models/accessCode.model.js';
-import * as CourseLevelModel from '../models/courseLevel.model.js';
-import { COURSE_NOT_FOUND } from '../validators/messagesResponse.js';
+import prisma from "../prisma/client.js";
 
 // Define a custom alphabet for generating codes (uppercase letters and numbers, no ambiguous chars)
 const nanoid = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 10);
@@ -13,26 +11,64 @@ const nanoid = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 10);
  * @param {Object} params
  * @param {number | undefined} params.courseId
  * @param {number | undefined} params.courseLevelId
- * @param {number} params.count
- * @param {number | null} params.validityInMonths - How many months the code is valid for after activation.
+ * @param {number} params.validityInMonths - How many months the code is valid for after activation.
  * @param {number} params.issuedBy - The ID of the admin who issued the codes.
  * @returns {Promise<string[]>} - Array of generated codes.
  */
-export const generateAccessCodes = async ({ courseLevelId, count, validityInMonths, issuedBy }) => {
+export const generateAccessCodes = async ({ 
+  courseLevelId, userId, validityInMonths, issuedBy, couponId, amountPaid, receiptImageUrl, notes }) => {
   // Validate level exists and implicitly validate course via level
-  const level = await CourseLevelModel.findById(courseLevelId, { id: true, courseId: true });
+  const level = await prisma.courseLevel.findUnique({
+    where: { id: courseLevelId },
+    select: { id: true, courseId: true }
+  });
   if (!level) throw new Error('المستوى غير موجود');
 
-  const codesToCreate = Array.from({ length: count }, () => ({
-    code: nanoid(),
-    courseLevelId,
-    issuedBy,
-    validityInMonths,
-  }));
+  // Generate a unique access code
+  const code = nanoid();
 
-  await AccessCodeModel.createMany(codesToCreate);
+  // Create the access code
+  const accessCode = await prisma.accessCode.create({
+    data: {
+      code,
+      courseLevelId,
+      issuedBy,
+      validityInMonths,
+      usedBy: userId,
+    }
+  });
 
-  return codesToCreate.map(c => c.code);
+  // Create the financial account entry
+  await prisma.financialAccount.create({
+    data: {
+      receiptImageUrl,
+      amountPaid: parseFloat(amountPaid),
+      notes,
+      accessCodeId: accessCode.id,
+      couponId: couponId 
+    }
+  });
+  return accessCode;
+};
+
+export const getAllAccessCodes = async () => {
+  return await prisma.accessCode.findMany({
+    include: {
+      courseLevel: {
+        include: {
+          course: true,
+          instructor: true,
+        }
+      },
+      user: { select: { id: true, name: true, phone: true } },
+      financialAccounts: {
+        include: {
+          coupon: true,
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' }
+  });
 };
 
 /**
@@ -42,25 +78,25 @@ export const generateAccessCodes = async ({ courseLevelId, count, validityInMont
  * @returns {Promise<import('@prisma/client').AccessCode>}
  */
 export const activateCode = async (code, userId) => {
-  const accessCode = await AccessCodeModel.findByCode(code);
+  const existingAccessCode = await prisma.accessCode.findByCode(code);
 
   // --- Validation Checks ---
-  if (!accessCode) {
+  if (!existingAccessCode) {
     throw new Error('الكود غير صحيح أو غير موجود.');
   }
-  if (!accessCode.isActive || accessCode.usedBy) {
+  if (!existingAccessCode.isActive || existingAccessCode.usedBy) {
     throw new Error('هذا الكود تم استخدامه مسبقاً.');
   }
 
   // Calculate expiration date if validity is set
   let expiresAt = null;
-  if (accessCode.validityInMonths) {
+  if (existingAccessCode.validityInMonths) {
     expiresAt = new Date();
     expiresAt.setMonth(expiresAt.getMonth() + accessCode.validityInMonths);
   }
 
   // Update the access code in the database
-  await AccessCodeModel.updateById(accessCode.id, {
+  await prisma.accessCode.updateById(accessCode.id, {
     usedBy: userId,
     usedAt: new Date(),
     isActive: false, // Deactivate the code after use
@@ -68,7 +104,7 @@ export const activateCode = async (code, userId) => {
   });
 
   // Return the code with included relations
-  const fullCode = await AccessCodeModel.findByCode(code);
+  const fullCode = await prisma.accessCode.findByCode(code);
   return fullCode;
 };
 
@@ -78,7 +114,7 @@ export const activateCode = async (code, userId) => {
  * @returns {Promise<import('@prisma/client').AccessCode[]>}
  */
 export const getAccessCodesByCourse = async (courseId) => {
-  return AccessCodeModel.findAll({
+  return prisma.accessCode.findAll({
     where: { courseLevel: { courseId } },
     include: {
       courseLevel: { select: { id: true, name: true, courseId: true, course: { select: { id: true, title: true } } } },

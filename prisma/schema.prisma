@@ -56,6 +56,15 @@ model User {
   Suggestion     Suggestion[]
   AuditLog       AuditLog[]
   CodeRequest    CodeRequest[]
+  Admin          Admin[]
+}
+
+model Admin {
+  id           Int       @id @default(autoincrement())
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id])
+  username     String
+  email        String
 }
 
 model Session {
@@ -152,6 +161,7 @@ model Specialization {
   id           Int      @id @default(autoincrement())
   name         String
   slug         String?   @unique
+  imageUrl     String?
   isActive     Boolean   @default(true)
   subjectId    Int?
   subject      Subject?         @relation(fields: [subjectId], references: [id])
@@ -183,6 +193,7 @@ model Course {
   title                String
   slug                 String?          @unique
   description          String?
+  imageUrl             String?
   specializationId     Int
   specialization       Specialization @relation(fields: [specializationId], references: [id])
   isActive             Boolean          @default(true)
@@ -201,6 +212,8 @@ model CourseLevel {
   priceSAR    Float?
   isFree      Boolean          @default(false)
   isActive    Boolean          @default(true)
+  previewUrl  String?
+  downloadUrl String?
   courseId    Int
   course      Course   @relation(fields: [courseId], references: [id])
   instructorId  Int
@@ -212,6 +225,7 @@ model CourseLevel {
   accessCodes  AccessCode[]
   Transaction  Transaction[]
   CodeRequest  CodeRequest[]
+  coupons      Coupon[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -220,22 +234,22 @@ model CourseLevel {
 }
 
 model Lesson {
-  id             Int              @id @default(autoincrement())
-  title          String
-  description    String?
-  youtubeUrl     String?
-  youtubeId      String?
-  googleDriveUrl     String?
-  durationSec    Int?
-  orderIndex     Int?
-  isFreePreview  Boolean          @default(false)
-  isActive       Boolean          @default(true)
-  courseLevelId  Int
-  courseLevel    CourseLevel     @relation(fields: [courseLevelId], references: [id])
-  createdAt      DateTime         @default(now())
-  updatedAt      DateTime         @updatedAt
-  VideoLinkCheck VideoLinkCheck[]
-  progress       LessonProgress[]
+  id                Int              @id @default(autoincrement())
+  title             String
+  description       String?
+  youtubeUrl        String?
+  youtubeId         String?
+  googleDriveUrl    String?
+  durationSec       Int?
+  orderIndex        Int?
+  isFreePreview     Boolean          @default(false)
+  isActive          Boolean          @default(true)
+  courseLevelId     Int
+  courseLevel       CourseLevel     @relation(fields: [courseLevelId], references: [id])
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  VideoLinkCheck    VideoLinkCheck[]
+  progress          LessonProgress[]
 
   @@index([courseLevelId])
 }
@@ -267,14 +281,32 @@ model AccessCode {
   validityInMonths Int? 
   issuedBy  Int?
   issuedAt  DateTime  @default(now())
-  usedBy    Int?
-  user      User?     @relation(fields: [usedBy], references: [id])
+  usedBy    Int
+  user      User     @relation(fields: [usedBy], references: [id])
+  used      Boolean   @default(false)
   usedAt    DateTime?
   expiresAt DateTime?
   isActive  Boolean   @default(true)
+  financialAccounts FinancialAccount[]
 
   @@index([courseLevelId])
   @@index([usedBy])
+}
+
+model FinancialAccount {
+  id              Int       @id @default(autoincrement())
+  receiptImageUrl String
+  amountPaid      Decimal   @db.Decimal(12, 2)
+  notes           String?
+  accessCodeId    Int
+  accessCode      AccessCode @relation(fields: [accessCodeId], references: [id])
+  couponId        Int?
+  coupon          Coupon?    @relation(fields: [couponId], references: [id])
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([accessCodeId])
+  @@index([couponId])
 }
 
 model CodeRequest {
@@ -292,6 +324,7 @@ model CodeRequest {
   @@index([courseLevelId])
 }
 
+
 model Coupon {
   id        Int       @id @default(autoincrement())
   code      String    @unique
@@ -301,9 +334,14 @@ model Coupon {
   maxUsage  Int?
   usedCount Int       @default(0)
   isActive  Boolean   @default(true)
+  courseLevelId Int
+  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
+  financialAccounts FinancialAccount[]
   createdBy Int?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
+
+  @@index([courseLevelId])
 }
 
 // ---------- Quizzes & Results ----------

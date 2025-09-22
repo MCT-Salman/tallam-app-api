@@ -10,23 +10,27 @@ import {
 } from '../validators/statusCode.js';
 
 // --- Admin Controllers ---
-
 export const adminGenerateCodes = async (req, res, next) => {
   try {
-    const { courseId, courseLevelId, count, validityInMonths } = req.body;
+    const { courseLevelId, userId, validityInMonths, couponId, amountPaid, notes } = req.body;
     const adminId = req.user.id;
+    const receiptImageUrl = req.file ? `/uploads/images/receipt/${req.file.filename}` : undefined;
 
-    const codes = await AccessCodeService.generateAccessCodes({
-      courseId,
-      courseLevelId,
-      count,
-      validityInMonths,
+    const result = await AccessCodeService.generateAccessCodes({
+      courseLevelId: courseLevelId ? parseInt(courseLevelId, 10) : null,
+      userId : userId ? parseInt(userId, 10) : null,
+      validityInMonths: validityInMonths ? parseInt(validityInMonths, 10) : null,
       issuedBy: adminId,
+      couponId: couponId ? parseInt(couponId, 10) : null,
+      amountPaid,
+      receiptImageUrl,
+      notes
     });
-    res.status(SUCCESS_CREATE_STATUS_CODE).json({
-      success: SUCCESS_REQUEST,
-      message: `تم توليد ${count} أكواد بنجاح.`,
-      data: serializeResponse({ codes }),
+
+    res.json({
+      success: true,
+      message: `تم توليد الكود ${result.code} بنجاح.`,
+      data: serializeResponse(result),
     });
   } catch (error) {
     if (error.message === COURSE_NOT_FOUND) {
@@ -34,6 +38,35 @@ export const adminGenerateCodes = async (req, res, next) => {
     } else {
       error.statusCode = BAD_REQUEST_STATUS_CODE;
     }
+    next(error);
+  }
+};
+
+export const adminGetAllCodes = async (req, res, next) => {
+  try {
+    const codes = await AccessCodeService.getAllAccessCodes();
+    res.json({
+      success: true,
+      message: "تم جلب جميع أكواد الوصول بنجاح.",
+      data: serializeResponse(codes),
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
+    next(error);
+  }
+};
+
+export const adminGetCodesByUserId = async (req, res, next) => {
+  try {
+    const userId = parseInt(req.params.userId, 10);
+    const codes = await AccessCodeService.getAccessCodesByUserId(userId);
+    res.json({
+      success: true,
+      message: "تم جلب أكواد الوصول للمستخدم بنجاح.",
+      data: serializeResponse(codes),
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
     next(error);
   }
 };

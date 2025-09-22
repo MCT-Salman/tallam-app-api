@@ -14,8 +14,11 @@ export const specializationCreateRules = [
     .isString()
     .isLength({ min: 2 })
     .withMessage("الاسم قصير"),
+  body("imageUrl").optional().isString().withMessage("imageUrl يجب أن يكون نصاً"),
+  body("subjectId")
+    .isInt({ gt: 0 })
+    .withMessage("subjectId غير صالح")
 ];
-
 
 export const subjectCreateRules = [
   body("name")
@@ -29,11 +32,10 @@ export const subjectCreateRules = [
     .withMessage("domainId غير صالح")
 ];
 
-
 export const instructorCreateRules = [
   body("name").exists({ checkFalsy: true }).withMessage("الاسم مطلوب").isString().isLength({ min: 2 }).withMessage("الاسم قصير"),
   body("bio").optional().isString(),
-  body("avatarUrl").optional().isString(),
+  body("avatarUrl").optional().isString().withMessage("avatarUrl يجب أن يكون نصاً"),
   body("specializationId").isInt({ gt: 0 }).withMessage("specializationId غير صالح")
 ];
 
@@ -42,6 +44,7 @@ export const instructorUpdateRules = instructorCreateRules.map(rule => rule.opti
 export const courseCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
   body("description").optional().isString(),
+  body("imageUrl").optional().isString().withMessage("imageUrl يجب أن يكون نصاً"),
   body("specializationId").isInt({ gt: 0 }).withMessage("specializationId غير صالح")
 ];
 
