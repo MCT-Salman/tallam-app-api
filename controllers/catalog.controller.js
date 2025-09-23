@@ -442,85 +442,161 @@ export const adminListCourses = async (req, res, next) => {
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
-// Public
+// Public: Domains
+export const publicListDomains = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const result = await listDomains({ page, limit });
+    res.json({
+      success: true,
+      message: "تم جلب قائمة المجالات بنجاح",
+      data: result.data,
+      pagination: result.pagination
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+// Public: Subjects
+export const publicListSubjects = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const result = await listSubjects({ page, limit });
+    res.json({
+      success: true,
+      message: "تم جلب قائمة المواد بنجاح",
+      data: result.data,
+      pagination: result.pagination
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+// Public: Instructors
+export const publicListInstructors = async (req, res, next) => {
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const result = await listInstructors({ page, limit });
+    res.json({
+      success: true,
+      message: "تم جلب قائمة المدربين بنجاح",
+      data: result.data,
+      pagination: result.pagination
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
 
 export const publicListSpecializations = async (req, res, next) => {
-  try { 
-    const list = await listSpecializations(); 
-    res.json({ 
-      success: true, 
+  try {
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const result = await listSpecializations({ page, limit });
+    res.json({
+      success: true,
       message: "تم جلب قائمة التخصصات بنجاح",
-      data: list
-      
-    }); 
+      data: result.data,
+      pagination: result.pagination
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
   }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
 export const publicListCoursesBySpecialization = async (req, res, next) => {
-  try { 
+  try {
     const specializationId = parseInt(req.params.id, 10);
-    const list = await listCoursesPublic({ specializationId }); 
-    res.json({ 
-      success: true, 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const result = await listCoursesPublic({ specializationId }, { page, limit });
+    res.json({
+      success: true,
       message: "تم جلب قائمة الكورسات بنجاح",
-      data: list
-    }); 
+      data: result.data,
+      pagination: result.pagination
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
   }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
 export const publicListCoursesByInstructor = async (req, res, next) => {
-  try { 
+  try {
     const instructorId = parseInt(req.params.id, 10);
-    const list = await listCoursesPublic({ instructorId }); 
-    res.json({ 
-      success: true, 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const result = await listCoursesPublic({ instructorId }, { page, limit });
+    res.json({
+      success: true,
       message: "تم جلب قائمة الكورسات بنجاح",
-      data: list
-    }); 
+      data: result.data,
+      pagination: result.pagination
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
   }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
 export const publicListCourses = async (req, res, next) => {
   try {
-    console.log(req.query);
-    const skip = req.query.skip ? parseInt(req.query.skip,10): 0;
-    const take = req.query.take ? parseInt(req.query.take,10): 20;
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const skip = (page - 1) * limit;
+    const take = limit;
     const filters = {
       q: req.query.q || undefined,
-      domainId: req.query.domainId ? parseInt(req.query.domainId,10): undefined,
-      subjectId: req.query.subjectId ? parseInt(req.query.subjectId,10): undefined,
-      instructorId: req.query.instructorId ? parseInt(req.query.instructorId,10): undefined,
+      specializationId: req.query.specializationId ? parseInt(req.query.specializationId, 10) : undefined,
     };
     const result = await listCoursesPublic(filters, skip, take);
-    res.json({ 
+    res.json({
       success: true,
       message: "تم جلب قائمة الكورسات بنجاح",
-      data: result
+      data: result.items,
+      pagination: {
+        page,
+        limit,
+        total: result.total,
+        totalPages: Math.ceil(result.total / limit)
+      }
     });
-  } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
 };
 
 export const publicListInstructorsForCourse = async (req, res, next) => {
-  try { 
+  try {
     const courseId = parseInt(req.params.id, 10);
-    const instructors = await listInstructorsForCourse(courseId);
-    res.json({ 
-      success: true, 
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const result = await listInstructorsForCourse(courseId, { page, limit });
+    res.json({
+      success: true,
       message: "تم جلب قائمة المدربين بنجاح",
-      data: instructors
-    }); 
-  }
-  catch (e) { 
+      data: result.data,
+      pagination: result.pagination
+    });
+  } catch (e) {
     if (e.message === "Course not found") {
       e.statusCode = 404;
       e.message = "الكورس غير موجود";
     } else {
       e.statusCode = e.statusCode || 400;
     }
-    next(e); 
+    next(e);
   }
 };
 

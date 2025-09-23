@@ -178,26 +178,38 @@ export const adminDeleteLesson = async (req, res, next) => {
 // Public
 export const publicListLevelsWithLessons = async (req, res, next) => {
   try {
-    const courseId = parseInt(req.params.courseId,10);
-    const levels = await listLevelsByCourse(courseId);
-    res.json({ 
+    const courseId = parseInt(req.params.courseId, 10);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const result = await listLevelsByCourse(courseId, { page, limit });
+    res.json({
       success: true,
-      message: "تم جلب قائمة المستويات  بنجاح", 
-      data: levels
+      message: "تم جلب قائمة المستويات بنجاح",
+      data: result.data,
+      pagination: result.pagination
     });
-  } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
 };
 
 export const publicListLessonsByLevel = async (req, res, next) => {
   try {
-    const courseLevelId = parseInt(req.params.courseLevelId,10);
-    const lessons = await listLessonsByLevel(courseLevelId);
+    const courseLevelId = parseInt(req.params.courseLevelId, 10);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const result = await listLessonsByLevel(courseLevelId, { page, limit });
     res.json({
       success: true,
       message: "تم جلب قائمة الدروس بنجاح",
-      data: lessons
+      data: result.data,
+      pagination: result.pagination
     });
-  } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
 };
 
 // Public: list levels for a course by selected instructor
@@ -205,11 +217,14 @@ export const publicListLevelsByCourseAndInstructor = async (req, res, next) => {
   try {
     const courseId = parseInt(req.params.courseId, 10);
     const instructorId = parseInt(req.params.instructorId, 10);
-    const levels = await listLevelsByCourseAndInstructor(courseId, instructorId);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const result = await listLevelsByCourseAndInstructor(courseId, instructorId, { page, limit });
     res.json({
       success: true,
       message: "تم جلب مستويات هذا المدرب للدورة",
-      data: levels
+      data: result.data,
+      pagination: result.pagination
     });
   } catch (e) {
     e.statusCode = e.statusCode || 400;

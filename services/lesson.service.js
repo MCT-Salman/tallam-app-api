@@ -24,15 +24,35 @@ export const createLevel = (courseId, data) =>
     }
   });
 
-export const listLevelsByCourse = (courseId) =>
-  prisma.courseLevel.findMany({
-    where: { courseId },
-    orderBy: { order: "asc" },
-    include: {
-      course: { select: courseSelect },
-      instructor: true
+export const listLevelsByCourse = async (courseId, pagination = {}) => {
+  const { page = 1, limit = 10 } = pagination;
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  const [data, total] = await Promise.all([
+    prisma.courseLevel.findMany({
+      where: { courseId },
+      orderBy: { order: "asc" },
+      include: {
+        course: { select: courseSelect },
+        instructor: true
+      },
+      skip,
+      take
+    }),
+    prisma.courseLevel.count({ where: { courseId } })
+  ]);
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
     }
-  });
+  };
+};
 
 export const updateLevel = (id, data) =>
   prisma.courseLevel.update({
@@ -70,14 +90,34 @@ export const createLessonForLevel = async (courseLevelId, data) => {
   });
 };
 
-export const listLessonsByLevel = (courseLevelId) =>
-  prisma.lesson.findMany({
-    where: { courseLevelId },
-    orderBy: [{ orderIndex: "asc" }, { id: "asc" }],
-    include: {
-      courseLevel: { include: { course: { select: courseSelect } } }
+export const listLessonsByLevel = async (courseLevelId, pagination = {}) => {
+  const { page = 1, limit = 10 } = pagination;
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  const [data, total] = await Promise.all([
+    prisma.lesson.findMany({
+      where: { courseLevelId },
+      orderBy: [{ orderIndex: "asc" }, { id: "asc" }],
+      include: {
+        courseLevel: { include: { course: { select: courseSelect } } }
+      },
+      skip,
+      take
+    }),
+    prisma.lesson.count({ where: { courseLevelId } })
+  ]);
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
     }
-  });
+  };
+};
 
 export const updateLesson = (id, data) =>
   prisma.lesson.update({
@@ -103,19 +143,44 @@ export const deleteLesson = (id) =>
 /**
  * Public: list levels for a course filtered by instructor assigned to the level
  */
-export const listLevelsByCourseAndInstructor = async (courseId, instructorId) => {
-  return prisma.courseLevel.findMany({
-    where: {
-      courseId,
-      instructorId,
-      isActive: true
-    },
-    orderBy: { order: "asc" },
-    select: {
-      id: true,
-      order: true
+export const listLevelsByCourseAndInstructor = async (courseId, instructorId, pagination = {}) => {
+  const { page = 1, limit = 10 } = pagination;
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  const [data, total] = await Promise.all([
+    prisma.courseLevel.findMany({
+      where: {
+        courseId,
+        instructorId,
+        isActive: true
+      },
+      orderBy: { order: "asc" },
+      select: {
+        id: true,
+        order: true
+      },
+      skip,
+      take
+    }),
+    prisma.courseLevel.count({
+      where: {
+        courseId,
+        instructorId,
+        isActive: true
+      }
+    })
+  ]);
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
     }
-  });
+  };
 };
 
 export const DetailLevel = async (courseLevelId, userId = null) => {
@@ -163,7 +228,6 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
       used: true
     }
   });
-
   // If access code exists with used=true, include full lesson details
   if (accessCode) {
     const fullResult = await prisma.courseLevel.findUnique({

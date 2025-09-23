@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { validate } from "../middlewares/validate.middleware.js";
-import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireAuth , optionalAuth } from "../middlewares/auth.middleware.js";
 import { requireRole } from "../middlewares/role.middleware.js";
 import { levelCreateRules, lessonCreateRules, toggleActiveRules, courseLevelIdParam, idParam, instructorIdParam } from "../validators/lesson.validators.js";
 import { courseIdParam } from "../validators/catalog.validators.js";
@@ -30,7 +30,7 @@ r.delete("/admin/lessons/:id", requireAuth, requireRole(["ADMIN"]), validate(idP
 // Public
 r.get("/courses/:courseId/levels", validate(courseIdParam), publicListLevelsWithLessons);
 r.get("/courses/:courseId/instructors/:instructorId/levels", validate(courseIdParam), validate(instructorIdParam), publicListLevelsByCourseAndInstructor);
-r.get("/levels/:courseLevelId", requireAuth ,validate(courseLevelIdParam), publicDetailLevel);
+r.get("/levels/:courseLevelId", optionalAuth ,validate(courseLevelIdParam), publicDetailLevel);
 r.get("/levels/:courseLevelId/lessons", validate(courseLevelIdParam), publicListLessonsByLevel);
 
 export default r;

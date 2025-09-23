@@ -3,7 +3,30 @@ import prisma from "../prisma/client.js";
 
 // Domains
 export const createDomain = (name) => prisma.domain.create({ data: { name } });
-export const listDomains = () => DomainModel.findAll({});
+export const listDomains = async (pagination = {}) => {
+  const { page = 1, limit = 10 } = pagination;
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  const [data, total] = await Promise.all([
+    prisma.domain.findMany({
+      skip,
+      take,
+      orderBy: { name: "asc" }
+    }),
+    prisma.domain.count()
+  ]);
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
+};
 export const updateDomain = (id, data) => prisma.domain.update({ where: { id }, data });
 export const toggleDomain = (id, isActive) => prisma.domain.update({ where: { id }, data: { isActive } });
 export const DeleteDomain = (id) => prisma.domain.delete({ where: { id } });
@@ -11,14 +34,35 @@ export const DeleteDomain = (id) => prisma.domain.delete({ where: { id } });
 // Specializations
 export const createSpecialization = (data) => prisma.specialization.create({ data });
 
-export const listSpecializations = () => prisma.specialization.findMany({
-  orderBy: { name: "asc" },
-  select: {
-    id: true,
-    name: true,
-    imageUrl: true
-  }
-});
+export const listSpecializations = async (pagination = {}) => {
+  const { page = 1, limit = 10 } = pagination;
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  const [data, total] = await Promise.all([
+    prisma.specialization.findMany({
+      skip,
+      take,
+      orderBy: { name: "asc" },
+      select: {
+        id: true,
+        name: true,
+        imageUrl: true
+      }
+    }),
+    prisma.specialization.count()
+  ]);
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
+};
 
 export const listSpecializationsBySubject = (subjectId) => prisma.specialization.findMany({
   where: { subjectId },
@@ -40,10 +84,31 @@ export const DeleteSpecialization = (id) => prisma.specialization.delete({ where
 // Subjects
 export const createSubject = (data) => prisma.subject.create({ data });
 
-export const listSubjects = () => prisma.subject.findMany({
-  orderBy: { name: "asc" },
-  include: { domain: true }
-});
+export const listSubjects = async (pagination = {}) => {
+  const { page = 1, limit = 10 } = pagination;
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  const [data, total] = await Promise.all([
+    prisma.subject.findMany({
+      skip,
+      take,
+      orderBy: { name: "asc" },
+      include: { domain: true }
+    }),
+    prisma.subject.count()
+  ]);
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
+};
 
 export const listSubjectsByDomain = (domainId) => prisma.subject.findMany({
   where: { domainId },
@@ -59,7 +124,30 @@ export const DeleteSubject = (id) => prisma.subject.delete({ where: { id } });
 
 // Instructors
 export const createInstructor = (data) => prisma.instructor.create({ data });
-export const listInstructors = () => prisma.instructor.findMany({include : {specialization : true}});
+export const listInstructors = async (pagination = {}) => {
+  const { page = 1, limit = 10 } = pagination;
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  const [data, total] = await Promise.all([
+    prisma.instructor.findMany({
+      skip,
+      take,
+      include: { specialization: true }
+    }),
+    prisma.instructor.count()
+  ]);
+
+  return {
+    data,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
+};
 export const updateInstructor = (id, data) => prisma.instructor.update({ where: { id }, data });
 export const toggleInstructor = (id, isActive) => prisma.instructor.update({ where: { id }, data: { isActive } });
 export const DeleteInstructor = (id) => prisma.instructor.delete({ where: { id } });
@@ -187,7 +275,11 @@ export const getCourseByIdForUser = async (id, userId) => {
  * @param {number} take
  * @returns {Promise<{items: Course[], total: number, skip: number, take: number}>}
  */
-export const listCoursesPublic = async (filters = {}, skip = 0, take = 20) => {
+export const listCoursesPublic = async (filters = {}, pagination = {}) => {
+  const { page = 1, limit = 10 } = pagination;
+  const skip = (page - 1) * limit;
+  const take = limit;
+
   const where = { isActive: true };
   const { q, specializationId } = filters;
 
@@ -198,6 +290,7 @@ export const listCoursesPublic = async (filters = {}, skip = 0, take = 20) => {
     ];
   }
   if (specializationId) where.specializationId = specializationId;
+
   const [items, total] = await Promise.all([
     prisma.course.findMany({
       where,
@@ -213,7 +306,16 @@ export const listCoursesPublic = async (filters = {}, skip = 0, take = 20) => {
     }),
     prisma.course.count({ where })
   ]);
-  return { items, total, skip, take };
+
+  return {
+    data: items,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
 };
 
 /**
@@ -242,29 +344,47 @@ export const listCoursesAdmin = async (filters = {}, skip = 0, take = 20) => {
  * @param {number} courseId - The ID of the course.
  * @returns {Promise<Array>} - Array of instructor objects.
  */
-export const listInstructorsForCourse = async (courseId) => {
-  const levels = await prisma.courseLevel.findMany({
-    where: { courseId, isActive: true },
-    select: {
-      instructor: {
-        select: {
-          id: true,
-          name: true,
-          bio: true,
-          avatarUrl: true
+export const listInstructorsForCourse = async (courseId, pagination = {}) => {
+  const { page = 1, limit = 10 } = pagination;
+  const skip = (page - 1) * limit;
+  const take = limit;
+
+  const [data, total] = await Promise.all([
+    prisma.courseLevel.findMany({
+      where: { courseId, isActive: true },
+      select: {
+        instructor: {
+          select: {
+            id: true,
+            name: true,
+            bio: true,
+            avatarUrl: true
+          }
         }
-      }
-    }
-  });
-  console.log(levels)
+      },
+      skip,
+      take
+    }),
+    prisma.courseLevel.count({ where: { courseId, isActive: true } })
+  ]);
 
   const instructorsMap = new Map();
-  levels.forEach(level => {
+  data.forEach(level => {
     if (level.instructor) {
       instructorsMap.set(level.instructor.id, level.instructor);
     }
   });
 
-  return Array.from(instructorsMap.values());
+  const instructors = Array.from(instructorsMap.values());
+
+  return {
+    data: instructors,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
 };
 

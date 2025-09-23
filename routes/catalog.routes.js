@@ -13,7 +13,8 @@ import {
   adminCreateInstructor, adminListInstructors, adminUpdateInstructor, adminToggleInstructor, adminDeleteInstructor,
   adminCreateCourse, adminUpdateCourse, adminToggleCourse, adminDeleteCourse, adminListCourses,
   publicListCourses, publicGetCourse, publicListInstructorsForCourse,
-  publicListSpecializations, publicListCoursesBySpecialization
+  publicListSpecializations, publicListCoursesBySpecialization, publicListCoursesByInstructor,
+  publicListDomains, publicListSubjects, publicListInstructors
 } from "../controllers/catalog.controller.js";
 import { uploadImage } from "../middlewares/upload.middleware.js";
 
@@ -57,8 +58,13 @@ r.put("/admin/courses/:id/active", requireAuth, requireRole(["ADMIN"]), validate
 r.delete("/admin/courses/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteCourse);
 
 // Public routes
+r.get("/domains", publicListDomains);
+r.get("/subjects", publicListSubjects);
+r.get("/instructors", publicListInstructors);
 r.get("/specializations", publicListSpecializations);
+r.get("/instructors/:id/courses", validate(idParam), publicListCoursesByInstructor);
 r.get("/specializations/:id/courses", validate(idParam), publicListCoursesBySpecialization);
+r.get("/courses", publicListCourses);
 r.get("/courses/:id", optionalAuth, validate(idParam), publicGetCourse);
 r.get("/courses/:id/instructors", validate(idParam), publicListInstructorsForCourse);
 
