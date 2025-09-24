@@ -28,16 +28,6 @@ async function addAdminAccount() {
       return;
     }
 
-    // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { phone }
-    });
-
-    if (existingUser) {
-      console.log('User with this phone already exists.');
-      return;
-    }
-
     // Hash password
     const passwordHash = await bcrypt.hash(password, 10);
 
