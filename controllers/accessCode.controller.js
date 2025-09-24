@@ -14,7 +14,14 @@ export const adminGenerateCodes = async (req, res, next) => {
   try {
     const { courseLevelId, userId, validityInMonths, couponId, amountPaid, notes } = req.body;
     const adminId = req.user.id;
-    const receiptImageUrl = req.file ? `/uploads/images/receipt/${req.file.filename}` : undefined;
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: "يجب رفع صورة الإيصال (receiptImageUrl) لأنه حقل إجباري",
+        data: {}
+      });
+    }
+    const receiptImageUrl =  `/uploads/images/receipt/${req.file.filename}`;
 
     const result = await AccessCodeService.generateAccessCodes({
       courseLevelId: courseLevelId ? parseInt(courseLevelId, 10) : null,
@@ -58,7 +65,7 @@ export const adminGetAllCodes = async (req, res, next) => {
 
 export const adminGetCodesByUserId = async (req, res, next) => {
   try {
-    const userId = parseInt(req.params.userId, 10);
+    const userId = parseInt(req.params.id, 10);
     const codes = await AccessCodeService.getAccessCodesByUserId(userId);
     res.json({
       success: true,
@@ -87,12 +94,43 @@ export const adminGetCourseCodes = async (req, res, next) => {
 
 // --- Student Controllers ---
 
+export const studentGetMyCodes = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const codes = await AccessCodeService.getAccessCodesByUserId(userId);
+    res.status(SUCCESS_STATUS_CODE).json({
+      success: SUCCESS_REQUEST,
+      message: 'تم جلب أكواد الوصول الخاصة بك بنجاح.',
+      data: serializeResponse(codes),
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
+    next(error);
+  }
+};
+
+export const studentGetMyCourses = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const courseLevels = await AccessCodeService.getCourseLevelsByUserId(userId);
+    res.status(SUCCESS_STATUS_CODE).json({
+      success: SUCCESS_REQUEST,
+      message: 'تم جلب دوراتك بنجاح.',
+      data: serializeResponse(courseLevels),
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
+    next(error);
+  }
+};
+
 export const studentActivateCode = async (req, res, next) => {
   try {
     const { code } = req.body;
     const userId = req.user.id;
+    const courseLevelId = parseInt(req.params.courseLevelId, 10); // Get courseLevelId from route
 
-    const activatedCode = await AccessCodeService.activateCode(code, userId);
+    const activatedCode = await AccessCodeService.activateCode(code, userId, courseLevelId);
 
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,

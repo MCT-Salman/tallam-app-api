@@ -10,7 +10,8 @@
     "migrate": "prisma migrate dev",
     "generate": "npx prisma generate",
     "studio": "npx prisma studio",
-    "seed": "prisma db seed"
+    "seed": "prisma db seed",
+    "add-admin": "node scripts/addAdminAccount.js"
   },
   "keywords": [
     "nodejs",

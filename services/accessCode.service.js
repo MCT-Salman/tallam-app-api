@@ -67,7 +67,7 @@ export const getAllAccessCodes = async () => {
         }
       }
     },
-    orderBy: { createdAt: 'desc' }
+    orderBy: { issuedAt: 'desc' }
   });
 };
 
@@ -75,36 +75,56 @@ export const getAllAccessCodes = async () => {
  * Activate an access code for a user.
  * @param {string} code - The access code string.
  * @param {number} userId - The ID of the user activating the code.
+ * @param {number} courseLevelId - The ID of the course level.
  * @returns {Promise<import('@prisma/client').AccessCode>}
  */
-export const activateCode = async (code, userId) => {
-  const existingAccessCode = await prisma.accessCode.findByCode(code);
+export const activateCode = async (code, userId, courseLevelId) => {
+  const existingAccessCode = await prisma.accessCode.findFirst({
+    where: {
+      code,
+      usedBy: userId,
+      courseLevelId: courseLevelId
+    }
+  });
 
   // --- Validation Checks ---
   if (!existingAccessCode) {
-    throw new Error('الكود غير صحيح أو غير موجود.');
+    throw new Error('الكود غير صحيح أو لا ينتمي لهذا المستوى.');
   }
-  if (!existingAccessCode.isActive || existingAccessCode.usedBy) {
+
+  if (!existingAccessCode.isActive || existingAccessCode.used) {
     throw new Error('هذا الكود تم استخدامه مسبقاً.');
   }
 
-  // Calculate expiration date if validity is set
+  // Calculate expiration date if validityInMonths is set
   let expiresAt = null;
   if (existingAccessCode.validityInMonths) {
     expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + accessCode.validityInMonths);
+    expiresAt.setMonth(expiresAt.getMonth() + existingAccessCode.validityInMonths);
   }
 
   // Update the access code in the database
-  await prisma.accessCode.updateById(accessCode.id, {
-    usedBy: userId,
-    usedAt: new Date(),
-    isActive: false, // Deactivate the code after use
-    expiresAt,
+  await prisma.accessCode.update({
+    where: { id: existingAccessCode.id },
+    data: {
+      usedAt: new Date(),
+      used: true,
+      isActive: false, // Deactivate the code after use
+      expiresAt,
+    }
   });
 
   // Return the code with included relations
-  const fullCode = await prisma.accessCode.findByCode(code);
+  const fullCode = await prisma.accessCode.findFirst({
+    where: { code },
+    include: {
+      courseLevel: {
+        include: {
+          course: { select: { id: true, title: true } }
+        }
+      }
+    }
+  });
   return fullCode;
 };
 
@@ -114,7 +134,7 @@ export const activateCode = async (code, userId) => {
  * @returns {Promise<import('@prisma/client').AccessCode[]>}
  */
 export const getAccessCodesByCourse = async (courseId) => {
-  return prisma.accessCode.findAll({
+  return prisma.accessCode.findMany({
     where: { courseLevel: { courseId } },
     include: {
       courseLevel: { select: { id: true, name: true, courseId: true, course: { select: { id: true, title: true } } } },
@@ -125,4 +145,43 @@ export const getAccessCodesByCourse = async (courseId) => {
       issuedAt: 'desc',
     },
   });
+};
+
+/**
+ * Get all access codes for a specific user (for students and admins).
+ * @param {number} userId
+ * @returns {Promise<import('@prisma/client').AccessCode[]>}
+ */
+export const getAccessCodesByUserId = async (userId) => {
+  return prisma.accessCode.findMany({
+    where: { usedBy: userId },
+    include: {
+      courseLevel: { select: { id: true, name: true, courseId: true, course: { select: { id: true, title: true } } } },
+    },
+    orderBy: {
+      issuedAt: 'desc',
+    },
+  });
+};  
+
+/**
+ * Get all access codes for a specific user (for students and admins).
+ * @param {number} userId
+ * @returns {Promise<import('@prisma/client').AccessCode[]>}
+ */
+export const getCourseLevelsByUserId = async (userId) => {
+  return prisma.accessCode.findMany({
+    where: {
+      usedBy: userId,
+      used: true
+    },
+    include: {
+      courseLevel: {
+        include: {
+          course: { select: { id: true, title: true } }
+        }
+      }
+    },
+    orderBy: { usedAt: 'desc' }
+  }).then(codes => codes.map(code => ({ ...code.courseLevel, accessCodeId: code.id })));
 };

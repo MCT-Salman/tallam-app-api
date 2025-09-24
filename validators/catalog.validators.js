@@ -2,7 +2,7 @@ import { body, param, query } from "express-validator";
 
 export const idParam = param("id").isInt({ gt: 0 }).withMessage("معرّف غير صالح");
 export const courseIdParam = param("courseId").isInt({ gt: 0 }).withMessage("courseId غير صالح");
-
+export const courseLevelIdParam = param("courseLevelId").isInt({ gt: 0 }).withMessage("courseLevelId غير صالح");
 export const domainCreateRules = [
   body("name").exists({ checkFalsy: true }).withMessage("الاسم مطلوب").isString().isLength({ min: 2 }).withMessage("الاسم قصير")
 ];
@@ -14,10 +14,11 @@ export const specializationCreateRules = [
     .isString()
     .isLength({ min: 2 })
     .withMessage("الاسم قصير"),
-  body("imageUrl").optional().isString().withMessage("imageUrl يجب أن يكون نصاً"),
-  body("subjectId")
-    .isInt({ gt: 0 })
-    .withMessage("subjectId غير صالح")
+  body("imageUrl")
+  .exists({ checkFalsy: true })
+  .withMessage(" صورة التخصص مطلوبة")
+  .isString()
+  .withMessage("حقل الصورة يجب أن يكون نصاً")
 ];
 
 export const subjectCreateRules = [
@@ -44,7 +45,10 @@ export const instructorUpdateRules = instructorCreateRules.map(rule => rule.opti
 export const courseCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
   body("description").optional().isString(),
-  body("imageUrl").optional().isString().withMessage("imageUrl يجب أن يكون نصاً"),
+  body("imageUrl").exists({ checkFalsy: true })
+  .withMessage(" صورة الكورس مطلوبة")
+  .isString()
+  .withMessage("حقل الصورة يجب أن يكون نصاً"),
   body("specializationId").isInt({ gt: 0 }).withMessage("specializationId غير صالح")
 ];
 
