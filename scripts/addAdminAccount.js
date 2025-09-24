@@ -1,5 +1,7 @@
 import bcrypt from 'bcrypt';
+import { hashPassword} from "../utils/hash.js";
 import prisma from '../prisma/client.js';
+import { UserModel } from '../models/index.js';
 
 async function addAdminAccount() {
   try {
@@ -7,19 +9,13 @@ async function addAdminAccount() {
 
     // Use default values
     const name = 'admin';
-    const phone = '0987654321';
+    const phone = '0987654322';
     const password = 'Admin@123';
     const birthDate = new Date();
     const sex = 'Male';
     const country = 'Saudi Arabia';
     const countryCode = '+966';
-    const isVerified = true;
-    const isActive = true;
-    const expiresAt = null;
-    const avatarUrl = null;
     const role = 'ADMIN';
-    const createdAt = new Date();
-    const updatedAt = new Date();
 
 
 
@@ -29,29 +25,24 @@ async function addAdminAccount() {
     }
 
     // Hash password
-    const passwordHash = await bcrypt.hash(password, 10);
+    const passwordHash = await hashPassword(password);
 
     // Create admin user
-    const adminUser = await prisma.user.create({
-      data: {
-        name,
-        phone,
-        passwordHash,
+     const user = await UserModel.createUser({
+         phone,
+         passwordHash,
+         name,
+         sex,
+         birthDate,
+         avatarUrl:null,
+         country,
+         countryCode,
         role,
-        isActive,
-        birthDate,
-        sex,
-        country,
-        countryCode,
-        isVerified,
-        expiresAt,
-        avatarUrl,
-        createdAt,
-        updatedAt
-      }
-    });
+         isVerified: true,
+         isActive: true
+       });
 
-    console.log(`Admin account created successfully! User ID: ${adminUser.id}`);
+    console.log(`Admin account created successfully! User ID: ${user.id}`);
   } catch (error) {
     console.error('Error creating admin account:', error);
   }
