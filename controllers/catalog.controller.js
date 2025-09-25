@@ -197,7 +197,7 @@ export const adminCreateSpecialization = async (req, res, next) => {
   try {
     const { name } = req.body;
     const subjectId = parseInt(req.body.subjectId, 10);
-    const imageUrl = `/uploads/images/${req.file.filename}`;
+    const imageUrl = `/uploads/images/specializations/${req.file.filename}`;
     const specialization = await createSpecialization({ name, subjectId, imageUrl });
     res.status(201).json({
       success: true,
@@ -243,7 +243,7 @@ export const adminUpdateSpecialization = async (req, res, next) => {
   try {
     const updateData = { name: req.body.name };
     if (req.body.subjectId) updateData.subjectId = parseInt(req.body.subjectId, 10);
-    if (req.file) updateData.imageUrl = `/uploads/images/${req.file.filename}`;
+    if (req.file) updateData.imageUrl = `/uploads/images/specializations/${req.file.filename}`;
     const s = await updateSpecialization(parseInt(req.params.id, 10), updateData);
     res.json({
       success: true,
@@ -295,7 +295,7 @@ export const adminDeleteSpecialization = async (req, res, next) => {
 export const adminCreateInstructor = async (req, res, next) => {
   try {
     const { name, bio, specializationId } = req.body;
-    const avatarUrl = req.file ? `/uploads/images/${req.file.filename}` : undefined;
+    const avatarUrl = req.file ? `/uploads/images/instructors/${req.file.filename}` : undefined;
     const i = await createInstructor({ name, bio, avatarUrl, specializationId: parseInt(specializationId, 10) });
     res.status(201).json({
       success: true,
@@ -324,7 +324,7 @@ export const adminUpdateInstructor = async (req, res, next) => {
   try {
     const updateData = { name: req.body.name, bio: req.body.bio };
     if (req.body.specializationId) updateData.specializationId = parseInt(req.body.specializationId, 10);
-    if (req.file) updateData.avatarUrl = `/uploads/images/${req.file.filename}`;
+    if (req.file) updateData.avatarUrl = `/uploads/images/instructors/${req.file.filename}`;
     const i = await updateInstructor(parseInt(req.params.id, 10), updateData);
     res.json({
       success: true,
@@ -373,7 +373,7 @@ export const adminDeleteInstructor = async (req, res, next) => {
 export const adminCreateCourse = async (req, res, next) => {
   try {
     const { title, description, specializationId } = req.body;
-    const imageUrl = req.file ? `/uploads/images/${req.file.filename}` : undefined;
+    const imageUrl = req.file ? `/uploads/images/course/${req.file.filename}` : undefined;
     const courseData = { title, description, specializationId: parseInt(specializationId, 10), imageUrl };
     const c = await createCourse(courseData);
     res.status(201).json({
@@ -388,7 +388,7 @@ export const adminUpdateCourse = async (req, res, next) => {
     const id = parseInt(req.params.id, 10);
     const updateData = { title: req.body.title, description: req.body.description };
     if (req.body.specializationId) updateData.specializationId = parseInt(req.body.specializationId, 10);
-    if (req.file) updateData.imageUrl = `/uploads/images/${req.file.filename}`;
+    if (req.file) updateData.imageUrl = `/uploads/images/course/${req.file.filename}`;
     const c = await updateCourse(id, updateData);
     res.json({
       success: true,

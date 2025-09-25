@@ -16,7 +16,7 @@ import {
   publicListSpecializations, publicListCoursesBySpecialization, publicListCoursesByInstructor,
   publicListDomains, publicListSubjects, publicListInstructors
 } from "../controllers/catalog.controller.js";
-import { uploadImage } from "../middlewares/upload.middleware.js";
+import { uploadCourseImage, uploadSpecializationImage, uploadInstructorImage, uploadUserAvatar } from "../middlewares/upload.middleware.js";
 
 const r = Router();
 
@@ -38,22 +38,22 @@ r.delete("/admin/subjects/:id", requireAuth, requireRole(["ADMIN"]), validate(id
 // Specializations
 r.get("/admin/specializations", requireAuth, requireRole(["ADMIN"]), adminListSpecializations);
 r.get("/admin/subjects/:id/specializations",validate(idParam),adminListSpecializationsBySubject);
-r.post("/admin/specializations", requireAuth, requireRole(["ADMIN"]), uploadImage.single('imageUrl'), validate(specializationCreateRules), adminCreateSpecialization);
-r.put("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), uploadImage.single('imageUrl'), validate(idParam), validate(specializationCreateRules), adminUpdateSpecialization);
+r.post("/admin/specializations", requireAuth, requireRole(["ADMIN"]), uploadSpecializationImage.single('imageUrl'), validate(specializationCreateRules), adminCreateSpecialization);
+r.put("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), uploadSpecializationImage.single('imageUrl'), validate(idParam), validate(specializationCreateRules), adminUpdateSpecialization);
 r.put("/admin/specializations/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleSpecialization);
 r.delete("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteSpecialization);
 
 // Instructors
 r.get("/admin/instructors", requireAuth, requireRole(["ADMIN"]), adminListInstructors);
-r.post("/admin/instructors", requireAuth, requireRole(["ADMIN"]), uploadImage.single('avatar'), validate(instructorCreateRules), adminCreateInstructor);
-r.put("/admin/instructors/:id", requireAuth, requireRole(["ADMIN"]), uploadImage.single('avatar'), validate(idParam), validate(instructorUpdateRules), adminUpdateInstructor);
+r.post("/admin/instructors", requireAuth, requireRole(["ADMIN"]), uploadInstructorImage.single('avatarUrl'), validate(instructorCreateRules), adminCreateInstructor);
+r.put("/admin/instructors/:id", requireAuth, requireRole(["ADMIN"]), uploadInstructorImage.single('avatarUrl'), validate(idParam), validate(instructorUpdateRules), adminUpdateInstructor);
 r.put("/admin/instructors/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleInstructor);
 r.delete("/admin/instructors/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteInstructor);
 
 // Courses
 r.get("/admin/courses", requireAuth, requireRole(["ADMIN", "SUBADMIN"]), validate(listQueryRules), adminListCourses);
-r.post("/admin/courses", requireAuth, requireRole(["ADMIN"]), uploadImage.single('image'), validate(courseCreateRules), adminCreateCourse);
-r.put("/admin/courses/:id", requireAuth, requireRole(["ADMIN"]), uploadImage.single('image'), validate(idParam), validate(courseUpdateRules), adminUpdateCourse);
+r.post("/admin/courses", requireAuth, requireRole(["ADMIN"]), uploadCourseImage.single('imageUrl'), validate(courseCreateRules), adminCreateCourse);
+r.put("/admin/courses/:id", requireAuth, requireRole(["ADMIN"]), uploadCourseImage.single('imageUrl'), validate(idParam), validate(courseUpdateRules), adminUpdateCourse);
 r.put("/admin/courses/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleCourse);
 r.delete("/admin/courses/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteCourse);
 

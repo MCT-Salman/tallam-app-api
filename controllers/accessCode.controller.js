@@ -21,7 +21,7 @@ export const adminGenerateCodes = async (req, res, next) => {
         data: {}
       });
     }
-    const receiptImageUrl =  `/uploads/images/receipt/${req.file.filename}`;
+    const receiptImageUrl =  `/uploads/images/financial/${req.file.filename}`;
 
     const result = await AccessCodeService.generateAccessCodes({
       courseLevelId: courseLevelId ? parseInt(courseLevelId, 10) : null,

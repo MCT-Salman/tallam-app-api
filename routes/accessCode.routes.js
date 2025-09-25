@@ -2,7 +2,7 @@ import { Router } from 'express';
 import { requireAuth } from '../middlewares/auth.middleware.js';
 import { requireRole } from '../middlewares/role.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
-import { uploadImage } from '../middlewares/upload.middleware.js';
+import { uploadNoticeImage } from '../middlewares/upload.middleware.js';
 import {
   adminGenerateCodes, adminGetAllCodes, adminGetCourseCodes, adminGetCodesByUserId,
   studentGetMyCodes, studentGetMyCourses, studentActivateCode
@@ -13,7 +13,7 @@ import { idParam ,courseIdParam, courseLevelIdParam } from '../validators/catalo
 const router = Router();
 
 // --- Admin Routes ---
-router.post('/admin/generate', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), uploadImage.single('receiptImageUrl'), validate(generateCodesRules), adminGenerateCodes);
+router.post('/admin/generate', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), uploadNoticeImage.single('receiptImageUrl'), validate(generateCodesRules), adminGenerateCodes);
 router.get('/admin/course/:courseId', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(courseIdParam), adminGetCourseCodes);
 router.get('/admin/all', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), adminGetAllCodes);
 router.get('/admin/user/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), adminGetCodesByUserId);
