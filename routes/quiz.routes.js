@@ -19,18 +19,8 @@ router.put('/quizzes/:id', validate(idParam), validate(createQuizRules), QuizCon
 router.delete('/quizzes/:id', validate(idParam), QuizController.adminDeleteQuiz);
 
 // --- Question Routes ---
-router.post(
-  '/quizzes/:quizId/questions',
-  validate(quizIdParam),
-  validate(createQuestionRules),
-  QuizController.adminAddQuestion
-);
-router.put(
-  '/questions/:id',
-  validate(idParam),
-  validate(createQuestionRules),
-  QuizController.adminUpdateQuestion
-);
+router.post('/quizzes/:quizId/questions', validate(quizIdParam), validate(createQuestionRules), QuizController.adminAddQuestion);
+router.put('/questions/:id', validate(idParam), validate(createQuestionRules), QuizController.adminUpdateQuestion);
 router.delete('/questions/:id', validate(idParam), QuizController.adminDeleteQuestion);
 
 // --- Option Routes ---

@@ -518,8 +518,8 @@ http://localhost:5000
 
 ## الاختبارات (Quizzes)
 
-### 1. إنشاء اختبار للدورة
-**POST** `/api/admin/courses/:courseId/quizzes`
+### 1. إنشاء اختبار للمستوى
+**POST** `/api/admin/course-levels/:courseLevelId/quizzes`
 
 ### Request Body:
 ```json
@@ -536,14 +536,14 @@ http://localhost:5000
   "data": {
     "id": 1,
     "title": "اختبار البرمجة الأساسية",
-    "courseId": 1,
+    "courseLevelId": 1,
     "createdAt": "2024-01-15T10:00:00Z"
   }
 }
 ```
 
-### 2. عرض اختبار دورة
-**GET** `/api/admin/courses/:courseId/quizzes`
+### 2. عرض اختبار مستوى
+**GET** `/api/admin/course-levels/:courseLevelId/quizzes`
 
 ### 3. عرض اختبار محدد
 **GET** `/api/admin/quizzes/:id`
@@ -555,7 +555,7 @@ http://localhost:5000
   "data": {
     "id": 1,
     "title": "اختبار البرمجة الأساسية",
-    "courseId": 1,
+    "courseLevelId": 1,
     "questions": [
       {
         "id": 1,
@@ -680,7 +680,7 @@ http://localhost:5000
 ### Request Body:
 ```json
 {
-  "courseId": 1,
+  "courseLevelId": 1,
   "count": 50,
   "validityInMonths": 6
 }
@@ -703,19 +703,19 @@ http://localhost:5000
 }
 ```
 
-### 2. عرض أكواد دورة محددة
-**GET** `/api/access-codes/admin/course/:courseId`
+### 2. عرض أكواد مستوى محدد
+**GET** `/api/access-codes/admin/course-level/:courseLevelId`
 
 ### Response:
 ```json
 {
   "success": true,
-  "message": "تم جلب أكواد الدورة بنجاح.",
+  "message": "تم جلب أكواد المستوى بنجاح.",
   "data": [
     {
       "id": 1,
       "code": "ABC123XYZ",
-      "courseId": 1,
+      "courseLevelId": 1,
       "issuedBy": 1,
       "issuedAt": "2024-01-15T10:00:00Z",
       "usedBy": null,
@@ -726,7 +726,7 @@ http://localhost:5000
     {
       "id": 2,
       "code": "DEF456UVW",
-      "courseId": 1,
+      "courseLevelId": 1,
       "issuedBy": 1,
       "issuedAt": "2024-01-15T10:00:00Z",
       "usedBy": 5,
