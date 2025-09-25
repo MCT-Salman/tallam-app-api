@@ -15,8 +15,8 @@ const handleServiceError = (error, next) => {
 // --- Quiz Management ---
 export const adminCreateQuiz = async (req, res, next) => {
   try {
-    const courseId = parseInt(req.params.courseId, 10);
-    const quiz = await QuizService.createQuiz(courseId, req.body);
+    const courseLevelId = parseInt(req.params.courseLevelId, 10);
+    const quiz = await QuizService.createQuiz(courseLevelId, req.body);
     res.status(SUCCESS_CREATE_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم إنشاء الاختبار بنجاح.', data: serializeResponse(quiz) });
   } catch (error) {
     handleServiceError(error, next);
@@ -36,9 +36,9 @@ export const adminGetQuiz = async (req, res, next) => {
 
 export const adminGetQuizByCourse = async (req, res, next) => {
   try {
-    const courseId = parseInt(req.params.courseId, 10);
-    const quiz = await QuizService.getQuizByCourseId(courseId);
-    if (!quiz) return res.status(NOT_FOUND_STATUS_CODE).json({ success: FAILURE_REQUEST, message: 'لا يوجد اختبار لهذه الدورة' });
+    const courseLevelId = parseInt(req.params.courseLevelId, 10);
+    const quiz = await QuizService.getQuizByCourseLevelId(courseLevelId);
+    if (!quiz) return res.status(NOT_FOUND_STATUS_CODE).json({ success: FAILURE_REQUEST, message: 'لا يوجد اختبار لهذا المستوى' });
     res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, data: serializeResponse(quiz) });
   } catch (error) {
     handleServiceError(error, next);

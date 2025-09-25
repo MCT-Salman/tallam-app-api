@@ -14,11 +14,11 @@ export const specializationCreateRules = [
     .isString()
     .isLength({ min: 2 })
     .withMessage("الاسم قصير"),
-  body("imageUrl")
-  .exists({ checkFalsy: true })
+ /* body("imageUrl")
+  .exists()
   .withMessage(" صورة التخصص مطلوبة")
   .isString()
-  .withMessage("حقل الصورة يجب أن يكون نصاً")
+  .withMessage("حقل الصورة يجب أن يكون نصاً")*/
 ];
 
 export const subjectCreateRules = [

@@ -3,7 +3,7 @@ import { requireAuth } from '../middlewares/auth.middleware.js';
 import { requireRole } from '../middlewares/role.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
 import * as QuizController from '../controllers/quiz.controller.js';
-import { idParam, courseIdParam } from '../validators/catalog.validators.js';
+import { idParam, courseIdParam, courseLevelIdParam } from '../validators/catalog.validators.js';
 import { createQuizRules, createQuestionRules, quizIdParam, createOptionRules } from '../validators/quiz.validators.js';
 
 const router = Router();
@@ -12,8 +12,8 @@ const router = Router();
 router.use(requireAuth, requireRole(['ADMIN', 'SUBADMIN']));
 
 // --- Quiz Routes ---
-router.post('/courses/:courseId/quizzes', validate(courseIdParam), validate(createQuizRules), QuizController.adminCreateQuiz);
-router.get('/courses/:courseId/quizzes', validate(courseIdParam), QuizController.adminGetQuizByCourse);
+router.post('/course-levels/:courseLevelId/quizzes', validate(courseLevelIdParam), validate(createQuizRules), QuizController.adminCreateQuiz);
+router.get('/course-levels/:courseLevelId/quizzes', validate(courseLevelIdParam), QuizController.adminGetQuizByCourse);
 router.get('/quizzes/:id', validate(idParam), QuizController.adminGetQuiz);
 router.put('/quizzes/:id', validate(idParam), validate(createQuizRules), QuizController.adminUpdateQuiz);
 router.delete('/quizzes/:id', validate(idParam), QuizController.adminDeleteQuiz);

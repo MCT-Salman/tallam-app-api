@@ -1,6 +1,4 @@
-import bcrypt from 'bcrypt';
 import { hashPassword} from "../utils/hash.js";
-import prisma from '../prisma/client.js';
 import { UserModel } from '../models/index.js';
 
 async function addAdminAccount() {
@@ -9,10 +7,10 @@ async function addAdminAccount() {
 
     // Use default values
     const name = 'admin';
-    const phone = '0987654322';
+    const phone = '0987654323';
     const password = 'Admin@123';
     const birthDate = new Date();
-    const sex = 'Male';
+    const sex = 'ذكر';
     const country = 'Saudi Arabia';
     const countryCode = '+966';
     const role = 'ADMIN';
@@ -37,7 +35,7 @@ async function addAdminAccount() {
          avatarUrl:null,
          country,
          countryCode,
-        role,
+         role,
          isVerified: true,
          isActive: true
        });
