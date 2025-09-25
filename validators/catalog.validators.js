@@ -14,11 +14,9 @@ export const specializationCreateRules = [
     .isString()
     .isLength({ min: 2 })
     .withMessage("الاسم قصير"),
- /* body("imageUrl")
-  .exists()
-  .withMessage(" صورة التخصص مطلوبة")
-  .isString()
-  .withMessage("حقل الصورة يجب أن يكون نصاً")*/
+  body("imageUrl")
+    .exists()
+    .withMessage(" صورة التخصص مطلوبة")
 ];
 
 export const subjectCreateRules = [
@@ -46,9 +44,9 @@ export const courseCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
   body("description").optional().isString(),
   body("imageUrl").exists({ checkFalsy: true })
-  .withMessage(" صورة الكورس مطلوبة")
-  .isString()
-  .withMessage("حقل الصورة يجب أن يكون نصاً"),
+    .withMessage(" صورة الكورس مطلوبة")
+    .isString()
+    .withMessage("حقل الصورة يجب أن يكون نصاً"),
   body("specializationId").isInt({ gt: 0 }).withMessage("specializationId غير صالح")
 ];
 
