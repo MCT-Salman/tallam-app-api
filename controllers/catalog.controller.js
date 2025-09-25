@@ -196,9 +196,8 @@ export const adminDeleteSubject = async (req, res, next) => {
 export const adminCreateSpecialization = async (req, res, next) => {
   try {
     const { name } = req.body;
-    const subjectId = parseInt(req.body.subjectId, 10);
     const imageUrl = `/uploads/images/specializations/${req.file.filename}`;
-    const specialization = await createSpecialization({ name, subjectId, imageUrl });
+    const specialization = await createSpecialization({ name, imageUrl });
     res.status(201).json({
       success: true,
       message: "تم إنشاء التخصص بنجاح",
