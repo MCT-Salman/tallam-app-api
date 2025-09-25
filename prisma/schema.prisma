@@ -173,21 +173,6 @@ model Specialization {
   @@index([subjectId])
 }
 
-model Instructor {
-  id        Int      @id @default(autoincrement())
-  name      String
-  bio       String?
-  avatarUrl String?
-  specializationId Int
-  specialization   Specialization @relation(fields: [specializationId], references: [id])
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  courseLevels CourseLevel[]
-
-  @@index([specializationId])
-}
-
 model Course {
   id                   Int              @id @default(autoincrement())
   title                String
@@ -203,6 +188,24 @@ model Course {
 
   @@index([specializationId])
 }
+
+model Instructor {
+  id        Int      @id @default(autoincrement())
+  name      String
+  bio       String?
+  avatarUrl String?
+  specializationId Int
+  specialization   Specialization @relation(fields: [specializationId], references: [id])
+  // courses    Course[]
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  courseLevels CourseLevel[]
+
+  @@index([specializationId])
+}
+
+
 
 model CourseLevel {
   id          Int      @id @default(autoincrement())

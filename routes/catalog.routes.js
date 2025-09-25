@@ -39,7 +39,6 @@ r.delete("/admin/subjects/:id", requireAuth, requireRole(["ADMIN"]), validate(id
 r.get("/admin/specializations", requireAuth, requireRole(["ADMIN"]), adminListSpecializations);
 r.get("/admin/subjects/:id/specializations",validate(idParam),adminListSpecializationsBySubject);
 r.post("/admin/specializations", requireAuth, requireRole(["ADMIN"]), uploadSpecializationImage.single('imageUrl'), validate(specializationCreateRules), adminCreateSpecialization);
-// r.post("/admin/specializations", requireAuth, requireRole(["ADMIN"]), uploadSpecializationImage.single('imageUrl'), adminCreateSpecialization);
 r.put("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), uploadSpecializationImage.single('imageUrl'), validate(idParam), validate(specializationCreateRules), adminUpdateSpecialization);
 r.put("/admin/specializations/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleSpecialization);
 r.delete("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteSpecialization);
