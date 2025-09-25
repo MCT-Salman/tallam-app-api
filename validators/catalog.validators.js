@@ -14,9 +14,9 @@ export const specializationCreateRules = [
     .isString()
     .isLength({ min: 2 })
     .withMessage("الاسم قصير"),
-  body("imageUrl")
-    .exists()
-    .withMessage(" صورة التخصص مطلوبة")
+  // body("imageUrl")
+  //   .exists()
+  //   .withMessage(" صورة التخصص مطلوبة")
 ];
 
 export const subjectCreateRules = [

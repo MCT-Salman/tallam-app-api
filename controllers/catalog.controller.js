@@ -196,7 +196,9 @@ export const adminDeleteSubject = async (req, res, next) => {
 export const adminCreateSpecialization = async (req, res, next) => {
   try {
     const { name } = req.body;
-    const imageUrl = `/uploads/images/specializations/${req.file.filename}`;
+    const imageUrl = req.file ? `/uploads/images/specializations/${req.file.filename}` : null;
+
+
     const specialization = await createSpecialization({ name, imageUrl });
     res.status(201).json({
       success: true,
