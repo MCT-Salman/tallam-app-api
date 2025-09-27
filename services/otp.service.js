@@ -73,6 +73,9 @@ export const verifyOtp = async (phone, code) => {
 
   await OtpCodeModel.markOtpUsed(otp.id);
 
+  const realIp = getRealIP(req);
+  const userAgent = req.headers["user-agent"];
+
   // إنشاء جلسة جديدة
   const session = await SessionModel.createSession({
     userId: user.id,
