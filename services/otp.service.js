@@ -63,7 +63,7 @@ export const sendOtp = async (phone) => {
   // };
 };
 
-export const verifyOtp = async (phone, code) => {
+export const verifyOtp = async (phone, code,req) => {
   const otp = await OtpCodeModel.findForVerify(phone, code);
   const user = await UserModel.findByPhone(phone);
   // const isVerifiedNumber = await OtpCodeModel.findForVerifeidNumber(phone);
