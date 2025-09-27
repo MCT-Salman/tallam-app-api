@@ -349,42 +349,84 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
   const skip = (page - 1) * limit;
   const take = limit;
 
-  const [data, total] = await Promise.all([
+  // 1️⃣ جلب المستويات الخاصة بالكورس مع المدرسين وعدد المشتركين لكل مستوى
+  const [levels, total] = await Promise.all([
     prisma.courseLevel.findMany({
       where: { courseId, isActive: true },
       select: {
-        instructor: {
-          select: {
-            id: true,
-            name: true,
-            bio: true,
-            avatarUrl: true
-          }
-        }
+        id: true,
+        instructor: { select: { id: true, name: true, bio: true, avatarUrl: true } },
+        _count: { select: { accessCodes: true } }, // subscribers لكل مستوى
       },
       skip,
-      take
+      take,
     }),
-    prisma.courseLevel.count({ where: { courseId, isActive: true } })
+    prisma.courseLevel.count({ where: { courseId, isActive: true } }),
   ]);
 
-  const instructorsMap = new Map();
-  data.forEach(level => {
-    if (level.instructor) {
-      instructorsMap.set(level.instructor.id, level.instructor);
+  // 2️⃣ تجميع مستويات كل مدرس
+  const instructorMap = new Map();
+  levels.forEach(level => {
+    const instr = level.instructor;
+    if (!instr) return;
+    if (!instructorMap.has(instr.id)) {
+      instructorMap.set(instr.id, {
+        id: instr.id,
+        name: instr.name,
+        bio: instr.bio,
+        avatarUrl: instr.avatarUrl,
+        levelIds: [],
+        totalSubscribers: 0,
+      });
     }
+    const instructorData = instructorMap.get(instr.id);
+    instructorData.levelIds.push(level.id);
+    instructorData.totalSubscribers += level._count.accessCodes || 0;
   });
 
-  const instructors = Array.from(instructorsMap.values());
+  // 3️⃣ جلب متوسط التقييم لكل مستوى
+  const ratings = await prisma.review.groupBy({
+    by: ["courseLevelId"],
+    where: { courseLevelId: { in: levels.map(l => l.id) } },
+    _avg: { rating: true },
+  });
+  const ratingMap = new Map();
+  ratings.forEach(r => ratingMap.set(r.courseLevelId, r._avg.rating || 0));
+
+  // 4️⃣ حساب متوسط التقييم لكل مدرس بناءً على مستوياته
+  const instructors = Array.from(instructorMap.values()).map(instr => {
+    const avgRating =
+      instr.levelIds.reduce((sum, id) => sum + (ratingMap.get(id) || 0), 0) /
+      (instr.levelIds.length || 1);
+    return {
+      name: instr.name,
+      bio: instr.bio,
+      avatarUrl: instr.avatarUrl,
+      avgRating: Number(avgRating.toFixed(2)),
+      totalSubscribers: instr.totalSubscribers,
+    };
+  });
 
   return {
-    data: instructors,
+    success: true,
+    result: {
+      instructors,
+    },
     pagination: {
       page,
       limit,
       total,
-      totalPages: Math.ceil(total / limit)
-    }
+      totalPages: Math.ceil(total / limit),
+    },
   };
 };
+
+
+
+
+
+
+
+
+
 

@@ -587,9 +587,10 @@ export const publicListInstructorsForCourse = async (req, res, next) => {
     res.json({
       success: true,
       message: "تم جلب قائمة المدربين بنجاح",
-      data: result.data,
+      data: result.result, // يحتوي على courseTitle, avgRating, totalSubscribers, instructors
       pagination: result.pagination
     });
+    
   } catch (e) {
     if (e.message === "Course not found") {
       e.statusCode = 404;

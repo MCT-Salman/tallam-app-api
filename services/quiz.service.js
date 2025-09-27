@@ -17,11 +17,22 @@ export const createQuiz = async (courseLevelId, data) => {
       courseLevelId,
       title: data.title,
     },
-    include: {
+    select: {
+        id: true,
+        title: true,
+        courseLevelId: true,
+      
       courseLevel: {
-        include: {
-          course: true,
-        },
+          select: {
+            id: true,
+            name: true,
+            course: {
+              select: {
+                id: true,
+                title: true,
+              },
+            },
+          },
       },
     },
   });
@@ -35,10 +46,20 @@ export const createQuiz = async (courseLevelId, data) => {
 export const getQuizById = async (quizId) => {
   return prisma.quiz.findUnique({
     where: { id: quizId },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      courseLevelId: true,
       courseLevel: {
-        include: {
-          course: true,
+        select: {
+          id: true,
+          name: true,
+          course: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
         },
       },
       questions: {
@@ -58,10 +79,20 @@ export const getQuizById = async (quizId) => {
 export const getQuizByCourseLevelId = async (courseLevelId) => {
   return prisma.quiz.findFirst({
     where: { courseLevelId },
-    include: {
+    select: {
+      id: true,
+      title: true,
+      courseLevelId: true,
       courseLevel: {
-        include: {
-          course: true,
+        select: {
+          id: true,
+          name: true,
+          course: {
+            select: {
+              id: true,
+              title: true,
+            },
+          },
         },
       },
       questions: {

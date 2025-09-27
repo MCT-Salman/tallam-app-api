@@ -28,4 +28,4 @@ router.put('/options/:id', validate(idParam), validate(createOptionRules), QuizC
 router.delete('/options/:id', validate(idParam), QuizController.adminDeleteOption);
 
 export default router;
-
+ 
