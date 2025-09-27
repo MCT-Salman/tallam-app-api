@@ -1,4 +1,6 @@
-import { OtpCodeModel, UserModel } from "../models/index.js";
+import { OtpCodeModel, SessionModel, UserModel } from "../models/index.js";
+import { generateTokenPair, revokeUserRefreshTokensExceptSession } from "../utils/jwt.js";
+import { rateLimiter } from "../utils/rateLimiter.js";
 import { FAILURE_OTP_CODE, FAILURE_REQUEST, NUMBER_ALREADY_EXIST, OTP_ALREADY_VERIFIED, OTP_CODE_EXPIRED, OTP_SUCCESS_REQUEST, OTP_SUCCESS_VERIFY, OTP_TIME_OUT_OTP, SUCCESS_REQUEST } from "../validators/messagesResponse.js";
 
 function generateOtpCode() {
@@ -71,6 +73,28 @@ export const verifyOtp = async (phone, code) => {
 
   await OtpCodeModel.markOtpUsed(otp.id);
 
+  // إنشاء جلسة جديدة
+  const session = await SessionModel.createSession({
+    userId: user.id,
+    userAgent,
+    ip: req.ip,
+    realIp
+  });
+
+  // تحديث معرف الجلسة الحالية
+  await UserModel.updateById(user.id, { currentSessionId: session.id });
+
+  // إنشاء التوكنات
+  const tokens = await generateTokenPair(user.id, session.id, user.role);
+
+  // تسجيل محاولة ناجحة
+  await rateLimiter.recordSuccessfulAttempt(phone, realIp, userAgent, user.id);
+
+  // إلغاء جميع Refresh Tokens الأخرى للمستخدم للحفاظ على جلسة واحدة فعّالة فقط
+  await revokeUserRefreshTokensExceptSession(user.id, session.id);
+
+  const { isVerified: __, ...safeUser } = user;
+
   if (!user || user && !user.isVerified) {
     return {
       success: SUCCESS_REQUEST,
@@ -84,7 +108,10 @@ export const verifyOtp = async (phone, code) => {
       success: SUCCESS_REQUEST,
       message: OTP_SUCCESS_VERIFY,
       data: {
-        isAlreadyVerified: SUCCESS_REQUEST
+        user: safeUser,
+        isVerified: user.isVerified,
+        isAlreadyVerified: SUCCESS_REQUEST,
+        ...tokens
       }
     };
   }

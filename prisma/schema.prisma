@@ -256,7 +256,7 @@ model Lesson {
   @@index([courseLevelId])
 }
 
-// ---------- Access / Purchase / Payments ----------
+// ---------- Access / Purchase /  yments ----------
 model Transaction {
   id         Int               @id @default(autoincrement())
   userId     Int?

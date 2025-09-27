@@ -21,7 +21,6 @@ import { FAILURE_REQUEST, OTP_SUCCESS_VERIFY, PHONE_NUMBER_REQUIRED, REFERESH_TO
  */
 export const register = async (req, res, next) => {
   try {
-    console.log(req.body);
     const { phone, name, birthDate, sex } = req.body;
     const avatarUrl = req.file ? `/uploads/avatars/${req.file.filename}` : null;
 
