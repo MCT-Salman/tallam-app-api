@@ -7,31 +7,25 @@ function generateOtpCode() {
 
 export const sendOtp = async (phone) => {
 
-  const notUsedOtp = await OtpCodeModel.findForNotUsedOtpNumber(phone);
-  if (notUsedOtp.length > 0) {
-   await editExpDate(phone);
-  }
+  // const notUsedOtp = await OtpCodeModel.findForNotUsedOtpNumber(phone);
+  // if (notUsedOtp.length > 0) {
+  //  await editExpDate(phone);
+  // }
   // Check if user with this phone already exists and is verified
-  const isVerifiedNumber = await OtpCodeModel.findForVerifeidNumber(phone);
+  // const isVerifiedNumber = await OtpCodeModel.findForVerifeidNumber(phone);
   const user = await UserModel.findByPhone(phone);
 
-  if (isVerifiedNumber && !user) {
-    return {
-      success: SUCCESS_REQUEST,
-      message: OTP_ALREADY_VERIFIED,
-      data: {
-        isAlreadyVerified: SUCCESS_REQUEST
-      }
-    }
-  }
 
-  if (user && isVerifiedNumber) {
-    return {
-      success: FAILURE_REQUEST,
-      message: NUMBER_ALREADY_EXIST,
-      data: {}
-    }
-  }
+
+  // if (user && !user.isVerified) {
+  //   return {
+  //     success: FAILURE_REQUEST,
+  //     message: "هذا الحساب غير موجود مسبقاً",
+  //     data: {
+  //       isAlreadyVerified: FAILURE_REQUEST
+  //     }
+  //   }
+  // }
 
   const code = generateOtpCode();
   const expiresAt = new Date(Date.now() + OTP_TIME_OUT_OTP);
@@ -40,15 +34,26 @@ export const sendOtp = async (phone) => {
 
   // بعد إنشاء code و قبل الإرجاع
   if (process.env.NODE_ENV === 'development') {
-    console.log(`📩 OTP to ${phone}: ${code}`);
-    // في التطوير يمكن اعادة الكود كـ convenience:
-    return {
-      success: SUCCESS_REQUEST,
-      message: `${OTP_SUCCESS_REQUEST}: ${code}`,
-      data: {
-        isAlreadyVerified: FAILURE_REQUEST
-      }
-    };
+    if (!user || user && !user.isVerified) {
+      console.log(`📩 OTP to ${phone}: ${code}`);
+      // في التطوير يمكن اعادة الكود كـ convenience:
+      return {
+        success: SUCCESS_REQUEST,
+        message: `${OTP_SUCCESS_REQUEST}: ${code}`,
+        data: {
+          isAlreadyVerified: FAILURE_REQUEST
+        }
+      };
+    }else{
+      return {
+        success: SUCCESS_REQUEST,
+        message: `${OTP_SUCCESS_REQUEST}: ${code}`,
+        data: {
+          isAlreadyVerified: SUCCESS_REQUEST
+        }
+      };
+    }
+
   }
 
   // في الإنتاج — لا تُرجع الكود ولا تطبعه

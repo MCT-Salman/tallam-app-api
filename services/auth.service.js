@@ -1,4 +1,3 @@
-import { hashPassword, comparePassword } from "../utils/hash.js";
 import { generateTokenPair, refreshAccessToken, revokeAllUserRefreshTokens, revokeRefreshToken, revokeUserRefreshTokensExceptSession } from "../utils/jwt.js";
 import { getRealIP } from "../utils/ip.js";
 import { rateLimiter } from "../utils/rateLimiter.js";
@@ -10,10 +9,10 @@ import { ACCOUNT_LOCKED_LOGIN, FAILURE_LOGOUT, FAILURE_REQUEST, FALIURE_REFERESH
 /**
  * تسجيل مستخدم جديد مع تحديد الدولة من رقم الهاتف
  */
-export const registerUser = async (phone, password, name, birthDate, sex, avatarUrl, req) => {
+export const registerUser = async (phone, name, birthDate, sex, avatarUrl, req) => {
   try {
     // التحقق من الحقول المطلوبة
-    if (!phone || !sex || !name || !birthDate || !password) {
+    if (!phone || !sex || !name || !birthDate) {
       throw new Error(MISSED_DATA_REGISTER);
     }
     // التحقق من وجود المستخدم
@@ -39,13 +38,9 @@ export const registerUser = async (phone, password, name, birthDate, sex, avatar
       console.warn(`Could not detect country for phone ${phone}:`, phoneInfo.error);
     }
 
-    // تشفير كلمة المرور
-    const passwordHash = await hashPassword(password);
-
     // إنشاء المستخدم
     const user = await UserModel.createUser({
       phone,
-      passwordHash,
       name,
       sex,
       birthDate: new Date(birthDate),
@@ -85,7 +80,7 @@ export const registerUser = async (phone, password, name, birthDate, sex, avatar
     // تسجيل محاولة تسجيل ناجحة
     await rateLimiter.recordSuccessfulAttempt(phone, realIp, userAgent, user.id);
 
-    const { passwordHash: _, isVerified: __, ...safeUser } = user;
+    const { isVerified: __, ...safeUser } = user;
     return {
       user: safeUser,
       isVerified: user.isVerified,
@@ -112,7 +107,7 @@ export const registerUser = async (phone, password, name, birthDate, sex, avatar
 /**
  * تسجيل دخول المستخدم مع حماية من هجمات القوة الغاشمة
  */
-export const loginUser = async (phone, password, req) => {
+export const loginUser = async (phone, req) => {
   const realIp = getRealIP(req);
   const userAgent = req.headers["user-agent"];
 
@@ -150,13 +145,6 @@ export const loginUser = async (phone, password, req) => {
       throw new Error(IN_ACTIVE_ACCOUNT);
     }
 
-    // التحقق من كلمة المرور
-    const passwordValid = await comparePassword(password, user.passwordHash);
-    if (!passwordValid) {
-      await rateLimiter.recordFailedAttempt(phone, realIp, userAgent, user.id, PHONENUMBER_OR_PASSWORD_FAILED);
-      throw new Error(PHONENUMBER_OR_PASSWORD_FAILED);
-    }
-
     // إنشاء جلسة جديدة
     const session = await SessionModel.createSession({
       userId: user.id,
@@ -177,7 +165,7 @@ export const loginUser = async (phone, password, req) => {
     // إلغاء جميع Refresh Tokens الأخرى للمستخدم للحفاظ على جلسة واحدة فعّالة فقط
     await revokeUserRefreshTokensExceptSession(user.id, session.id);
 
-    const { passwordHash: _, isVerified: __, ...safeUser } = user;
+    const { isVerified: __, ...safeUser } = user;
     return {
       user: safeUser,
       isVerified: user.isVerified,

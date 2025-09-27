@@ -1,21 +1,18 @@
-import { hashPassword } from "../utils/hash.js";
 import { UserModel } from "../models/index.js";
 
-export const createSubAdmin = async (phone, password, name, birthDate) => {
+export const createSubAdmin = async (phone, name, birthDate) => {
   const exists = await UserModel.findByPhone(phone);
   if (exists) throw new Error("رقم الهاتف موجود مسبقا");
 
-  const passwordHash = await hashPassword(password);
   const user = await UserModel.createUser({
     phone,
-    passwordHash,
     name,
     birthDate: new Date(birthDate),
     role: "SUBADMIN",
     isVerified: true
   });
 
-  const { passwordHash: _, ...safeUser } = user;
+  const {...safeUser } = user;
   return safeUser;
 };
 

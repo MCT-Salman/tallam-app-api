@@ -17,27 +17,11 @@ export const phoneValidator = body("phone")
     return true;
   });
 
-export const passwordValidator = body("password")
-  .exists({ checkFalsy: true }).withMessage("كلمة المرور مطلوبة")
-  .isLength({ min: 8 }).withMessage("كلمة المرور يجب أن تكون 8 أحرف على الأقل")
-  .matches(/[A-Z]/).withMessage("يجب أن تحتوي كلمة المرور على حرف كبير واحد على الأقل")
-  .matches(/[a-z]/).withMessage("يجب أن تحتوي كلمة المرور على حرف صغير واحد على الأقل")
-  .matches(/[0-9]/).withMessage("يجب أن تحتوي كلمة المرور على رقم واحد على الأقل")
-  .matches(/[^A-Za-z0-9]/).withMessage("يجب أن تحتوي كلمة المرور على رمز خاص واحد على الأقل");
-
 // Validator مخفف لصفحة تسجيل الدخول حتى لا نفصح عن تفاصيل صيغة الهاتف
 export const loginPhoneValidator = body("phone")
   .exists({ checkFalsy: true }).withMessage("بيانات تسجيل الدخول غير صحيحة")
   .isString().withMessage("بيانات تسجيل الدخول غير صحيحة")
   .isLength({ min: 6 }).withMessage("بيانات تسجيل الدخول غير صحيحة");
-
-export const newPasswordValidator = body("newPassword")
-  .optional()
-  .isLength({ min: 8 }).withMessage("كلمة المرور يجب أن تكون 8 أحرف على الأقل")
-  .matches(/[A-Z]/).withMessage("كلمة المرور الجديدة يجب أن تحتوي على حرف كبير واحد على الأقل")
-  .matches(/[a-z]/).withMessage("كلمة المرور الجديدة يجب أن تحتوي على حرف صغير واحد على الأقل")
-  .matches(/[0-9]/).withMessage("كلمة المرور الجديدة يجب أن تحتوي على رقم واحد على الأقل")
-  .matches(/[^A-Za-z0-9]/).withMessage("كلمة المرور الجديدة يجب أن تحتوي على رمز خاص واحد على الأقل");
 
 export const nameValidator = body("name")
   .optional()
@@ -79,7 +63,6 @@ export const resetTokenValidator = body("resetToken")
 
 export const registerRules = [
   phoneValidator,
-  passwordValidator,
   requiredName,
   requiredBirthDate,
   sexValidator,
@@ -88,16 +71,12 @@ export const registerRules = [
 export const phoneNumber =[phoneValidator]
 
 export const loginRules = [
-  loginPhoneValidator,
-  body("password")
-    .exists({ checkFalsy: true }).withMessage("بيانات تسجيل الدخول غير صحيحة")
-    .isLength({ min: 8 }).withMessage("بيانات تسجيل الدخول غير صحيحة"),
+  loginPhoneValidator
 ];
 
 export const refreshRules = [refreshTokenValidator];
 
 export const forgotRequestOtpRules = [phoneValidator];
 export const forgotVerifyOtpRules = [phoneValidator, otpCodeValidator];
-export const forgotResetRules = [resetTokenValidator, newPasswordValidator];
 
-export const profileUpdateRules = [nameValidator, birthDateValidator, sexValidatorUpdate,newPasswordValidator];
+export const profileUpdateRules = [nameValidator, birthDateValidator, sexValidatorUpdate];

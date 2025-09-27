@@ -23,7 +23,7 @@ export const updateById = (id, data, select = undefined) => {
 
 // تحديث آمن للملف الشخصي: يمنع تعديل passwordHash مباشرة هنا
 export const updateSafeProfile = (id, data, select = undefined) => {
-  const { passwordHash, ...safe } = data || {};
+  const { ...safe } = data || {};
   return prisma.user.update({ where: { id }, data: safe, ...(select ? { select } : {}) });
 };
 

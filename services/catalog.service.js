@@ -168,7 +168,7 @@ export const createCourse = async (courseData) => {
     return tx.course.findUnique({
       where: { id: course.id },
       include: {
-        specialization: true 
+        specialization: true
       },
     });
   });
@@ -333,7 +333,7 @@ export const listCoursesAdmin = async (filters = {}, skip = 0, take = 20) => {
   if (specializationId) where.specializationId = specializationId;
 
   const [items, total] = await Promise.all([
-    prisma.course.findMany({ where, skip, take, orderBy: { createdAt: 'desc' }, include: { specialization:  true } }),
+    prisma.course.findMany({ where, skip, take, orderBy: { createdAt: 'desc' }, include: { specialization: true } }),
     prisma.course.count({ where })
   ]);
   return { items, total, skip, take };
@@ -409,7 +409,7 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
 
   return {
     success: true,
-    result: {
+    data: {
       instructors,
     },
     pagination: {

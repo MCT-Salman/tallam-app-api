@@ -7,8 +7,8 @@ import { createSubAdmin, setUserRole, toggleUserActive } from "../services/admin
  */
 export const addSubAdmin = async (req, res, next) => {
   try {
-    const { phone, password, name, birthDate } = req.body;
-    const user = await createSubAdmin(phone, password, name, birthDate);
+    const { phone, name, birthDate } = req.body;
+    const user = await createSubAdmin(phone, name, birthDate);
     res.json({ 
       success: true, 
       message: "تم إنشاء حساب المشرف الفرعي بنجاح",

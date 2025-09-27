@@ -1,5 +1,4 @@
 import { UserModel } from '../models/index.js';
-import { hashPassword } from '../utils/hash.js';
 import { getCountryFromPhone } from '../utils/phoneCountry.js';
 import { INSUFFICIENT_PERMISSIONS, NUMBER_ALREADY_EXIST } from '../validators/messagesResponse.js';
 
@@ -69,7 +68,7 @@ export const getUserById = async (id) => {
  * @returns {Promise<User>}
  */
 export const createUserByAdmin = async (userData, actor) => {
-  const { phone, password, name, birthDate, sex, role, isActive, expiresAt } = userData;
+  const { phone, name, birthDate, sex, role, isActive, expiresAt } = userData;
 
   // Security check: Only ADMIN can create other ADMINs or SUBADMINs.
   const targetRole = role || 'STUDENT';
@@ -80,12 +79,10 @@ export const createUserByAdmin = async (userData, actor) => {
   const exists = await UserModel.findByPhone(phone);
   if (exists) throw new Error(NUMBER_ALREADY_EXIST);
 
-  const passwordHash = await hashPassword(password);
   const phoneInfo = getCountryFromPhone(phone);
 
   const user = await UserModel.createUser({
     phone: phoneInfo.success ? phoneInfo.phone : phone,
-    passwordHash,
     name,
     birthDate: new Date(birthDate),
     sex,
@@ -97,7 +94,7 @@ export const createUserByAdmin = async (userData, actor) => {
     expiresAt: expiresAt ? new Date(expiresAt) : null,
   });
 
-  const { passwordHash: _, ...safeUser } = user;
+  const { ...safeUser } = user;
   return safeUser;
 };
 
@@ -109,7 +106,7 @@ export const createUserByAdmin = async (userData, actor) => {
  * @returns {Promise<User>}
  */
 export const updateUserByAdmin = async (id, updateData, actor) => {
-  const { phone, password, ...restData } = updateData;
+  const { phone, ...restData } = updateData;
   const dataToUpdate = { ...restData };
 
   // Security check: SUBADMIN can only edit STUDENTS.
@@ -141,10 +138,6 @@ export const updateUserByAdmin = async (id, updateData, actor) => {
     dataToUpdate.countryCode = phoneInfo.success ? phoneInfo.countryCode : null;
   }
 
-  if (password) {
-    dataToUpdate.passwordHash = await hashPassword(password);
-  }
-
   if (updateData.birthDate) {
     dataToUpdate.birthDate = new Date(updateData.birthDate);
   }
@@ -155,7 +148,7 @@ export const updateUserByAdmin = async (id, updateData, actor) => {
   }
 
   const user = await UserModel.updateById(id, dataToUpdate);
-  const { passwordHash: _, ...safeUser } = user;
+  const { ...safeUser } = user;
   return safeUser;
 };
 
@@ -201,6 +194,6 @@ export const toggleUserActiveStatus = async (id, actor) => {
     isActive: !targetUser.isActive,
   });
 
-  const { passwordHash, ...safeUser } = updatedUser;
+  const { ...safeUser } = updatedUser;
   return safeUser;
 };

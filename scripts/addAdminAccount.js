@@ -1,4 +1,3 @@
-import { hashPassword} from "../utils/hash.js";
 import { UserModel } from '../models/index.js';
 
 async function addAdminAccount() {
@@ -8,7 +7,6 @@ async function addAdminAccount() {
     // Use default values
     const name = 'admin';
     const phone = '0987654323';
-    const password = 'Admin@123';
     const birthDate = new Date();
     const sex = 'ذكر';
     const country = 'Saudi Arabia';
@@ -17,18 +15,14 @@ async function addAdminAccount() {
 
 
 
-    if (!name || !phone || !password) {
+    if (!name || !phone ) {
       console.log('All fields are required.');
       return;
     }
 
-    // Hash password
-    const passwordHash = await hashPassword(password);
-
     // Create admin user
      const user = await UserModel.createUser({
          phone,
-         passwordHash,
          name,
          sex,
          birthDate,

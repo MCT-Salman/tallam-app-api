@@ -10,8 +10,7 @@ import {
   getProfile,
   updateProfile,
   forgotRequestOtp,
-  forgotVerifyOtp,
-  resetPassword
+  forgotVerifyOtp
 } from '../controllers/auth.controller.js';
 import { 
   requireAuth, 
@@ -20,7 +19,7 @@ import {
 } from '../middlewares/auth.middleware.js';
 import { uploadAvatar } from '../utils/upload.js';
 import { validate } from '../middlewares/validate.middleware.js';
-import { registerRules, loginRules, refreshRules, forgotRequestOtpRules, forgotVerifyOtpRules, forgotResetRules, profileUpdateRules } from '../validators/auth.validators.js';
+import { registerRules, loginRules, refreshRules, forgotRequestOtpRules, forgotVerifyOtpRules, profileUpdateRules } from '../validators/auth.validators.js';
 import { normalizePhoneE164 } from '../middlewares/phone.middleware.js';
 import { otpRateLimitByPhone } from '../middlewares/otpRateLimit.middleware.js';
 import { authRateLimit } from '../middlewares/authRateLimit.middleware.js';
@@ -42,7 +41,6 @@ router.post('/refresh',  validate(refreshRules), refresh);
 router.post('/forgot/request-otp', normalizePhoneE164, validate(forgotRequestOtpRules), forgotRequestOtp);
 // router.post('/forgot/verify-otp', normalizePhoneE164, otpRateLimitByPhone, validate(forgotVerifyOtpRules), forgotVerifyOtp);
 router.post('/forgot/verify-otp', normalizePhoneE164, validate(forgotVerifyOtpRules), forgotVerifyOtp);
-router.post('/forgot/reset', validate(forgotResetRules), resetPassword);
 
 // مسارات تتطلب مصادقة
 router.use(requireAuth); // تطبيق middleware المصادقة على جميع المسارات التالية
