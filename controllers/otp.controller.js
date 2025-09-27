@@ -44,7 +44,7 @@ export const checkOtp = async (req, res, next) => {
     res.json({
       success: result.success,
       message: result.message,
-      data: {}
+      data: result.data
     })
 
     // const { isVerified, userExists } = result.data;
