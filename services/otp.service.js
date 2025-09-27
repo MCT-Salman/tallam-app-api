@@ -74,30 +74,7 @@ export const verifyOtp = async (phone, code, req) => {
 
   await OtpCodeModel.markOtpUsed(otp.id);
 
-  const realIp = getRealIP(req);
-  const userAgent = req.headers["user-agent"];
 
-  // إنشاء جلسة جديدة
-  const session = await SessionModel.createSession({
-    userId: user.id,
-    userAgent,
-    ip: req.ip,
-    realIp
-  });
-
-  // تحديث معرف الجلسة الحالية
-  await UserModel.updateById(user.id, { currentSessionId: session.id });
-
-  // إنشاء التوكنات
-  const tokens = await generateTokenPair(user.id, session.id, user.role);
-
-  // تسجيل محاولة ناجحة
-  await rateLimiter.recordSuccessfulAttempt(phone, realIp, userAgent, user.id);
-
-  // إلغاء جميع Refresh Tokens الأخرى للمستخدم للحفاظ على جلسة واحدة فعّالة فقط
-  await revokeUserRefreshTokensExceptSession(user.id, session.id);
-
-  const { isVerified: __, ...safeUser } = user;
 
   if (!user || user && !user.isVerified) {
     return {
@@ -108,6 +85,30 @@ export const verifyOtp = async (phone, code, req) => {
       }
     };
   } else {
+    const realIp = getRealIP(req);
+    const userAgent = req.headers["user-agent"];
+  
+    // إنشاء جلسة جديدة
+    const session = await SessionModel.createSession({
+      userId: user.id,
+      userAgent,
+      ip: req.ip,
+      realIp
+    });
+  
+    // تحديث معرف الجلسة الحالية
+    await UserModel.updateById(user.id, { currentSessionId: session.id });
+  
+    // إنشاء التوكنات
+    const tokens = await generateTokenPair(user.id, session.id, user.role);
+  
+    // تسجيل محاولة ناجحة
+    await rateLimiter.recordSuccessfulAttempt(phone, realIp, userAgent, user.id);
+  
+    // إلغاء جميع Refresh Tokens الأخرى للمستخدم للحفاظ على جلسة واحدة فعّالة فقط
+    await revokeUserRefreshTokensExceptSession(user.id, session.id);
+  
+    const { isVerified: __, ...safeUser } = user;
     return {
       success: SUCCESS_REQUEST,
       message: OTP_SUCCESS_VERIFY,
