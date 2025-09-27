@@ -41,7 +41,7 @@ export const sendOtp = async (phone) => {
         success: SUCCESS_REQUEST,
         message: `${OTP_SUCCESS_REQUEST}: ${code}`,
         data: {
-          isAlreadyVerified: FAILURE_REQUEST
+          isAlreadyVerified: SUCCESS_REQUEST
         }
       };
     }else{
@@ -49,7 +49,7 @@ export const sendOtp = async (phone) => {
         success: SUCCESS_REQUEST,
         message: `${OTP_SUCCESS_REQUEST}: ${code}`,
         data: {
-          isAlreadyVerified: SUCCESS_REQUEST
+          isAlreadyVerified: FAILURE_REQUEST
         }
       };
     }
