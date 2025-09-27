@@ -13,7 +13,7 @@ export const sendOtp = async (phone) => {
   // }
   // Check if user with this phone already exists and is verified
   // const isVerifiedNumber = await OtpCodeModel.findForVerifeidNumber(phone);
-  const user = await UserModel.findByPhone(phone);
+
 
 
 
@@ -34,35 +34,19 @@ export const sendOtp = async (phone) => {
 
   // بعد إنشاء code و قبل الإرجاع
   if (process.env.NODE_ENV === 'development') {
-    if (!user || user && !user.isVerified) {
-      console.log(`📩 OTP to ${phone}: ${code}`);
-      // في التطوير يمكن اعادة الكود كـ convenience:
-      return {
-        success: SUCCESS_REQUEST,
-        message: `${OTP_SUCCESS_REQUEST}: ${code}`,
-        data: {
-          isAlreadyVerified: SUCCESS_REQUEST
-        }
-      };
-    }else{
-      return {
-        success: SUCCESS_REQUEST,
-        message: `${OTP_SUCCESS_REQUEST}: ${code}`,
-        data: {
-          isAlreadyVerified: FAILURE_REQUEST
-        }
-      };
-    }
-
+    console.log(`📩 OTP to ${phone}: ${code}`);
+    return {
+      success: SUCCESS_REQUEST,
+      message: `${OTP_SUCCESS_REQUEST}: ${code}`,
+      data: {}
+    };
   }
 
   // في الإنتاج — لا تُرجع الكود ولا تطبعه
   return {
     success: SUCCESS_REQUEST,
     message: OTP_SUCCESS_REQUEST,
-    data: {
-      isAlreadyVerified: FAILURE_REQUEST
-    }
+    data: {}
   };
 
 
@@ -78,16 +62,30 @@ export const sendOtp = async (phone) => {
 
 export const verifyOtp = async (phone, code) => {
   const otp = await OtpCodeModel.findForVerify(phone, code);
-  const isVerifiedNumber = await OtpCodeModel.findForVerifeidNumber(phone);
+  const user = await UserModel.findByPhone(phone);
+  // const isVerifiedNumber = await OtpCodeModel.findForVerifeidNumber(phone);
 
-  if (isVerifiedNumber) throw new Error(OTP_ALREADY_VERIFIED);
+  // if (isVerifiedNumber) throw new Error(OTP_ALREADY_VERIFIED);
   if (!otp) throw new Error(FAILURE_OTP_CODE);
   if (otp.expiresAt < new Date()) throw new Error(OTP_CODE_EXPIRED);
 
   await OtpCodeModel.markOtpUsed(otp.id);
 
-  return {
-    success: SUCCESS_REQUEST,
-    message: OTP_SUCCESS_VERIFY,
-  };
+  if (!user || user && !user.isVerified) {
+    return {
+      success: SUCCESS_REQUEST,
+      message: OTP_SUCCESS_VERIFY,
+      data: {
+        isAlreadyVerified: FAILURE_REQUEST
+      }
+    };
+  } else {
+    return {
+      success: SUCCESS_REQUEST,
+      message: OTP_SUCCESS_VERIFY,
+      data: {
+        isAlreadyVerified: SUCCESS_REQUEST
+      }
+    };
+  }
 };
