@@ -49,7 +49,7 @@ export const uploadCourseImage = multer({
 });
 
 export const uploadInstructorImage = multer({
-  storage: createStorage('instructor'),
+  storage: createStorage('instructors'),
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 }
 });
