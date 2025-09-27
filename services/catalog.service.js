@@ -364,6 +364,13 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
     prisma.courseLevel.count({ where: { courseId, isActive: true } }),
   ]);
 
+    const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { id: true, title: true },
+  });
+  if (!course) {
+    throw new Error("الدورة غير موجودة");
+  }
   // 2️⃣ تجميع مستويات كل مدرس
   const instructorMap = new Map();
   levels.forEach(level => {
@@ -402,6 +409,7 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
       name: instr.name,
       bio: instr.bio,
       avatarUrl: instr.avatarUrl,
+      coursetitle: course.title,
       avgRating: Number(avgRating.toFixed(2)),
       totalSubscribers: instr.totalSubscribers,
     };
