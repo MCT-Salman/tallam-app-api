@@ -39,7 +39,7 @@ export const checkOtp = async (req, res, next) => {
     const { phone, code } = req.body;
 
     // Verify the OTP
-    const result = await verifyOtp(phone, code);
+    const result = await verifyOtp(phone, code,req);
 
     res.json({
       success: result.success,
