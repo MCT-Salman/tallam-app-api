@@ -9,10 +9,12 @@ import {
 // Levels (Admin)
 export const adminCreateLevel = async (req, res, next) => {
   try { 
+    const imageUrl = req.file ? `/uploads/images/courselevel/${req.file.filename}` : null;
     const level = await createLevel(parseInt(req.params.courseId,10), { name: req.body.title, order: req.body.order ? parseInt(req.body.order,10): 1, instructorId: req.body.instructorId,
       priceUSD: req.body.priceUSD,
       priceSAR: req.body.priceSAR,
-      isFree: req.body.isFree
+      isFree: req.body.isFree,
+      imageUrl
      }); 
     res.status(201).json({ 
       success: true, 
@@ -38,10 +40,12 @@ export const adminListLevels = async (req, res, next) => {
 };
 export const adminUpdateLevel = async (req, res, next) => {
   try { 
+    const imageUrl = req.file ? `/uploads/images/courselevel/${req.file.filename}` : null;
     const level = await updateLevel(parseInt(req.params.id,10), { name: req.body.title, order: req.body.order ? parseInt(req.body.order,10): undefined,
       priceUSD: req.body.priceUSD,
       priceSAR: req.body.priceSAR,
-      isFree: req.body.isFree
+      isFree: req.body.isFree,
+      imageUrl
      }); 
     res.json({ 
       success: true, 
@@ -236,6 +240,7 @@ export const publicDetailLevel = async (req, res, next) => {
   try {
     const courseLevelId = parseInt(req.params.courseLevelId, 10);
     const userId = req.user ? req.user.id : null; // Check if user is logged in
+    console.log(userId)
     const level = await DetailLevel(courseLevelId, userId);
     res.json({
       success: true,

@@ -406,6 +406,7 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
       instr.levelIds.reduce((sum, id) => sum + (ratingMap.get(id) || 0), 0) /
       (instr.levelIds.length || 1);
     return {
+      id : instr.id,
       name: instr.name,
       bio: instr.bio,
       avatarUrl: instr.avatarUrl,

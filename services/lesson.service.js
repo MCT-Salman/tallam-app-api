@@ -158,7 +158,9 @@ export const listLevelsByCourseAndInstructor = async (courseId, instructorId, pa
       orderBy: { order: "asc" },
       select: {
         id: true,
-        order: true
+        name : true,
+        order: true,
+        imageUrl : true,
       },
       skip,
       take
@@ -185,12 +187,16 @@ export const listLevelsByCourseAndInstructor = async (courseId, instructorId, pa
 
 export const DetailLevel = async (courseLevelId, userId = null) => {
   const baseInclude = {
-    course: { select: courseSelect },
+    course: { select: {
+      id: true,
+      title: true,
+      description : true,
+    }
+     },
     instructor: {
       select: {
         id: true,
         name: true,
-        avatarUrl: true
       }
     }
   };
@@ -198,7 +204,12 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
   // Base query: always include level details and lesson names (without full details)
   const result = await prisma.courseLevel.findUnique({
     where: { id: courseLevelId },
-    include: {
+    select: {
+      id: true,
+      name: true,
+      priceUSD : true,
+      priceSAR : true,
+      previewUrl : true,
       ...baseInclude,
       lessons: {
         select: {
@@ -232,14 +243,45 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
   if (accessCode) {
     const fullResult = await prisma.courseLevel.findUnique({
       where: { id: courseLevelId },
-      include: {
+      select: {
+        // الحقول المباشرة من CourseLevel
+        id: true,
+        name: true,
+        priceUSD: true,
+        priceSAR: true,
+        previewUrl: true,
         ...baseInclude,
-        lessons: true // Include full lesson details
-      }
+        lessons: {
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            durationSec: true,
+            orderIndex: true,
+            youtubeUrl: true,
+            youtubeId: true,
+            googleDriveUrl: true
+          },
+        },
+       /* files: {
+          select: {
+            id: true,
+            url: true,
+            name: true,
+            type: true,
+          },
+        },
+        quizzes: {
+          select: {
+            id: true,
+            title: true,
+          },
+        },*/
+      },
     });
+    
     return fullResult;
   }
-
   // Otherwise, return basic details
   return result;
 };

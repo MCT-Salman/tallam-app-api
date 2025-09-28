@@ -5,7 +5,10 @@ export const idParam = param("id").isInt({ gt: 0 }).withMessage("id غير صا�
 
 export const levelCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
-  body("order").optional().isInt({ min: 0 })
+  body("order").optional().isInt({ min: 0 }).withMessage("المستوى مطلوب"),
+  body("priceUSD").optional().isFloat({ min: 0 }).withMessage("السعر مطلوب"),
+  body("priceSAR").optional().isFloat({ min: 0 }).withMessage("السعر مطلوب"),
+  body("imageUrl").optional().isString().withMessage("الصورة مطلوبة")
 ];
 
 export const lessonCreateRules = [

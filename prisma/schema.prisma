@@ -214,6 +214,7 @@ model CourseLevel {
   priceSAR    Float?
   isFree      Boolean          @default(false)
   isActive    Boolean          @default(true)
+  imageUrl    String?
   previewUrl  String?
   downloadUrl String?
   courseId    Int
@@ -228,6 +229,7 @@ model CourseLevel {
   Transaction  Transaction[]
   CodeRequest  CodeRequest[]
   coupons      Coupon[]
+  files        File[]
   createdAt   DateTime @default  (now())
   updatedAt   DateTime @updatedAt
 
@@ -492,13 +494,18 @@ model Suggestion {
 
 // ---------- Utilities / Admin logs / Settings ----------
 model File {
-  id        Int      @id @default(autoincrement())
-  key       String   @unique
-  url       String
-  mimeType  String?
-  size      Int?
-  meta      Json?
-  createdAt DateTime @default(now())
+  id            Int         @id @default(autoincrement())
+  key           String      @unique
+  url           String
+  name          String?
+  type          String?
+  size          Int?
+  meta          Json?
+  courseLevelId Int?
+  courseLevel   CourseLevel? @relation(fields: [courseLevelId], references: [id])
+  createdAt     DateTime    @default(now())
+
+  @@index([courseLevelId])
 }
 
 model AuditLog {
