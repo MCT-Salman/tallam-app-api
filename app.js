@@ -131,7 +131,7 @@ app.get('/', (req, res) => {
 // تطبيق المسارات
 // لا نطبق authLimiter على جميع مسارات /api/auth حتى لا تتأثر مسارات مثل /profile
 app.use('/api/auth', authRoutes);
-//app.use('/api/admin', adminRoutes);
+app.use('/api/admin', adminRoutes);
 // app.use('/api/otp', authLimiter, otpRoutes);
 app.use('/api/otp', otpRoutes);
 app.use('/api/users', userRoutes);
@@ -142,7 +142,7 @@ app.use('/api/quizzes', studentQuizRoutes); // Routes for students to take quizz
 app.use('/api/progress', progressRoutes); // Routes for students to track progress
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/lessons', lessonRoutes);
-app.use('/api', fileRoutes);
+app.use('/api/files', fileRoutes);
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 // معالجة الأخطاء 404

@@ -77,7 +77,7 @@ export const getQuizById = async (quizId) => {
  * @returns {Promise<import('@prisma/client').Quiz>}
  */
 export const getQuizByCourseLevelId = async (courseLevelId) => {
-  return prisma.quiz.findFirst({
+  return prisma.quiz.findMany({
     where: { courseLevelId },
     select: {
       id: true,
@@ -167,9 +167,24 @@ export const addQuestionToQuiz = async (quizId, data) => {
  * @returns {Promise<import('@prisma/client').Question>}
  */
 export const updateQuestion = async (questionId, data) => {
+  const { text, order, options } = data;
+
   return prisma.question.update({
     where: { id: questionId },
-    data,
+    data: {
+      text,
+      order,
+      options: options
+        ? {
+            // حذف جميع الخيارات القديمة وإضافة الجديدة
+            deleteMany: {},
+            create: options.map((o) => ({
+              text: o.text,
+              isCorrect: o.isCorrect ?? false,
+            })),
+          }
+        : undefined,
+    },
     include: {
       options: true,
     },
@@ -182,6 +197,11 @@ export const updateQuestion = async (questionId, data) => {
  * @returns {Promise<import('@prisma/client').Question>}
  */
 export const deleteQuestion = async (questionId) => {
+  // حذف كل الخيارات المرتبطة أولاً
+  await prisma.option.deleteMany({
+    where: { questionId: questionId },
+  });
+
   return prisma.question.delete({
     where: { id: questionId },
   });
@@ -232,9 +252,9 @@ const checkCourseLevelAccess = async (userId, courseLevelId) => {
 };
 
 /** Student: Get a quiz to take (without correct answers) */
-export const getQuizForStudent = async (quizId, userId) => {
-  const quiz = await QuizModel.findUnique({
-    where: { id: quizId },
+export const getQuizForStudent = async (levelId, userId) => {
+  const quiz = await QuizModel.findMany({
+    where: { courseLevelId: levelId },
     select: {
       id: true,
       title: true,

@@ -62,8 +62,9 @@ model Admin {
   id           Int       @id @default(autoincrement())
   userId       Int
   user         User      @relation(fields: [userId], references: [id])
-  username     String
-  email        String
+  username     String    @unique
+  email        String    @unique
+  passwordHash String
 }
 
 model Session {

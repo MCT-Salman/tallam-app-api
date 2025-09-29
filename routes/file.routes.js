@@ -16,7 +16,7 @@ r.put("/admin/files/:id", requireAuth, requireRole(["ADMIN", "SUBADMIN"]), uploa
 r.delete("/admin/files/:id", requireAuth, requireRole(["ADMIN", "SUBADMIN"]), validate(idParam), adminDeleteFile);
 
 // Public endpoints (read-only)
-r.get("/files", validate(listQueryRules), publicListFiles);
-r.get("/files/:id", validate(idParam), publicGetFile);
+r.get("/levels/:id",requireAuth, requireRole(["STUDENT"]), validate(idParam), publicListFiles);
+r.get("/file/:id", validate(idParam), publicGetFile);
 
 export default r;

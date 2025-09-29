@@ -1,5 +1,6 @@
 import { serializeResponse } from "../utils/serialize.js";
 import { createFile, listFiles, getFileById, updateFile, deleteFile } from "../services/file.service.js";
+import path from "path";
 
 export const adminListFiles = async (req, res, next) => {
   try {
@@ -22,7 +23,7 @@ export const adminCreateFile = async (req, res, next) => {
     const fileRecord = await createFile({
       key: f.filename,
       url: `/uploads/files/general/${f.filename}`,
-      name: f.originalname,
+      name: path.parse(f.originalname).name,
       type: f.mimetype,
       size: f.size,
       meta: req.body.meta ? JSON.parse(req.body.meta) : undefined,
@@ -80,8 +81,8 @@ export const publicListFiles = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
-    const courseLevelId = req.query.courseLevelId ? parseInt(req.query.courseLevelId, 10) : undefined;
-    const result = await listFiles({ courseLevelId }, { page, limit });
+    const courseLevelId = parseInt(req.params.id, 10);
+    const result = await listFiles(courseLevelId, { page, limit });
     res.json({ success: true, data: serializeResponse(result.data), pagination: result.pagination });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };

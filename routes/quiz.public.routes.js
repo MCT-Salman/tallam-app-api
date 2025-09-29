@@ -12,7 +12,7 @@ const router = Router();
 router.use(requireAuth, requireRole(['STUDENT']));
 
 // Get a quiz by level id
-//router.get('/levels/:id/quiz',validate(idParam),StudentQuizController.studentGetQuizByLevel);
+router.get('/levels/:id',validate(idParam),StudentQuizController.studentGetQuizByLevel);
 
 // Get a quiz to start taking it
 router.get('/:id/start',validate(idParam),StudentQuizController.studentGetQuiz);

@@ -502,6 +502,76 @@ http://localhost:5000
 
 ---
 
+# 📁 Files Routes
+
+## ملفات المستوى
+
+### 1. عرض ملفات مستوى محدد
+**GET** `/api/files/levels/:id`
+يتطلب مصادقة - دور: STUDENT
+
+#### Parameters:
+- `:id` معرف المستوى `courseLevelId`
+
+#### Query Parameters:
+- `page` اختياري، رقم الصفحة (افتراضي: 1)
+- `limit` اختياري، عدد العناصر بالصفحة (افتراضي: 10)
+
+#### Response:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 12,
+      "key": "1700000000-123456789.pdf",
+      "url": "/uploads/files/general/1700000000-123456789.pdf",
+      "name": "ملف المراجعة.pdf",
+      "type": "application/pdf",
+      "size": 204800,
+      "meta": { "note": "مرفق مراجعة" },
+      "courseLevelId": 1,
+      "createdAt": "2024-01-15"
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 1,
+    "totalPages": 1
+  }
+}
+```
+
+> ملاحظة: صلاحية عرض ملفات المستوى قد تعتمد على وجود وصول فعّال للمستوى.
+
+### 2. عرض تفاصيل ملف
+**GET** `/api/files/files/:id`
+لا يتطلب مصادقة
+
+#### Parameters:
+- `:id` معرف الملف
+
+#### Response:
+```json
+{
+  "success": true,
+  "data": {
+    "id": 12,
+    "key": "1700000000-123456789.pdf",
+    "url": "/uploads/files/general/1700000000-123456789.pdf",
+    "name": "ملف المراجعة.pdf",
+    "type": "application/pdf",
+    "size": 204800,
+    "meta": { "note": "مرفق مراجعة" },
+    "courseLevelId": 1,
+    "createdAt": "2024-01-15"
+  }
+}
+```
+
+---
+
 # 🎯 Quiz Routes
 
 ## الاختبارات
@@ -882,14 +952,13 @@ curl -X PUT http://localhost:5000/api/auth/change-password \
    - حماية من XSS attacks
 
 4. **File Upload**:
-   - الصور الشخصية محدودة بـ 5MB
-   - أنواع الملفات المسموحة: JPG, PNG, GIF
+  - الصور (avatars/images): حد 5MB
+  - ملفات عامة (صور/فيديو/PDF/Word): حد 50MB
+  - الأنواع المسموحة للرفع العام: صور (image/*)، فيديو (video/*)، PDF (application/pdf)، Word (application/msword, application/vnd.openxmlformats-officedocument.wordprocessingml.document)
 
 5. **Phone Validation**:
    - يتم التحقق من صحة رقم الهاتف
    - كشف الدولة تلقائياً
-
-6. **Password Security**:
    - كلمة المرور يجب أن تحتوي على 8 أحرف على الأقل
    - يجب أن تحتوي على أحرف وأرقام
 

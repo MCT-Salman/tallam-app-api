@@ -47,7 +47,8 @@ export const listSpecializations = async (pagination = {}) => {
       select: {
         id: true,
         name: true,
-        imageUrl: true
+        imageUrl: true,
+        isActive:true
       }
     }),
     prisma.specialization.count()

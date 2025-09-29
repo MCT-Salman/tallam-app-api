@@ -53,26 +53,35 @@ const fileImageFilter = (req, file, cb) => {
 };
 
 // File filter for images + videos + pdf
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = [
-    'image/',     // كل الصور
-    'video/',     // كل الفيديوهات
-    'application/pdf', // ملفات PDF
-    'application/msword', // ملفات Word
-    'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
-  ];
+// const fileFilter = (req, file, cb) => {
+//   const allowedTypes = [
+//     'image/',     // كل الصور
+//     'video/',     // كل الفيديوهات
+//     'application/pdf', // ملفات PDF
+//     'application/msword', // ملفات Word
+//     'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
+//   ];
 
-  // نشوف هل mimetype يبدأ بـ "image/" أو "video/" أو يطابق أي نوع في القائمة
-  if (
-    allowedTypes.some(type =>
-      file.mimetype.startsWith(type) || file.mimetype === type
-    )
-  ) {
-    cb(null, true);
+//   // نشوف هل mimetype يبدأ بـ "image/" أو "video/" أو يطابق أي نوع في القائمة
+//   if (
+//     allowedTypes.some(type =>
+//       file.mimetype.startsWith(type) || file.mimetype === type
+//     )
+//   ) {
+//     cb(null, true);
+//   } else {
+//     cb(new Error('غير مسموح إلا بالصور أو الفيديو أو الملفات المحددة'), false);
+//   }
+// };
+
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === 'application/pdf') {
+    cb(null, true); // قبول الملف
   } else {
-    cb(new Error('غير مسموح إلا بالصور أو الفيديو أو الملفات المحددة'), false);
+    cb(new Error('فقط ملفات PDF مسموحة!'), false); // رفض الملف
   }
 };
+
 
 
 // Middlewares for different folders

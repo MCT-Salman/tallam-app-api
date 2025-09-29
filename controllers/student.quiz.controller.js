@@ -14,6 +14,25 @@ const handleServiceError = (error, next) => {
   next(error);
 };
 
+
+/**
+ * Get a quiz by level id
+ */
+export const studentGetQuizByLevel = async (req, res, next) => {
+  try {
+    const levelId = parseInt(req.params.id, 10);
+    const userId = req.user.id;
+    const quiz = await QuizService.getQuizForStudent(levelId, userId);
+    res.status(SUCCESS_STATUS_CODE).json({
+      success: SUCCESS_REQUEST,
+      message: 'تم جلب الاختبارات بنجاح.',
+      data: serializeResponse(quiz),
+    });
+  } catch (error) {
+    handleServiceError(error, next);
+  }
+};
+
 /**
  * Get a quiz for a student to take.
  * Strips out correct answer information.
@@ -22,7 +41,7 @@ export const studentGetQuiz = async (req, res, next) => {
   try {
     const quizId = parseInt(req.params.id, 10);
     const userId = req.user.id;
-    const quiz = await QuizService.getQuizForStudent(quizId, userId);
+    const quiz = await QuizService.getQuizByCourseLevelId(quizId, userId);
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
       message: 'تم جلب الاختبار بنجاح.',

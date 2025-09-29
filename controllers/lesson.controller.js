@@ -14,6 +14,9 @@ export const adminCreateLevel = async (req, res, next) => {
       priceUSD: req.body.priceUSD,
       priceSAR: req.body.priceSAR,
       isFree: req.body.isFree,
+      previewUrl : req.body.previewUrl,
+      downloadUrl : req.body.downloadUrl,
+      isActive: req.body.isActive || true,
       imageUrl
      }); 
     res.status(201).json({ 
@@ -45,6 +48,9 @@ export const adminUpdateLevel = async (req, res, next) => {
       priceUSD: req.body.priceUSD,
       priceSAR: req.body.priceSAR,
       isFree: req.body.isFree,
+      previewUrl : req.body.previewUrl,
+      downloadUrl : req.body.downloadUrl,
+      isActive: req.body.isActive || true,
       imageUrl
      }); 
     res.json({ 

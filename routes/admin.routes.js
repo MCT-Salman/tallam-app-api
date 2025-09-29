@@ -1,9 +1,14 @@
 import { Router } from "express";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { requireRole } from "../middlewares/role.middleware.js";
-import { addSubAdmin, changeRole, deactivateUser } from "../controllers/admin.controller.js";
+import { addSubAdmin, changeRole, deactivateUser, adminLogin } from "../controllers/admin.controller.js";
+import { validate } from "../middlewares/validate.middleware.js";
+import { adminLoginRules } from "../validators/admin.validators.js";
 
 const r = Router();
+
+// مسار عام لتسجيل الدخول للوحة التحكم
+r.post("/login", validate(adminLoginRules), adminLogin);
 
 // كل المسارات هنا للمدير الرئيسي فقط
 r.post("/create-subadmin", requireAuth, requireRole(["ADMIN"]), addSubAdmin);

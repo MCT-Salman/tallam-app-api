@@ -1,4 +1,5 @@
-import { createSubAdmin, setUserRole, toggleUserActive } from "../services/admin.service.js";
+import { createSubAdmin, setUserRole, toggleUserActive, adminLogin as adminLoginService } from "../services/admin.service.js";
+import { SUCCESS_REQUEST, SUCCESS_LOGIN } from "../validators/messagesResponse.js";
 
 /**
  * @route ~/api/admin/create-subadmin
@@ -63,6 +64,28 @@ export const deactivateUser = async (req, res, next) => {
     });
   } catch (e) {
     e.statusCode = e.statusCode || 400;
+    return next(e);
+  }
+};
+
+/**
+ * @route ~/api/admin/login
+ * @desc admin login with email or username + password
+ * @access public
+ */
+export const adminLogin = async (req, res, next) => {
+  try {
+    const { identifier, password } = req.body;
+    const result = await adminLoginService(identifier, password, req);
+    res.json({
+      success: SUCCESS_REQUEST,
+      message: SUCCESS_LOGIN,
+      data: {
+        ...result
+      }
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 401;
     return next(e);
   }
 };
