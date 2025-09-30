@@ -21,8 +21,7 @@ const handleServiceError = (error, next) => {
 export const studentGetQuizByLevel = async (req, res, next) => {
   try {
     const levelId = parseInt(req.params.id, 10);
-    const userId = req.user.id;
-    const quiz = await QuizService.getQuizForStudent(levelId, userId);
+    const quiz = await QuizService.getQuizByCourseLevelId(levelId);
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
       message: 'تم جلب الاختبارات بنجاح.',
@@ -41,7 +40,7 @@ export const studentGetQuiz = async (req, res, next) => {
   try {
     const quizId = parseInt(req.params.id, 10);
     const userId = req.user.id;
-    const quiz = await QuizService.getQuizByCourseLevelId(quizId, userId);
+    const quiz = await QuizService.getQuizForStudent(quizId, userId);
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
       message: 'تم جلب الاختبار بنجاح.',

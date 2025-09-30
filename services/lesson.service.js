@@ -280,8 +280,8 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
       },
     });
     
-    return fullResult;
+    return { ...fullResult, issubscribed: true };
   }
   // Otherwise, return basic details
-  return result;
+  return { ...result, issubscribed: false };
 };
