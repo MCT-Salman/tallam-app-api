@@ -31,6 +31,8 @@ import progressRoutes from './routes/progress.routes.js';
 import lessonRoutes from './routes/lesson.routes.js';
 import fileRoutes from './routes/file.routes.js';
 
+import setupRoutes from './routes/setup.routes.js';
+
 const app = express();
 // تفعيل الثقة بالـ Proxy (فعّلها عند التشغيل خلف Nginx/Cloudflare/Load Balancer)
 // ملاحظة: عندما تكون خلف بروكسي واحد (مثل Nginx أمام التطبيق مباشرة) يمكنك استخدام الرقم 1
@@ -143,6 +145,8 @@ app.use('/api/progress', progressRoutes); // Routes for students to track progre
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/files', fileRoutes);
+
+app.use('/api/setup', setupRoutes);
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 // معالجة الأخطاء 404
