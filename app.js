@@ -30,6 +30,7 @@ import studentQuizRoutes from './routes/quiz.public.routes.js';
 import progressRoutes from './routes/progress.routes.js';
 import lessonRoutes from './routes/lesson.routes.js';
 import fileRoutes from './routes/file.routes.js';
+import couponRoutes from './routes/coupon.routes.js';
 
 import setupRoutes from './routes/setup.routes.js';
 
@@ -102,7 +103,15 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 app.use(xssSanitizer);
 // خدمة الملفات الثابتة
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+//app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/uploads', express.static('uploads', {
+  setHeaders: (res, path) => {
+    res.set('Access-Control-Allow-Origin', '*');
+    res.set('Access-Control-Allow-Methods', 'GET');
+    res.set('Access-Control-Allow-Headers', 'Content-Type');
+  }
+}));
+
 // توثيق OpenAPI (ملف JSON)
 app.use('/docs', express.static(path.join(__dirname, 'docs')));
 
@@ -145,6 +154,7 @@ app.use('/api/progress', progressRoutes); // Routes for students to track progre
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/files', fileRoutes);
+app.use('/api/coupons', couponRoutes);
 
 app.use('/api/setup', setupRoutes);
 

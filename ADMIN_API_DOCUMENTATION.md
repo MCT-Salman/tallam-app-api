@@ -740,6 +740,76 @@ http://localhost:5000
 
 ---
 
+# 🎟️ Coupons Management Routes
+
+## الكوبونات (Coupons)
+
+### 1. إنشاء كوبون
+**POST** `/api/coupons/admin`
+
+#### Request Body:
+```json
+{
+  "code": "BACK2SCHOOL",
+  "discount": 20,
+  "isPercent": true,
+  "expiry": "2025-12-31",
+  "maxUsage": 100,
+  "isActive": true,
+  "courseLevelId": 1
+}
+```
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم إنشاء الكوبون بنجاح.",
+  "data": {
+    "id": 1,
+    "code": "BACK2SCHOOL",
+    "discount": 20,
+    "isPercent": true,
+    "expiry": "2025-12-31",
+    "maxUsage": 100,
+    "usedCount": 0,
+    "isActive": true,
+    "courseLevelId": 1,
+    "createdAt": "2025-10-01"
+  }
+}
+```
+
+### 2. عرض كل الكوبونات
+**GET** `/api/coupons/admin?skip=0&take=20`
+
+### 3. عرض كوبون محدد
+**GET** `/api/coupons/admin/:id`
+
+### 4. تحديث كوبون
+**PUT** `/api/coupons/admin/:id`
+
+#### Body (أي من الحقول التالية):
+```json
+{
+  "code": "WINTER25",
+  "discount": 25,
+  "isPercent": true,
+  "expiry": "2026-01-31",
+  "maxUsage": 200,
+  "isActive": false,
+  "courseLevelId": 2
+}
+```
+
+### 5. حذف كوبون
+**DELETE** `/api/coupons/admin/:id`
+
+### 6. عرض كوبونات مستوى محدد
+**GET** `/api/coupons/admin/level/:courseLevelId`
+
+---
+
 # 📝 Code Request Management Routes
 
 ## طلبات الأكواد (Code Requests)
