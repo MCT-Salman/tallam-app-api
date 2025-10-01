@@ -10,9 +10,12 @@ import {
 export const adminCreateLevel = async (req, res, next) => {
   try { 
     const imageUrl = req.file ? `/uploads/images/courselevel/${req.file.filename}` : null;
-    const level = await createLevel(parseInt(req.params.courseId,10), { name: req.body.title, order: req.body.order ? parseInt(req.body.order,10): 1, instructorId: req.body.instructorId,
-      priceUSD: req.body.priceUSD,
-      priceSAR: req.body.priceSAR,
+    const level = await createLevel(parseInt(req.params.courseId,10), { 
+      name: req.body.title, 
+      order: req.body.order ? parseInt(req.body.order,10): 1,
+      instructorId: parseInt(req.body.instructorId,10),
+      priceUSD: req.body.priceUSD ? parseFloat(req.body.priceUSD) : null, // ← Float
+      priceSAR: req.body.priceSAR ? parseFloat(req.body.priceSAR) : null,
       isFree: req.body.isFree,
       previewUrl : req.body.previewUrl,
       downloadUrl : req.body.downloadUrl,
