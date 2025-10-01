@@ -228,7 +228,7 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
   }
   // If user is not logged in, return basic details
   if (!userId) {
-    return result;
+    return { ...result, issubscribed: false };
   }
 
   // Check if user has valid access code
