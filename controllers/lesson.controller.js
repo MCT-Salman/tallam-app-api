@@ -14,7 +14,7 @@ export const adminCreateLevel = async (req, res, next) => {
       name: req.body.title, 
       order: req.body.order ? parseInt(req.body.order,10): 1,
       instructorId: parseInt(req.body.instructorId,10),
-      priceUSD: req.body.priceUSD ? parseFloat(req.body.priceUSD) : null, // ← Float
+      priceUSD: req.body.priceUSD ? parseFloat(req.body.priceUSD) : null, 
       priceSAR: req.body.priceSAR ? parseFloat(req.body.priceSAR) : null,
       isFree: req.body.isFree,
       previewUrl : req.body.previewUrl,
@@ -47,9 +47,11 @@ export const adminListLevels = async (req, res, next) => {
 export const adminUpdateLevel = async (req, res, next) => {
   try { 
     const imageUrl = req.file ? `/uploads/images/courselevel/${req.file.filename}` : null;
-    const level = await updateLevel(parseInt(req.params.id,10), { name: req.body.title, order: req.body.order ? parseInt(req.body.order,10): undefined,
-      priceUSD: req.body.priceUSD,
-      priceSAR: req.body.priceSAR,
+    const level = await updateLevel(parseInt(req.params.id,10), { 
+      name: req.body.title, 
+      order: req.body.order ? parseInt(req.body.order,10): 1,
+      priceUSD: req.body.priceUSD ? parseFloat(req.body.priceUSD) : null, 
+      priceSAR: req.body.priceSAR ? parseFloat(req.body.priceSAR) : null,
       isFree: req.body.isFree,
       previewUrl : req.body.previewUrl,
       downloadUrl : req.body.downloadUrl,
