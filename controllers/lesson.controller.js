@@ -178,7 +178,7 @@ export const adminUpdateLesson = async (req, res, next) => {
     const youtubeUrl = req.body.youtubeUrl || req.body.youtubeurl;
     const googleDriveUrl = req.body.googleDriveUrl || req.body.googledriveurl;
 
-    if (youtubeUrl) {
+   /* if (youtubeUrl) {
       let ytValid = false;
       if (isYouTubeUrl(youtubeUrl)) {
         const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 8000 });
@@ -200,7 +200,7 @@ export const adminUpdateLesson = async (req, res, next) => {
         message: `روابط غير صالحة: ${invalidFields.join(', ')}`,
         data: { errors: invalidFields }
       });
-    }
+    }*/
 
     const lesson = await updateLesson(parseInt(req.params.id,10), {
       title: req.body.title,
