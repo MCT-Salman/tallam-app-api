@@ -27,7 +27,7 @@ export const listCoupons = async ({ skip = 0, take = 50 } = {}) => {
 export const getCouponById = async (id) => {
   return prisma.coupon.findUnique({
     where: { id: Number(id) },
-    include: { courseLevel: { include: { course: true } }, financialAccounts: true },
+    include: { courseLevel: { include: { course: true } }, transaction: true },
   });
 };
 

@@ -8,7 +8,8 @@ export const levelCreateRules = [
   body("order").optional().isInt({ min: 0 }).withMessage("المستوى مطلوب"),
   body("priceUSD").optional().isFloat({ min: 0 }).withMessage("السعر مطلوب"),
   body("priceSAR").optional().isFloat({ min: 0 }).withMessage("السعر مطلوب"),
-  body("imageUrl").optional().isString().withMessage("الصورة مطلوبة")
+  body("imageUrl").optional().isString().withMessage("الصورة مطلوبة"),
+  body("previewUrl").optional().isString().withMessage("الفيديو مطلوب"),
 ];
 
 export const lessonCreateRules = [

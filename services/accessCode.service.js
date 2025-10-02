@@ -39,7 +39,7 @@ export const generateAccessCodes = async ({
   });
 
   // Create the financial account entry
-  await prisma.financialAccount.create({
+  await prisma.transaction.create({
     data: {
       receiptImageUrl,
       amountPaid: parseFloat(amountPaid),
@@ -61,7 +61,7 @@ export const getAllAccessCodes = async () => {
         }
       },
       user: { select: { id: true, name: true, phone: true } },
-      financialAccounts: {
+      transaction: {
         include: {
           coupon: true,
         }

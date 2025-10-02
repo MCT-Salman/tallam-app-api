@@ -15,12 +15,6 @@ enum Role {
   SUBADMIN
 }
 
-enum TransactionStatus {
-  PENDING
-  SUCCEEDED
-  FAILED
-  CANCELLED
-}
 
 // ---------- Auth / Sessions / Security ----------
 model User {
@@ -46,7 +40,6 @@ model User {
 
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
-  Transaction    Transaction[]
   QuizResult     QuizResult[]
   CourseProgress CourseProgress[]
   Notification   Notification[]
@@ -227,7 +220,6 @@ model CourseLevel {
   progress     CourseProgress[]
   reviews      Review[]
   accessCodes  AccessCode[]
-  Transaction  Transaction[]
   CodeRequest  CodeRequest[]
   coupons      Coupon[]
   files        File[]
@@ -253,30 +245,12 @@ model Lesson {
   courseLevel       CourseLevel     @relation(fields: [courseLevelId], references: [id])
   createdAt         DateTime         @default(now())
   updatedAt         DateTime         @updatedAt
-  VideoLinkCheck    VideoLinkCheck[]
   progress          LessonProgress[]
 
   @@index([courseLevelId])
 }
 
-// ---------- Access / Purchase /  yments ----------
-model Transaction {
-  id         Int               @id @default(autoincrement())
-  userId     Int?
-  user       User?             @relation(fields: [userId], references: [id])
-  courseLevelId   Int?
-  courseLevel     CourseLevel?           @relation(fields: [courseLevelId], references: [id])
-  amount     Decimal           @db.Decimal(12, 2)
-  currency   String
-  status     TransactionStatus @default(PENDING)
-  providerId String?
-  metadata   Json?
-  createdAt  DateTime          @default(now())
 
-  @@index([userId])
-  @@index([courseLevelId])
-  @@index([status])
-}
 
 model AccessCode {
   id        Int       @id @default(autoincrement())
@@ -292,14 +266,15 @@ model AccessCode {
   usedAt    DateTime?
   expiresAt DateTime?
   isActive  Boolean   @default(true)
-  financialAccounts FinancialAccount[]
+  transaction Transaction[]
 
   @@index([courseLevelId])
   @@index([usedBy])
 }
 
-model FinancialAccount {
-  id              Int       @id @default(autoincrement())
+// ---------- Access / Purchase /  yments ----------
+model Transaction {
+ id              Int       @id @default(autoincrement())
   receiptImageUrl String
   amountPaid      Decimal   @db.Decimal(12, 2)
   notes           String?
@@ -341,7 +316,7 @@ model Coupon {
   isActive  Boolean   @default(true)
   courseLevelId Int
   courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
-  financialAccounts FinancialAccount[]
+  transaction Transaction[]
   createdBy Int?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -528,15 +503,6 @@ model RateLimit {
   updatedAt DateTime  @updatedAt
 
   @@index([key])
-}
-
-model VideoLinkCheck {
-  id        Int      @id @default(autoincrement())
-  url       String
-  lessonId  Int?
-  lesson    Lesson?  @relation(fields: [lessonId], references: [id])
-  status    String // valid, invalid, private, removed
-  checkedAt DateTime @default(now())
 }
 
 //------------ settings --------------

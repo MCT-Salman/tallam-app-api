@@ -1,4 +1,5 @@
 import { serializeResponse } from "../utils/serialize.js";
+import { checkUrl, isYouTubeUrl, checkYouTubeAvailability } from "../utils/urlCheck.js";
 import {
   createLevel, listLevelsByCourse, updateLevel, toggleLevel, deleteLevel,
    createLessonForLevel, listLessonsByLevel,
@@ -117,11 +118,45 @@ export const adminListLessonsByLevel = async (req, res, next) => {
 };
 export const adminCreateLessonForLevel = async (req, res, next) => {
   try { 
+    // Validate external URLs before creating the lesson
+    const invalidFields = [];
+    // Normalize possible lowercase keys
+    const youtubeUrl = req.body.youtubeUrl || req.body.youtubeurl;
+    const googleDriveUrl = req.body.googleDriveUrl || req.body.googledriveurl;
+
+    let ytDetail = null;
+    if (youtubeUrl) {
+      let ytValid = false;
+      if (isYouTubeUrl(youtubeUrl)) {
+        const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 8000 });
+        ytDetail = yt;
+        ytValid = yt.available === true;
+      } else {
+        const yt = await checkUrl(youtubeUrl, { timeoutMs: 8000, allowRedirects: true, headers: { 'User-Agent': 'Taalam/1.0' } });
+        ytDetail = yt;
+        ytValid = yt.valid;
+      }
+      if (!ytValid) invalidFields.push('youtubeUrl');
+    }
+    if (googleDriveUrl) {
+      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 8000, allowRedirects: true, headers: { 'User-Agent': 'Taalam/1.0' } });
+      if (!gd.valid) invalidFields.push('googleDriveUrl');
+    }
+
+    if (invalidFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `روابط غير صالحة: ${invalidFields.join(', ')}`,
+        data: { errors: invalidFields, youtube: ytDetail }
+      });
+    }
+
     const lesson = await createLessonForLevel(parseInt(req.params.courseLevelId,10), {
       title: req.body.title,
       description: req.body.description,
-      youtubeUrl: req.body.youtubeUrl,
+      youtubeUrl: youtubeUrl,
       youtubeId: req.body.youtubeId,
+      googleDriveUrl: googleDriveUrl || null,
       durationSec: req.body.durationSec? parseInt(req.body.durationSec,10): null,
       orderIndex: req.body.orderIndex? parseInt(req.body.orderIndex,10): 0,
       isFreePreview: !!req.body.isFreePreview
@@ -138,11 +173,41 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
 };
 export const adminUpdateLesson = async (req, res, next) => {
   try { 
+    // Validate URLs if provided on update
+    const invalidFields = [];
+    const youtubeUrl = req.body.youtubeUrl || req.body.youtubeurl;
+    const googleDriveUrl = req.body.googleDriveUrl || req.body.googledriveurl;
+
+    if (youtubeUrl) {
+      let ytValid = false;
+      if (isYouTubeUrl(youtubeUrl)) {
+        const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 8000 });
+        ytValid = yt.available === true;
+      } else {
+        const yt = await checkUrl(youtubeUrl, { timeoutMs: 8000, allowRedirects: true, headers: { 'User-Agent': 'Taalam/1.0' } });
+        ytValid = yt.valid;
+      }
+      if (!ytValid) invalidFields.push('youtubeUrl');
+    }
+    if (googleDriveUrl) {
+      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 8000, allowRedirects: true, headers: { 'User-Agent': 'Taalam/1.0' } });
+      if (!gd.valid) invalidFields.push('googleDriveUrl');
+    }
+
+    if (invalidFields.length > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `روابط غير صالحة: ${invalidFields.join(', ')}`,
+        data: { errors: invalidFields }
+      });
+    }
+
     const lesson = await updateLesson(parseInt(req.params.id,10), {
       title: req.body.title,
       description: req.body.description,
-      youtubeUrl: req.body.youtubeUrl,
+      youtubeUrl: youtubeUrl,
       youtubeId: req.body.youtubeId,
+      googleDriveUrl: googleDriveUrl,
       durationSec: req.body.durationSec? parseInt(req.body.durationSec,10): undefined,
       orderIndex: req.body.orderIndex? parseInt(req.body.orderIndex,10): undefined,
       isFreePreview: req.body.isFreePreview
