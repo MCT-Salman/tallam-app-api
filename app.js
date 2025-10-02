@@ -31,6 +31,7 @@ import progressRoutes from './routes/progress.routes.js';
 import lessonRoutes from './routes/lesson.routes.js';
 import fileRoutes from './routes/file.routes.js';
 import couponRoutes from './routes/coupon.routes.js';
+import suggestionRoutes from './routes/suggestion.routes.js';
 
 import setupRoutes from './routes/setup.routes.js';
 
@@ -155,6 +156,7 @@ app.use('/api/catalog', catalogRoutes);
 app.use('/api/lessons', lessonRoutes);
 app.use('/api/files', fileRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/suggestions', suggestionRoutes);
 
 app.use('/api/setup', setupRoutes);
 

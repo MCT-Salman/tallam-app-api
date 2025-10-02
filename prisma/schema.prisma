@@ -223,6 +223,7 @@ model CourseLevel {
   CodeRequest  CodeRequest[]
   coupons      Coupon[]
   files        File[]
+  suggestions  Suggestion[]
   createdAt   DateTime @default  (now())
   updatedAt   DateTime @updatedAt
 
@@ -461,11 +462,16 @@ model SupportMessage {
 }
 
 model Suggestion {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  message   String
-  createdAt DateTime @default(now())
+  id              Int           @id @default(autoincrement())
+  userId          Int
+  user            User          @relation(fields: [userId], references: [id])
+  courseLevelId   Int?
+  courseLevel     CourseLevel?   @relation(fields: [courseLevelId], references: [id])
+  message         String
+  createdAt       DateTime      @default(now())
+
+  @@index([userId])
+  @@index([courseLevelId])
 }
 
 // ---------- Utilities / Admin logs / Settings ----------
