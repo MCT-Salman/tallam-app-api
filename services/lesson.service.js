@@ -239,6 +239,7 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
       used: true
     }
   });
+  
   // If access code exists with used=true, include full lesson details
   if (accessCode) {
     const fullResult = await prisma.courseLevel.findUnique({

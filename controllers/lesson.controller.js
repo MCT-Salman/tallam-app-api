@@ -174,7 +174,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
 export const adminUpdateLesson = async (req, res, next) => {
   try { 
     // Validate URLs if provided on update
-    const invalidFields = [];
+    //const invalidFields = [];
     const youtubeUrl = req.body.youtubeUrl || req.body.youtubeurl;
     const googleDriveUrl = req.body.googleDriveUrl || req.body.googledriveurl;
 
