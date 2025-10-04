@@ -4,14 +4,14 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import compression from 'compression';
 import rateLimit from 'express-rate-limit';
-import { dotenv } from 'dotenv';
+import { config } from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { xssSanitizer } from "./middlewares/xss.middleware.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
 // تحميل متغيرات البيئة
-dotenv.config();
+config();
 
 // إعداد __dirname للـ ES modules
 const __filename = fileURLToPath(import.meta.url);
