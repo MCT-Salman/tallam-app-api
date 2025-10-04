@@ -123,7 +123,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
     // Normalize possible lowercase keys
     const youtubeUrl = req.body.youtubeUrl || req.body.youtubeurl;
     const googleDriveUrl = req.body.googleDriveUrl || req.body.googledriveurl;
-
+/*
     let ytDetail = null;
     if (youtubeUrl) {
       let ytValid = false;
@@ -149,7 +149,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
         message: `روابط غير صالحة: ${invalidFields.join(', ')}`,
         data: { errors: invalidFields, youtube: ytDetail }
       });
-    }
+    }*/
 
     const lesson = await createLessonForLevel(parseInt(req.params.courseLevelId,10), {
       title: req.body.title,
