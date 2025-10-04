@@ -648,67 +648,62 @@ http://localhost:5000
 ## الاختبارات
 
 ### 1. بدء اختبار
-**GET** `/api/quizzes/:id/start`
+**GET** `/api/levels/:id/start`
 *يتطلب مصادقة - طالب*
 
 ### Response:
 ```json
 {
   "success": true,
-  "message": "تم جلب الاختبار بنجاح.",
-  "data": {
-    "id": 1,
-    "title": "اختبار البرمجة الأساسية",
-    "courseId": 1,
-    "questions": [
-      {
-        "id": 1,
-        "text": "ما هي لغة البرمجة؟",
-        "order": 1,
-        "options": [
-          {
-            "id": 1,
-            "text": "أداة للتواصل مع الحاسوب"
-          },
-          {
-            "id": 2,
-            "text": "برنامج حاسوبي"
-          },
-          {
-            "id": 3,
-            "text": "نوع من أنواع الألعاب"
-          },
-          {
-            "id": 4,
-            "text": "تطبيق للهاتف"
-          }
-        ]
-      },
-      {
-        "id": 2,
-        "text": "ما هو المتغير في البرمجة؟",
-        "order": 2,
-        "options": [
-          {
-            "id": 5,
-            "text": "مكان لتخزين البيانات"
-          },
-          {
-            "id": 6,
-            "text": "نوع من أنواع الملفات"
-          },
-          {
-            "id": 7,
-            "text": "برنامج للحاسوب"
-          },
-          {
-            "id": 8,
-            "text": "لغة برمجة"
-          }
-        ]
-      }
-    ]
-  }
+  "message": "تم جلب الأسئلة بنجاح.",
+  "data": [
+    {
+      "id": 1,
+      "text": "ما هي لغة البرمجة؟",
+      "order": 1,
+      "options": [
+        {
+          "id": 1,
+          "text": "أداة للتواصل مع الحاسوب"
+        },
+        {
+          "id": 2,
+          "text": "برنامج حاسوبي"
+        },
+        {
+          "id": 3,
+          "text": "نوع من أنواع الألعاب"
+        },
+        {
+          "id": 4,
+          "text": "تطبيق للهاتف"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "ما هو المتغير في البرمجة؟",
+      "order": 2,
+      "options": [
+        {
+          "id": 5,
+          "text": "مكان لتخزين البيانات"
+        },
+        {
+          "id": 6,
+          "text": "نوع من أنواع الملفات"
+        },
+        {
+          "id": 7,
+          "text": "برنامج للحاسوب"
+        },
+        {
+          "id": 8,
+          "text": "لغة برمجة"
+        }
+      ]
+    }
+  ]
 }
 ```
 
@@ -720,7 +715,7 @@ http://localhost:5000
 }
 ```
 
-### Error Response (اختبار غير موجود):
+### Error Response (أسئلة غير موجودة):
 ```json
 {
   "success": false,
@@ -729,7 +724,7 @@ http://localhost:5000
 ```
 
 ### 2. تقديم إجابات الاختبار
-**POST** `/api/quizzes/:id/submit`
+**POST** `/api/levels/:id/submit`
 *يتطلب مصادقة - طالب*
 
 ### Request Body:
@@ -754,30 +749,24 @@ http://localhost:5000
   "success": true,
   "message": "تم تقديم الاختبار بنجاح.",
   "data": {
-    "id": 1,
-    "userId": 10,
-    "quizId": 1,
+    "resultId": 1,
     "score": 85.5,
     "totalQuestions": 10,
     "correctAnswers": 8,
-    "wrongAnswers": 2,
-    "passed": true,
-    "passingScore": 70.0,
+    "incorrectAnswers": 2,
     "answers": [
       {
         "questionId": 1,
-        "selectedOptionId": 1,
-        "correctOptionId": 1,
+        "optionId": 1,
         "isCorrect": true
       },
       {
         "questionId": 2,
-        "selectedOptionId": 5,
-        "correctOptionId": 5,
+        "optionId": 5,
         "isCorrect": true
       }
     ],
-    "createdAt": "2024-01-15T11:00:00Z"
+    "alreadyTaken": false
   }
 }
 ```
@@ -925,11 +914,11 @@ curl -X GET http://localhost:5000/api/progress/courses/1 \
 #### هـ) أداء الاختبارات
 ```bash
 # 9. بدء اختبار
-curl -X GET http://localhost:5000/api/quizzes/1/start \
+curl -X GET http://localhost:5000/api/levels/1/start \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
 
 # 10. تقديم إجابات الاختبار
-curl -X POST http://localhost:5000/api/quizzes/1/submit \
+curl -X POST http://localhost:5000/api/levels/1/submit \
   -H "Authorization: Bearer YOUR_ACCESS_TOKEN" \
   -H "Content-Type: application/json" \
   -d '{"answers":[{"questionId":1,"optionId":1},{"questionId":2,"optionId":5}]}'

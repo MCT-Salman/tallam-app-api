@@ -384,6 +384,7 @@ export const adminCreateCourse = async (req, res, next) => {
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
+
 export const adminUpdateCourse = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
@@ -398,6 +399,7 @@ export const adminUpdateCourse = async (req, res, next) => {
     });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
+
 export const adminDeleteCourse = async (req, res, next) => {
   try {
     console.log(req.params.id);

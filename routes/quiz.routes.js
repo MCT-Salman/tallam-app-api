@@ -3,8 +3,8 @@ import { requireAuth } from '../middlewares/auth.middleware.js';
 import { requireRole } from '../middlewares/role.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
 import * as QuizController from '../controllers/quiz.controller.js';
-import { idParam, courseIdParam, courseLevelIdParam } from '../validators/catalog.validators.js';
-import { createQuizRules, createQuestionRules, quizIdParam, createOptionRules } from '../validators/quiz.validators.js';
+import { idParam, courseLevelIdParam } from '../validators/catalog.validators.js';
+import { createQuizRules, createQuestionRules, createOptionRules } from '../validators/quiz.validators.js';
 
 const router = Router();
 
@@ -12,14 +12,11 @@ const router = Router();
 router.use(requireAuth, requireRole(['ADMIN', 'SUBADMIN']));
 
 // --- Quiz Routes ---
-router.post('/course-levels/:courseLevelId/quizzes', validate(courseLevelIdParam), validate(createQuizRules), QuizController.adminCreateQuiz);
-router.get('/course-levels/:courseLevelId/quizzes', validate(courseLevelIdParam), QuizController.adminGetQuizByCourse);
-router.get('/quizzes/:id', validate(idParam), QuizController.adminGetQuiz);
-router.put('/quizzes/:id', validate(idParam), validate(createQuizRules), QuizController.adminUpdateQuiz);
-router.delete('/quizzes/:id', validate(idParam), QuizController.adminDeleteQuiz);
+router.get('/courselevels/:courseLevelId/questions', validate(courseLevelIdParam), QuizController.adminGetQuizByCourse);
+router.delete('/courselevels/:courseLevelId', validate(courseLevelIdParam), QuizController.adminDeleteQuiz);
 
 // --- Question Routes ---
-router.post('/quizzes/:quizId/questions', validate(quizIdParam), validate(createQuestionRules), QuizController.adminAddQuestion);
+router.post('/courselevels/:courseLevelId/questions', validate(courseLevelIdParam), validate(createQuestionRules), QuizController.adminAddQuestion);
 router.put('/questions/:id', validate(idParam), validate(createQuestionRules), QuizController.adminUpdateQuestion);
 router.delete('/questions/:id', validate(idParam), QuizController.adminDeleteQuestion);
 

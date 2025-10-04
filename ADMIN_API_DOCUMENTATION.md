@@ -518,79 +518,66 @@ http://localhost:5000
 
 ## الاختبارات (Quizzes)
 
-### 1. إنشاء اختبار للمستوى
-**POST** `/api/admin/course-levels/:courseLevelId/quizzes`
-
-### Request Body:
-```json
-{
-  "title": "اختبار البرمجة الأساسية"
-}
-```
+### 1. عرض أسئلة المستوى
+**GET** `/api/admin/courselevels/:courseLevelId/questions`
 
 ### Response:
 ```json
 {
   "success": true,
-  "message": "تم إنشاء الاختبار بنجاح",
-  "data": {
-    "id": 1,
-    "title": "اختبار البرمجة الأساسية",
-    "courseLevelId": 1,
-    "createdAt": "2024-01-15T10:00:00Z"
-  }
+  "data": [
+    {
+      "id": 1,
+      "text": "ما هي لغة البرمجة؟",
+      "order": 1,
+      "courseLevelId": 1,
+      "options": [
+        {
+          "id": 1,
+          "text": "أداة للتواصل مع الحاسوب",
+          "isCorrect": true
+        },
+        {
+          "id": 2,
+          "text": "برنامج حاسوبي",
+          "isCorrect": false
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "text": "ما هو المتغير في البرمجة؟",
+      "order": 2,
+      "courseLevelId": 1,
+      "options": [
+        {
+          "id": 3,
+          "text": "مكان لتخزين البيانات",
+          "isCorrect": true
+        }
+      ]
+    }
+  ]
 }
 ```
 
-### 2. عرض اختبار مستوى
-**GET** `/api/admin/course-levels/:courseLevelId/quizzes`
-
-### 3. عرض اختبار محدد
-**GET** `/api/admin/quizzes/:id`
+### 2. حذف جميع أسئلة المستوى
+**DELETE** `/api/admin/courselevels/:courseLevelId`
 
 ### Response:
 ```json
 {
   "success": true,
-  "data": {
-    "id": 1,
-    "title": "اختبار البرمجة الأساسية",
-    "courseLevelId": 1,
-    "questions": [
-      {
-        "id": 1,
-        "text": "ما هي لغة البرمجة؟",
-        "order": 1,
-        "options": [
-          {
-            "id": 1,
-            "text": "أداة للتواصل مع الحاسوب",
-            "isCorrect": true
-          },
-          {
-            "id": 2,
-            "text": "برنامج حاسوبي",
-            "isCorrect": false
-          }
-        ]
-      }
-    ]
-  }
+  "message": "تم حذف الاختبار بنجاح."
 }
 ```
-
-### 4. تحديث اختبار
-**PUT** `/api/admin/quizzes/:id`
-
-### 5. حذف اختبار
-**DELETE** `/api/admin/quizzes/:id`
 
 ---
 
 ## الأسئلة (Questions)
 
-### 1. إضافة سؤال للاختبار
-**POST** `/api/admin/quizzes/:quizId/questions`
+### 1. إضافة سؤال للمستوى
+**POST** `/api/admin/courselevels/:courseLevelId/questions`
 
 ### Request Body:
 ```json
@@ -627,7 +614,7 @@ http://localhost:5000
     "id": 1,
     "text": "ما هي لغة البرمجة؟",
     "order": 1,
-    "quizId": 1,
+    "courseLevelId": 1,
     "options": [
       {
         "id": 1,
@@ -1217,18 +1204,10 @@ Domain
         └── Courses
             └── CourseLevels
                 ├── Instructor
-                └── Lessons
+                ├── Lessons
+                └── Questions (Quiz)
 ```
-
-## Key Changes
-- **Domains**: Top-level categories
-- **Subjects**: Belong to Domains
-- **Specializations**: Belong to Subjects
-- **Instructors & Courses**: Belong to Specializations
-- **CourseLevels**: Belong to Courses with pricing and instructor assignment
-- **Lessons**: Belong to CourseLevels
-
-All API endpoints have been updated to reflect this structure.
+Questions are now directly associated with CourseLevels, eliminating the intermediate Quiz table.
 
 ---
 
@@ -1239,6 +1218,7 @@ All API endpoints have been updated to reflect this structure.
 - **Instructors**: Now require `specializationId` for creation and updates.
 - **Courses**: Now require `specializationId` and no longer have direct pricing (handled at CourseLevel).
 - **Levels**: Include `instructorId` and pricing fields for course levels.
+- **Quiz System**: Simplified by eliminating the Quiz table - questions are now directly associated with CourseLevels for a one-quiz-per-level structure.
 
 ## ملاحظات الأمان
 

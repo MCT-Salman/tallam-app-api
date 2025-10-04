@@ -216,7 +216,8 @@ model CourseLevel {
   instructorId  Int
   instructor    Instructor  @relation(fields: [instructorId], references: [id])
   lessons      Lesson[]
-  quizzes      Quiz[]
+  questions    Question[]
+  quizResults  QuizResult[]
   progress     CourseProgress[]
   reviews      Review[]
   accessCodes  AccessCode[]
@@ -326,23 +327,14 @@ model Coupon {
 }
 
 // ---------- Quizzes & Results ----------
-model Quiz {
-  id         Int          @id @default(autoincrement())
-  courseLevelId   Int
-  courseLevel     CourseLevel       @relation(fields: [courseLevelId], references: [id])
-  title      String?
-  questions  Question[]
-  createdAt  DateTime     @default(now())
-  QuizResult QuizResult[]
-}
 
 model Question {
-  id      Int      @id @default(autoincrement())
-  quizId  Int
-  quiz    Quiz     @relation(fields: [quizId], references: [id])
-  text    String
-  order   Int?
-  options Option[]
+  id            Int      @id @default(autoincrement())
+  courseLevelId Int
+  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
+  text          String
+  order         Int?
+  options       Option[]
 }
 
 model Option {
@@ -354,17 +346,17 @@ model Option {
 }
 
 model QuizResult {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  quizId    Int
-  quiz      Quiz     @relation(fields: [quizId], references: [id])
-  score     Float
-  answers   Json
-  createdAt DateTime @default(now())
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  user          User     @relation(fields: [userId], references: [id])
+  courseLevelId Int
+  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
+  score         Float
+  answers       Json
+  createdAt     DateTime @default(now())
 
   @@index([userId])
-  @@index([quizId])
+  @@index([courseLevelId])
 }
 
 model CourseProgress {

@@ -31,8 +31,8 @@ export const subjectCreateRules = [
 
 export const instructorCreateRules = [
   body("name").exists({ checkFalsy: true }).withMessage("الاسم مطلوب").isString().isLength({ min: 2 }).withMessage("الاسم قصير"),
-  body("bio").optional().isString(),
-  // body("avatarUrl").optional().isString().withMessage("avatarUrl يجب أن يكون نصاً"),
+  body("bio").exists({ checkFalsy: true }).withMessage("السيرة الذاتية مطلوبة").isString(),
+  body("avatarUrl").exists().isString().withMessage("الصورة مطلوبة"),
   body("specializationId").isInt({ gt: 0 }).withMessage("specializationId غير صالح")
 ];
 
@@ -40,8 +40,8 @@ export const instructorUpdateRules = instructorCreateRules.map(rule => rule.opti
 
 export const courseCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
-  body("description").optional().isString(),
-  body("imageUrl").optional().isString().withMessage("الصورة مطلوبة"),
+  body("description").exists({ checkFalsy: true }).withMessage("الشرح مطلوب").isString().isLength({ min: 1 }).withMessage("الشرح مطلوب ولا يمكن أن يكون فارغ"),
+  body("imageUrl").exists().isString().withMessage("الصورة يجب أن تكون نص صالح"),
   body("specializationId").isInt({ gt: 0 }).withMessage("specializationId غير صالح")
 ];
 

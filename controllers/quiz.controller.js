@@ -23,42 +23,23 @@ export const adminCreateQuiz = async (req, res, next) => {
   }
 };
 
-export const adminGetQuiz = async (req, res, next) => {
-  try {
-    const quizId = parseInt(req.params.id, 10);
-    const quiz = await QuizService.getQuizById(quizId);
-    if (!quiz) return res.status(NOT_FOUND_STATUS_CODE).json({ success: FAILURE_REQUEST, message: 'الاختبار غير موجود' });
-    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, data: serializeResponse(quiz) });
-  } catch (error) {
-    handleServiceError(error, next);
-  }
-};
 
 export const adminGetQuizByCourse = async (req, res, next) => {
   try {
     const courseLevelId = parseInt(req.params.courseLevelId, 10);
-    const quiz = await QuizService.getQuizByCourseLevelId(courseLevelId);
-    if (!quiz) return res.status(NOT_FOUND_STATUS_CODE).json({ success: FAILURE_REQUEST, message: 'لا يوجد اختبار لهذا المستوى' });
-    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, data: serializeResponse(quiz) });
+    const questions = await QuizService.getQuestionsByCourseLevel(courseLevelId);
+    if (!questions || questions.length === 0) return res.status(NOT_FOUND_STATUS_CODE).json({ success: FAILURE_REQUEST, message: 'لا يوجد أسئلة لهذا المستوى' });
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, data: serializeResponse(questions) });
   } catch (error) {
     handleServiceError(error, next);
   }
 };
 
-export const adminUpdateQuiz = async (req, res, next) => {
-  try {
-    const quizId = parseInt(req.params.id, 10);
-    const quiz = await QuizService.updateQuiz(quizId, req.body);
-    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم تحديث الاختبار بنجاح.', data: serializeResponse(quiz) });
-  } catch (error) {
-    handleServiceError(error, next);
-  }
-};
 
 export const adminDeleteQuiz = async (req, res, next) => {
   try {
-    const quizId = parseInt(req.params.id, 10);
-    await QuizService.deleteQuiz(quizId);
+    const courseLevelId = parseInt(req.params.courseLevelId, 10);
+    await QuizService.deleteQuiz(courseLevelId);
     res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم حذف الاختبار بنجاح.' });
   } catch (error) {
     handleServiceError(error, next);
@@ -68,8 +49,8 @@ export const adminDeleteQuiz = async (req, res, next) => {
 // --- Question Management ---
 export const adminAddQuestion = async (req, res, next) => {
   try {
-    const quizId = parseInt(req.params.quizId, 10);
-    const question = await QuizService.addQuestionToQuiz(quizId, req.body);
+    const courseLevelId = parseInt(req.params.courseLevelId, 10);
+    const question = await QuizService.addQuestionToCourseLevel(courseLevelId, req.body);
     res.status(SUCCESS_CREATE_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تمت إضافة السؤال بنجاح.', data: serializeResponse(question) });
   } catch (error) {
     handleServiceError(error, next);

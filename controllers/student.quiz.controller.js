@@ -14,18 +14,18 @@ const handleServiceError = (error, next) => {
   next(error);
 };
 
-
 /**
  * Get a quiz by level id
  */
 export const studentGetQuizByLevel = async (req, res, next) => {
   try {
     const levelId = parseInt(req.params.id, 10);
-    const quiz = await QuizService.getQuizByCourseLevelId(levelId);
+    const userId = req.user.id;
+    const questions = await QuizService.getQuizByCourseLevelId(levelId, userId);
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
-      message: 'تم جلب الاختبارات بنجاح.',
-      data: serializeResponse(quiz),
+      message: 'تم جلب الأسئلة بنجاح.',
+      data: serializeResponse(questions),
     });
   } catch (error) {
     handleServiceError(error, next);
@@ -38,13 +38,13 @@ export const studentGetQuizByLevel = async (req, res, next) => {
  */
 export const studentGetQuiz = async (req, res, next) => {
   try {
-    const quizId = parseInt(req.params.id, 10);
+    const courseLevelId = parseInt(req.params.id, 10);
     const userId = req.user.id;
-    const quiz = await QuizService.getQuizForStudent(quizId, userId);
+    const questions = await QuizService.getQuizForStudent(courseLevelId, userId);
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
-      message: 'تم جلب الاختبار بنجاح.',
-      data: serializeResponse(quiz),
+      message: 'تم جلب الأسئلة بنجاح.',
+      data: serializeResponse(questions),
     });
   } catch (error) {
     handleServiceError(error, next);
@@ -56,11 +56,11 @@ export const studentGetQuiz = async (req, res, next) => {
  */
 export const studentSubmitQuiz = async (req, res, next) => {
   try {
-    const quizId = parseInt(req.params.id, 10);
+    const courseLevelId = parseInt(req.params.id, 10);
     const userId = req.user.id;
     const { answers } = req.body;
 
-    const result = await QuizService.submitQuiz(quizId, userId, answers);
+    const result = await QuizService.submitQuiz(courseLevelId, userId, answers);
 
     res.status(SUCCESS_CREATE_STATUS_CODE).json({
       success: SUCCESS_REQUEST,

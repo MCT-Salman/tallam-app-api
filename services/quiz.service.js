@@ -1,150 +1,97 @@
 import prisma from '../prisma/client.js';
 
-// Assume QuizModel is defined elsewhere or use prisma directly
-const QuizModel = prisma.quiz;
-
 // ---------- Admin Functions ----------
 
 /**
- * Create a new quiz for a course level.
+ * Create a quiz for a course level (now just returns course level info).
  * @param {number} courseLevelId
  * @param {object} data
- * @returns {Promise<import('@prisma/client').Quiz>}
+ * @returns {Promise<object>}
  */
 export const createQuiz = async (courseLevelId, data) => {
-  return prisma.quiz.create({
-    data: {
-      courseLevelId,
-      title: data.title,
-    },
-    select: {
-        id: true,
-        title: true,
-        courseLevelId: true,
-      
-      courseLevel: {
-          select: {
-            id: true,
-            name: true,
-            course: {
-              select: {
-                id: true,
-                title: true,
-              },
-            },
-          },
-      },
-    },
-  });
-};
-
-/**
- * Get a quiz by ID.
- * @param {number} quizId
- * @returns {Promise<import('@prisma/client').Quiz>}
- */
-export const getQuizById = async (quizId) => {
-  return prisma.quiz.findUnique({
-    where: { id: quizId },
+  // Since we're eliminating the Quiz table, this function now just returns course level info
+  const courseLevel = await prisma.courseLevel.findUnique({
+    where: { id: courseLevelId },
     select: {
       id: true,
-      title: true,
-      courseLevelId: true,
-      courseLevel: {
+      name: true,
+      course: {
         select: {
           id: true,
-          name: true,
-          course: {
-            select: {
-              id: true,
-              title: true,
-            },
-          },
-        },
-      },
-      questions: {
-        include: {
-          options: true,
+          title: true,
         },
       },
     },
   });
+
+  if (!courseLevel) {
+    throw new Error('Course level not found');
+  }
+
+  return {
+    id: courseLevel.id,
+    title: data.title || courseLevel.name,
+    courseLevelId: courseLevel.id,
+    courseLevel,
+  };
 };
 
 /**
- * Get a quiz by course level ID.
+ * Get questions for a course level.
  * @param {number} courseLevelId
- * @returns {Promise<import('@prisma/client').Quiz>}
- *//*
-export const getQuizByCourseLevelId = async (courseLevelId) => {
-  return prisma.quiz.findMany({
+ * @returns {Promise<import('@prisma/client').Question[]>}
+ */
+export const getQuestionsByCourseLevel = async (courseLevelId) => {
+  return prisma.question.findMany({
     where: { courseLevelId },
-    select: {
-      id: true,
-      title: true,
-      courseLevelId: true,
-      courseLevel: {
-        select: {
-          id: true,
-          name: true,
-          course: {
-            select: {
-              id: true,
-              title: true,
-            },
-          },
-        },
-      },
-      questions: {
-        include: {
-          options: true,
-        },
-      },
-    },
-  });
-};
-*/
-/**
- * Update a quiz.
- * @param {number} quizId
- * @param {object} data
- * @returns {Promise<import('@prisma/client').Quiz>}
- */
-export const updateQuiz = async (quizId, data) => {
-  return prisma.quiz.update({
-    where: { id: quizId },
-    data,
+    orderBy: { order: 'asc' },
     include: {
-      courseLevel: {
-        include: {
-          course: true,
-        },
+      options: {
+        orderBy: { id: 'asc' },
       },
     },
   });
 };
 
+
+
 /**
- * Delete a quiz.
- * @param {number} quizId
- * @returns {Promise<import('@prisma/client').Quiz>}
+ * Delete a quiz (now deletes all questions for a course level).
+ * @param {number} courseLevelId
+ * @returns {Promise<object>}
  */
-export const deleteQuiz = async (quizId) => {
-  return prisma.quiz.delete({
-    where: { id: quizId },
+export const deleteQuiz = async (courseLevelId) => {
+  // Delete all questions and their options for this course level
+  await prisma.option.deleteMany({
+    where: {
+      question: {
+        courseLevelId,
+      },
+    },
   });
+
+  await prisma.question.deleteMany({
+    where: { courseLevelId },
+  });
+
+  // Also delete any quiz results for this course level
+  await prisma.quizResult.deleteMany({
+    where: { courseLevelId },
+  });
+
+  return { deleted: true, courseLevelId };
 };
 
 /**
- * Add a question to a quiz.
- * @param {number} quizId
+ * Add a question to a course level.
+ * @param {number} courseLevelId
  * @param {object} data
  * @returns {Promise<import('@prisma/client').Question>}
  */
-export const addQuestionToQuiz = async (quizId, data) => {
+export const addQuestionToCourseLevel = async (courseLevelId, data) => {
   return prisma.question.create({
     data: {
-      quizId,
+      courseLevelId,
       text: data.text,
       order: data.order,
       options: {
@@ -176,7 +123,7 @@ export const updateQuestion = async (questionId, data) => {
       order,
       options: options
         ? {
-            // حذف جميع الخيارات القديمة وإضافة الجديدة
+            // Delete all old options and add new ones
             deleteMany: {},
             create: options.map((o) => ({
               text: o.text,
@@ -197,7 +144,7 @@ export const updateQuestion = async (questionId, data) => {
  * @returns {Promise<import('@prisma/client').Question>}
  */
 export const deleteQuestion = async (questionId) => {
-  // حذف كل الخيارات المرتبطة أولاً
+  // Delete all options first
   await prisma.option.deleteMany({
     where: { questionId: questionId },
   });
@@ -253,169 +200,110 @@ const checkCourseLevelAccess = async (userId, courseLevelId) => {
 
 /** Student: Get a quiz to take (without correct answers) */
 export const getQuizByCourseLevelId = async (courseLevelId, userId) => {
-  const quiz = await QuizModel.findMany({
+  const questions = await prisma.question.findMany({
     where: { courseLevelId },
+    orderBy: { order: 'asc' },
     select: {
       id: true,
-      title: true,
-      courseLevelId: true,
-      questions: {
-        orderBy: { order: 'asc' },
+      text: true,
+      order: true,
+      options: {
         select: {
           id: true,
           text: true,
-          order: true,
-          options: {
-            select: {
-              id: true,
-              text: true,
-            },
-            orderBy: { id: 'asc' },
-          },
         },
+        orderBy: { id: 'asc' },
       },
     },
   });
 
-  if (!quiz) {
+  if (!questions || questions.length === 0) {
     throw new Error(QUIZ_NOT_FOUND);
   }
 
   // Check if student has access to the course level
-  const hasAccess = await checkCourseLevelAccess(userId, quiz.courseLevelId);
+  const hasAccess = await checkCourseLevelAccess(userId, courseLevelId);
   if (!hasAccess) {
     throw new Error(QUIZ_NO_ACCESS);
   }
 
-  return quiz;
+  return questions;
 };
 
 /** Student: Get a quiz to take (without correct answers) */
-export const getQuizForStudent = async (quizId, userId) => {
-  const quiz = await prisma.quiz.findUnique({
-    where: { id: quizId },
+export const getQuizForStudent = async (courseLevelId, userId) => {
+  const questions = await prisma.question.findMany({
+    where: { courseLevelId },
+    orderBy: { order: 'asc' },
     select: {
       id: true,
-      title: true,
-      courseLevelId: true,
-      questions: {
-        orderBy: { order: 'asc' },
+      text: true,
+      order: true,
+      options: {
         select: {
           id: true,
           text: true,
-          order: true,
-          options: {
-            select: {
-              id: true,
-              text: true,
-            },
-            orderBy: { id: 'asc' },
-          },
         },
+        orderBy: { id: 'asc' },
       },
     },
   });
 
-  if (!quiz) {
+  if (!questions || questions.length === 0) {
     throw new Error(QUIZ_NOT_FOUND);
   }
 
-  // Check if student has access to the course
-  const hasAccess = await checkCourseLevelAccess(userId, quiz.courseLevelId);
+  // Check if student has access to the course level
+  const hasAccess = await checkCourseLevelAccess(userId, courseLevelId);
   if (!hasAccess) {
     throw new Error(QUIZ_NO_ACCESS);
   }
 
-  return quiz;
+  return questions;
 };
 
 /** Student: Submit quiz answers and get result */
-/*
-export const submitQuiz = async (quizId, userId, answers) => {
-  // 1. Fetch the quiz with correct answers
-  const quiz = await QuizModel.findUnique({
-    where: { id: quizId },
+export const submitQuiz = async (courseLevelId, userId, answers) => {
+  // 1. Fetch the questions with correct answers
+  const questions = await prisma.question.findMany({
+    where: { courseLevelId },
     include: {
-      courseLevel: true,
-      questions: {
-        include: {
-          options: true,
-        },
-      },
+      options: true,
     },
   });
 
-  if (!quiz) throw new Error(QUIZ_NOT_FOUND);
+  if (!questions || questions.length === 0) throw new Error(QUIZ_NOT_FOUND);
 
   // 2. Check if student has access to the course level
-  const hasAccess = await checkCourseLevelAccess(userId, quiz.courseLevelId);
+  const hasAccess = await checkCourseLevelAccess(userId, courseLevelId);
   if (!hasAccess) throw new Error(QUIZ_NO_ACCESS);
 
-  // 3. Check if student has already taken this quiz
-  const existingResult = await prisma.quizResult.findFirst({ where: { quizId, userId } });
-  if (existingResult) throw new Error(QUIZ_ALREADY_TAKEN);
-
-  // 4. Calculate score
-  let correctAnswers = 0;
-  const totalQuestions = quiz.questions.length;
-  const questionMap = new Map(quiz.questions.map((q) => [q.id, q]));
-
-  for (const answer of answers) {
-    const question = questionMap.get(answer.questionId);
-    if (question) {
-      const correctOption = question.options.find((o) => o.isCorrect);
-      if (correctOption && correctOption.id === answer.optionId) {
-        correctAnswers++;
-      }
-    }
-  }
-
-  const score = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
-
-  // 5. Save the result
-  const result = await prisma.quizResult.create({
-    data: { userId, quizId, score, answers },
-  });
-
-  return { resultId: result.id, score, totalQuestions, correctAnswers };
-};*/
-export const submitQuiz = async (quizId, userId, answers) => {
-  // 1. Fetch the quiz with correct answers
-  const quiz = await QuizModel.findUnique({
-    where: { id: quizId },
-    include: {
-      courseLevel: true,
-      questions: {
-        include: {
-          options: true,
-        },
-      },
-    },
-  });
-
-  if (!quiz) throw new Error(QUIZ_NOT_FOUND);
-
-  // 2. Check if student has access to the course level
-  const hasAccess = await checkCourseLevelAccess(userId, quiz.courseLevelId);
-  if (!hasAccess) throw new Error(QUIZ_NO_ACCESS);
-
-  const questionMap = new Map(quiz.questions.map((q) => [q.id, q]));
+  const questionMap = new Map(questions.map((q) => [q.id, q]));
 
   // 3. Prepare detailed answers with correctness
   const detailedAnswers = answers.map((answer) => {
     const question = questionMap.get(answer.questionId);
     const correctOption = question?.options.find((o) => o.isCorrect);
-    const isCorrect = correctOption?.id === answer.optionId;
-    return { ...answer, isCorrect };
+    const isCorrect = correctOption ? correctOption.id === answer.optionId : false;
+
+    return {
+      questionId: answer.questionId,
+      optionId: answer.optionId,
+      isCorrect,
+      correctOptionId: correctOption?.id || null,
+      correctOptionText: correctOption?.text || null
+    };
   });
 
   const correctAnswers = detailedAnswers.filter((a) => a.isCorrect).length;
   const incorrectAnswers = detailedAnswers.filter((a) => !a.isCorrect).length;
-  const totalQuestions = quiz.questions.length;
+  const totalQuestions = questions.length;
   const score = totalQuestions > 0 ? (correctAnswers / totalQuestions) * 100 : 0;
 
   // 4. Check if student has already taken this quiz
-  const existingResult = await prisma.quizResult.findFirst({ where: { quizId, userId } });
+  const existingResult = await prisma.quizResult.findFirst({
+    where: { courseLevelId, userId },
+  });
 
   let result;
   if (existingResult) {
@@ -427,7 +315,12 @@ export const submitQuiz = async (quizId, userId, answers) => {
   } else {
     // Create a new result
     result = await prisma.quizResult.create({
-      data: { userId, quizId, score, answers: detailedAnswers },
+      data: {
+        userId,
+        courseLevelId,
+        score,
+        answers: detailedAnswers,
+      },
     });
   }
 
@@ -441,4 +334,3 @@ export const submitQuiz = async (quizId, userId, answers) => {
     alreadyTaken: !!existingResult,
   };
 };
-

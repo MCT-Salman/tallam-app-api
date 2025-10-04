@@ -1,6 +1,6 @@
 import { body, param } from 'express-validator';
 
-export const quizIdParam = param('quizId').isInt({ gt: 0 }).withMessage('معرف الاختبار غير صالح');
+export const courseLevelIdParam = param('courseLevelId').isInt({ gt: 0 }).withMessage('معرف المستوى غير صالح');
 export const questionIdParam = param('questionId').isInt({ gt: 0 }).withMessage('معرف السؤال غير صالح');
 
 export const createQuizRules = [
