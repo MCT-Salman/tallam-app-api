@@ -4,9 +4,9 @@ import prisma from "../prisma/client.js";
 import { RefreshTokenModel } from "../models/index.js";
 import { TOKEN_NOT_CORRECT } from "../validators/messagesResponse.js";
 
-const JWT_SECRET = process.env.JWT_SECRET ;
-const REFRESH_SECRET = process.env.REFRESH_SECRET ;
-const PASSWORD_RESET_SECRET = process.env.PASSWORD_RESET_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET  || "q5w$@fkTkd8gir^edds_f#x";
+const REFRESH_SECRET = process.env.REFRESH_SECRET || "dse$@f12877faFFd8gir^edds_fx-ke";
+const PASSWORD_RESET_SECRET = process.env.PASSWORD_RESET_SECRET || "dse$@f1_dssaF3eFGir^edds_fx";
 
 if (process.env.NODE_ENV === 'production') {
   if (!process.env.JWT_SECRET || !process.env.REFRESH_SECRET || !process.env.PASSWORD_RESET_SECRET) {
