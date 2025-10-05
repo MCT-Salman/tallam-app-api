@@ -8,7 +8,7 @@ export const levelCreateRules = [
   body("order").exists().isInt({ min: 0 }).withMessage("المستوى مطلوب"),
   body("priceUSD").exists().isFloat({ min: 0 }).withMessage("السعر مطلوب"),
   body("priceSAR").exists().isFloat({ min: 0 }).withMessage("السعر مطلوب"),
-  body("imageUrl").optional().isString().withMessage("الصورة يجب أن تكون نص صالح"),
+  body("imageUrl").exists().withMessage("الصورة مطلوبة"),
   body("previewUrl").exists({ checkFalsy: true }).withMessage("الفيديو مطلوب").isString().isLength({ min: 1 }).withMessage("الفيديو مطلوب ولا يمكن أن يكون فارغ"),
 ];
 
