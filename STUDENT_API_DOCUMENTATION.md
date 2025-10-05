@@ -773,6 +773,232 @@ http://localhost:5000
 
 ---
 
+# ⭐ Review Routes
+
+## تقييم المستويات
+
+### 1. إضافة تقييم لمستوى دورة
+**POST** `/api/reviews/course-levels/:courseLevelId`
+*يتطلب مصادقة - طالب*
+
+#### Request Body:
+```json
+{
+  "rating": 5,
+  "comment": "مستوى ممتاز ومفيد جداً"
+}
+```
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم إضافة التقييم بنجاح",
+  "data": {
+    "id": 1,
+    "userId": 10,
+    "courseLevelId": 1,
+    "rating": 5,
+    "comment": "مستوى ممتاز ومفيد جداً",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "user": {
+      "name": "علي الطالب",
+      "avatarUrl": "/uploads/avatars/avatar-123.jpg"
+    },
+    "courseLevel": {
+      "name": "المستوى الأول - الأساسيات",
+      "course": {
+        "title": "دورة البرمجة الأساسية"
+      }
+    }
+  }
+}
+```
+
+#### Error Response (تقييم موجود مسبقاً):
+```json
+{
+  "success": false,
+  "message": "لقد قمت بتقييم هذا المستوى مسبقاً"
+}
+```
+
+#### Error Response (تقييم خارج النطاق):
+```json
+{
+  "success": false,
+  "message": "التقييم يجب أن يكون بين 1 و 5"
+}
+```
+
+### 2. عرض التقييمات لمستوى دورة محدد
+**GET** `/api/reviews/course-levels/:courseLevelId?page=1&limit=10`
+
+#### Query Parameters:
+- `page`: رقم الصفحة (افتراضي: 1)
+- `limit`: عدد العناصر في الصفحة (افتراضي: 10، أقصى: 50)
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم جلب التقييمات بنجاح",
+  "data": {
+    "reviews": [
+      {
+        "id": 1,
+        "rating": 5,
+        "comment": "مستوى ممتاز ومفيد جداً",
+        "createdAt": "2024-01-15T10:00:00Z",
+        "user": {
+          "name": "علي الطالب",
+          "avatarUrl": "/uploads/avatars/avatar-123.jpg"
+        }
+      },
+      {
+        "id": 2,
+        "rating": 4,
+        "comment": "محتوى جيد ولكن يحتاج المزيد من الأمثلة",
+        "createdAt": "2024-01-14T15:30:00Z",
+        "user": {
+          "name": "فاطمة أحمد",
+          "avatarUrl": null
+        }
+      }
+    ],
+    "stats": {
+      "averageRating": 4.5,
+      "totalReviews": 2
+    },
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 2,
+      "totalPages": 1
+    }
+  }
+}
+```
+
+### 3. عرض تقييمي الخاص لمستوى محدد
+**GET** `/api/reviews/course-levels/:courseLevelId/mine`
+*يتطلب مصادقة - طالب*
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم جلب التقييم بنجاح",
+  "data": {
+    "id": 1,
+    "rating": 5,
+    "comment": "مستوى ممتاز ومفيد جداً",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "user": {
+      "name": "علي الطالب",
+      "avatarUrl": "/uploads/avatars/avatar-123.jpg"
+    },
+    "courseLevel": {
+      "name": "المستوى الأول - الأساسيات",
+      "course": {
+        "title": "دورة البرمجة الأساسية"
+      }
+    }
+  }
+}
+```
+
+#### Error Response (لم أقم بتقييم هذا المستوى):
+```json
+{
+  "success": false,
+  "message": "لم تقم بتقييم هذا المستوى بعد"
+}
+```
+
+### 4. تحديث تقييمي
+**PUT** `/api/reviews/:reviewId`
+*يتطلب مصادقة - طالب*
+
+#### Request Body:
+```json
+{
+  "rating": 4,
+  "comment": "محتوى جيد بعد المراجعة"
+}
+```
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم تحديث التقييم بنجاح",
+  "data": {
+    "id": 1,
+    "rating": 4,
+    "comment": "محتوى جيد بعد المراجعة",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "user": {
+      "name": "علي الطالب",
+      "avatarUrl": "/uploads/avatars/avatar-123.jpg"
+    }
+  }
+}
+```
+
+### 5. حذف تقييمي
+**DELETE** `/api/reviews/:reviewId`
+*يتطلب مصادقة - طالب*
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم حذف التقييم بنجاح"
+}
+```
+
+#### Error Response (ليس لدي صلاحية حذف هذا التقييم):
+```json
+{
+  "success": false,
+  "message": "التقييم غير موجود أو ليس لديك صلاحية حذفه"
+}
+```
+
+### 6. عرض إحصائيات التقييمات لمستوى محدد
+**GET** `/api/reviews/course-levels/:courseLevelId/stats`
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم جلب إحصائيات التقييمات بنجاح",
+  "data": {
+    "totalReviews": 15,
+    "averageRating": 4.3,
+    "minRating": 2,
+    "maxRating": 5,
+    "ratingDistribution": [
+      {
+        "rating": 5,
+        "count": 8
+      },
+      {
+        "rating": 4,
+        "count": 5
+      },
+      {
+        "rating": 3,
+        "count": 2
+      }
+    ]
+  }
+}
+```
+
+---
+
 # 🔐 OTP Verification Routes
 
 ## التحقق برمز OTP

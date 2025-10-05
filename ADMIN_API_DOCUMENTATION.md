@@ -1148,6 +1148,183 @@ http://localhost:5000
 
 ---
 
+# 💰 Transaction Management Routes
+
+## إدارة المعاملات (Transactions)
+
+جميع هذه المسارات تتطلب مصادقة ودور ADMIN أو SUBADMIN. تم تركيب الراوتر في التطبيق تحت المسار الأساسي `/api/admin/transactions`.
+
+### 1. عرض جميع المعاملات
+**GET** `/api/admin/transactions?page=1&limit=10&sortBy=createdAt&sortOrder=desc`
+
+#### Query Parameters:
+- `page` اختياري، افتراضي 1
+- `limit` اختياري، افتراضي 10 (حد أقصى 100)
+- `sortBy` اختياري، حقول للترتيب: id, createdAt, amountPaid, updatedAt (افتراضي: createdAt)
+- `sortOrder` اختياري، ترتيب: asc أو desc (افتراضي: desc)
+- `accessCodeId` اختياري لتصفية حسب كود الوصول
+- `couponId` اختياري لتصفية حسب الكوبون
+- `minAmount` اختياري لتصفية حسب الحد الأدنى للمبلغ
+- `maxAmount` اختياري لتصفية حسب الحد الأقصى للمبلغ
+- `startDate` اختياري لتصفية حسب تاريخ البداية (YYYY-MM-DD)
+- `endDate` اختياري لتصفية حسب تاريخ النهاية (YYYY-MM-DD)
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم جلب المعاملات بنجاح",
+  "data": {
+    "transactions": [
+      {
+        "id": 1,
+        "receiptImageUrl": "/uploads/receipts/receipt-123.jpg",
+        "amountPaid": 299.99,
+        "notes": "دفعة أولى",
+        "createdAt": "2024-01-15T10:00:00Z",
+        "updatedAt": "2024-01-15T10:00:00Z",
+        "accessCode": {
+          "id": 1,
+          "code": "ABC123XYZ",
+          "courseLevel": {
+            "id": 1,
+            "name": "المستوى الأول - الأساسيات",
+            "course": {
+              "id": 1,
+              "title": "دورة البرمجة الأساسية"
+            }
+          },
+          "user": {
+            "id": 5,
+            "name": "علي الطالب",
+            "phone": "+963933528477"
+          }
+        },
+        "coupon": {
+          "id": 1,
+          "code": "WELCOME20",
+          "discount": 20,
+          "isPercent": true
+        }
+      }
+    ],
+    "pagination": {
+      "page": 1,
+      "limit": 10,
+      "total": 1,
+      "totalPages": 1
+    }
+  }
+}
+```
+
+### 2. عرض معاملة محددة
+**GET** `/api/admin/transactions/:id`
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم جلب المعاملة بنجاح",
+  "data": {
+    "id": 1,
+    "receiptImageUrl": "/uploads/receipts/receipt-123.jpg",
+    "amountPaid": 299.99,
+    "notes": "دفعة أولى",
+    "createdAt": "2024-01-15T10:00:00Z",
+    "updatedAt": "2024-01-15T10:00:00Z",
+    "accessCode": {
+      "id": 1,
+      "code": "ABC123XYZ",
+      "courseLevel": {
+        "id": 1,
+        "name": "المستوى الأول - الأساسيات",
+        "course": {
+          "id": 1,
+          "title": "دورة البرمجة الأساسية",
+          "specialization": {
+            "id": 1,
+            "name": "تطوير الويب"
+          }
+        }
+      },
+      "user": {
+        "id": 5,
+        "name": "علي الطالب",
+        "phone": "+963933528477",
+        "country": "Syria"
+      }
+    },
+    "coupon": {
+      "id": 1,
+      "code": "WELCOME20",
+      "discount": 20,
+      "isPercent": true,
+      "maxUsage": 100,
+      "usedCount": 1
+    }
+  }
+}
+```
+
+### 3. عرض إحصائيات المعاملات
+**GET** `/api/admin/transactions/stats/overview?startDate=2024-01-01&endDate=2024-01-31`
+
+#### Query Parameters:
+- `startDate` اختياري لتصفية حسب تاريخ البداية (YYYY-MM-DD)
+- `endDate` اختياري لتصفية حسب تاريخ النهاية (YYYY-MM-DD)
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم جلب إحصائيات المعاملات بنجاح",
+  "data": {
+    "totalTransactions": 150,
+    "totalAmount": 45000.00,
+    "averageAmount": 300.00,
+    "minAmount": 50.00,
+    "maxAmount": 1000.00,
+    "transactionCount": 150
+  }
+}
+```
+
+### 4. تحليل المعاملات بالتاريخ
+**GET** `/api/admin/transactions/analytics/date?startDate=2024-01-01&endDate=2024-01-31&groupBy=day`
+
+#### Query Parameters:
+- `startDate` اختياري لتصفية حسب تاريخ البداية (YYYY-MM-DD)
+- `endDate` اختياري لتصفية حسب تاريخ النهاية (YYYY-MM-DD)
+- `groupBy` اختياري، نوع التجميع: day, week, month (افتراضي: day)
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم جلب تحليل المعاملات بالتاريخ بنجاح",
+  "data": {
+    "transactions": [
+      {
+        "date": "2024-01-15",
+        "count": 5,
+        "totalAmount": 1500.00,
+        "avgAmount": 300.00
+      },
+      {
+        "date": "2024-01-14",
+        "count": 3,
+        "totalAmount": 900.00,
+        "avgAmount": 300.00
+      }
+    ],
+    "groupBy": "day"
+  }
+}
+```
+
+---
+
 # 📊 Error Codes
 
 ## أكواد الأخطاء الشائعة

@@ -1,6 +1,6 @@
 import { DomainModel, SpecializationModel, SubjectModel, InstructorModel, CourseModel } from "../models/index.js";
 import prisma from "../prisma/client.js";
-
+import { getBooleanSetting } from './appSettings.service.js';
 // Domains
 export const createDomain = (name) => prisma.domain.create({ data: { name } });
 export const listDomains = async (pagination = {}) => {
@@ -365,13 +365,14 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
     prisma.courseLevel.count({ where: { courseId, isActive: true } }),
   ]);
 
-    const course = await prisma.course.findUnique({
+  const course = await prisma.course.findUnique({
     where: { id: courseId },
     select: { id: true, title: true },
   });
   if (!course) {
     throw new Error("الدورة غير موجودة");
   }
+
   // 2️⃣ تجميع مستويات كل مدرس
   const instructorMap = new Map();
   levels.forEach(level => {
@@ -392,36 +393,43 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
     instructorData.totalSubscribers += level._count.accessCodes || 0;
   });
 
-  // 3️⃣ جلب متوسط التقييم لكل مستوى
-  const ratings = await prisma.review.groupBy({
-    by: ["courseLevelId"],
-    where: { courseLevelId: { in: levels.map(l => l.id) } },
-    _avg: { rating: true },
-  });
-  const ratingMap = new Map();
-  ratings.forEach(r => ratingMap.set(r.courseLevelId, r._avg.rating || 0));
+  // 3️⃣ التحقق من تفعيل التقييم
+  const allowRating = await getBooleanSetting("allowRating", true);
 
-  // 4️⃣ حساب متوسط التقييم لكل مدرس بناءً على مستوياته
+  let ratingMap = new Map();
+  if (allowRating) {
+    const ratings = await prisma.review.groupBy({
+      by: ["courseLevelId"],
+      where: { courseLevelId: { in: levels.map(l => l.id) } },
+      _avg: { rating: true },
+    });
+    ratings.forEach(r => ratingMap.set(r.courseLevelId, r._avg.rating || 0));
+  }
+
+  // 4️⃣ بناء بيانات المدرسين مع/بدون تقييم
   const instructors = Array.from(instructorMap.values()).map(instr => {
-    const avgRating =
-      instr.levelIds.reduce((sum, id) => sum + (ratingMap.get(id) || 0), 0) /
-      (instr.levelIds.length || 1);
+    let avgRating = null;
+    if (allowRating) {
+      avgRating =
+        instr.levelIds.reduce((sum, id) => sum + (ratingMap.get(id) || 0), 0) /
+        (instr.levelIds.length || 1);
+      avgRating = Number(avgRating.toFixed(2));
+    }
+
     return {
-      id : instr.id,
+      id: instr.id,
       name: instr.name,
       bio: instr.bio,
       avatarUrl: instr.avatarUrl,
       coursetitle: course.title,
-      avgRating: Number(avgRating.toFixed(2)),
+      avgRating, // ممكن يكون null إذا التقييم مطفي
       totalSubscribers: instr.totalSubscribers,
     };
   });
 
   return {
     success: true,
-    data: {
-      instructors,
-    },
+    data: { instructors },
     pagination: {
       page,
       limit,
@@ -430,6 +438,7 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
     },
   };
 };
+
 
 
 

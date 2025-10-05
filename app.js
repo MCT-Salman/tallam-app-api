@@ -31,8 +31,10 @@ import progressRoutes from './routes/progress.routes.js';
 import lessonRoutes from './routes/lesson.routes.js';
 import fileRoutes from './routes/file.routes.js';
 import couponRoutes from './routes/coupon.routes.js';
+import transactionRoutes from './routes/transaction.routes.js';
+import appSettingsRoutes from './routes/appSettings.routes.js';
+import reviewRoutes from './routes/review.routes.js';
 import suggestionRoutes from './routes/suggestion.routes.js';
-
 import setupRoutes from './routes/setup.routes.js';
 
 const app = express();
@@ -135,10 +137,13 @@ app.get('/', (req, res) => {
       admin: '/api/admin',
       user: '/api/user',
       otp: '/api/otp',
-      catalog: '/api/catalog'
+      catalog: '/api/catalog',
+      reviews: '/api/reviews'
     }
   });
 });
+
+app.use('/api/setup', setupRoutes);
 
 // تطبيق المسارات
 // لا نطبق authLimiter على جميع مسارات /api/auth حتى لا تتأثر مسارات مثل /profile
@@ -150,12 +155,15 @@ app.use('/api/users', userRoutes);
 app.use('/api/code-requests', codeRequestRoutes);
 app.use('/api/access-codes', accessCodeRoutes);
 app.use('/api/admin', quizRoutes); // Using /api/admin prefix for quiz management
+app.use('/api/admin/transactions', transactionRoutes); // Using /api/admin/transactions prefix for transaction management
 app.use('/api/quizzes', studentQuizRoutes); // Routes for students to take quizzes
 app.use('/api/progress', progressRoutes); // Routes for students to track progress
 app.use('/api/catalog', catalogRoutes);
 app.use('/api/lessons', lessonRoutes);
+app.use('/api/reviews', reviewRoutes); // Routes for course level reviews
 app.use('/api/files', fileRoutes);
 app.use('/api/coupons', couponRoutes);
+app.use('/api/settings', appSettingsRoutes); // Routes for app settings
 app.use('/api/suggestions', suggestionRoutes);
 
 app.use('/api/setup', setupRoutes);
@@ -168,7 +176,7 @@ app.use( (req, res) => {
     error: 'المسار غير موجود',
     path: req.originalUrl
   });
-});
+}); 
 
 // معالج أخطاء مركزي
 app.use(errorHandler);

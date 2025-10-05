@@ -1,4 +1,5 @@
 import prisma from '../prisma/client.js';
+import { getBooleanSetting } from './appSettings.service.js';
 
 // ---------- Admin Functions ----------
 
@@ -324,6 +325,25 @@ export const submitQuiz = async (courseLevelId, userId, answers) => {
     });
   }
 
+  // 5. Check if rating is allowed and get average review for this course level
+  let averageReview = null;
+  const allowRating = await getBooleanSetting('allowRating', true);
+
+  if (allowRating) {
+    const reviewStats = await prisma.review.aggregate({
+      where: { courseLevelId },
+      _avg: { rating: true },
+      _count: { rating: true }
+    });
+
+    if (reviewStats._count.rating > 0) {
+      averageReview = {
+        averageRating: Number(reviewStats._avg.rating),
+        totalReviews: reviewStats._count.rating
+      };
+    }
+  }
+
   return {
     resultId: result.id,
     score,
@@ -332,5 +352,6 @@ export const submitQuiz = async (courseLevelId, userId, answers) => {
     incorrectAnswers,
     answers: detailedAnswers,
     alreadyTaken: !!existingResult,
+    averageReview: averageReview // Include average review if rating is allowed
   };
 };
