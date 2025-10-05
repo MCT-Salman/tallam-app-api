@@ -20,31 +20,15 @@ router.use(requireAuth);
 router.use(requireRole(['ADMIN']));
 
 // Get all transactions with filtering and pagination
-router.get(
-  "/",
-  validate(transactionListValidationRules),
-  adminGetTransactions
-);
+router.get("/", validate(transactionListValidationRules), adminGetTransactions);
 
 // Get a specific transaction by ID
-router.get(
-  "/:id",
-  validate(transactionIdParam),
-  adminGetTransaction
-);
+router.get("/:id", validate(transactionIdParam), adminGetTransaction);
 
 // Get transaction statistics
-router.get(
-  "/stats/overview",
-  validate(transactionAnalyticsValidationRules),
-  adminGetTransactionStats
-);
+router.get("/stats/overview", validate(transactionAnalyticsValidationRules), adminGetTransactionStats);
 
 // Get transactions grouped by date for analytics
-router.get(
-  "/analytics/date",
-  validate(transactionAnalyticsValidationRules),
-  adminGetTransactionsByDate
-);
+router.get("/analytics/date", validate(transactionAnalyticsValidationRules), adminGetTransactionsByDate);
 
 export default router;

@@ -158,9 +158,9 @@ export const listLevelsByCourseAndInstructor = async (courseId, instructorId, pa
       orderBy: { order: "asc" },
       select: {
         id: true,
-        name : true,
+        name: true,
         order: true,
-        imageUrl : true,
+        imageUrl: true,
       },
       skip,
       take
@@ -187,12 +187,13 @@ export const listLevelsByCourseAndInstructor = async (courseId, instructorId, pa
 
 export const DetailLevel = async (courseLevelId, userId = null) => {
   const baseInclude = {
-    course: { select: {
-      id: true,
-      title: true,
-      description : true,
-    }
-     },
+    course: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+      }
+    },
     instructor: {
       select: {
         id: true,
@@ -207,9 +208,10 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
     select: {
       id: true,
       name: true,
-      priceUSD : true,
-      priceSAR : true,
-      previewUrl : true,
+      priceUSD: true,
+      priceSAR: true,
+      previewUrl: true,
+      order: true,
       ...baseInclude,
       lessons: {
         select: {
@@ -239,7 +241,7 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
       used: true
     }
   });
-  
+
   // If access code exists with used=true, include full lesson details
   if (accessCode) {
     const fullResult = await prisma.courseLevel.findUnique({
@@ -251,6 +253,7 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
         priceUSD: true,
         priceSAR: true,
         previewUrl: true,
+        order: true,
         ...baseInclude,
         lessons: {
           select: {
@@ -264,23 +267,23 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
             googleDriveUrl: true
           },
         },
-       /* files: {
-          select: {
-            id: true,
-            url: true,
-            name: true,
-            type: true,
-          },
-        },
-        quizzes: {
-          select: {
-            id: true,
-            title: true,
-          },
-        },*/
+        /* files: {
+           select: {
+             id: true,
+             url: true,
+             name: true,
+             type: true,
+           },
+         },
+         quizzes: {
+           select: {
+             id: true,
+             title: true,
+           },
+         },*/
       },
     });
-    
+
     return { ...fullResult, issubscribed: true };
   }
   // Otherwise, return basic details
