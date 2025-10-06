@@ -125,10 +125,10 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
     const defaultHeaders = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'
     };
-
+*/
     const youtubeUrl = (req.body.youtubeUrl ?? req.body.youtubeurl ?? '').trim();
     const googleDriveUrl = (req.body.googleDriveUrl ?? req.body.googledriveurl ?? '').trim();
-
+/*
     let ytDetail = null;
 
     if (youtubeUrl && isYouTubeUrl(youtubeUrl)) {
@@ -180,10 +180,10 @@ export const adminUpdateLesson = async (req, res, next) => {
     const defaultHeaders = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'
     };
-
+*/
     const youtubeUrl = (req.body.youtubeUrl ?? req.body.youtubeurl ?? '').trim();
     const googleDriveUrl = (req.body.googleDriveUrl ?? req.body.googledriveurl ?? '').trim();
-
+/*
     if (youtubeUrl) {
       let ytValid = false;
       if (isYouTubeUrl(youtubeUrl)) {
