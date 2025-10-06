@@ -250,14 +250,14 @@ export const getQuizForStudent = async (courseLevelId, userId) => {
     },
   });
 
-  if (!questions || questions.length === 0) {
-    throw new Error(QUIZ_NOT_FOUND);
-  }
+ /* if (!questions || questions.length === 0) {
+    throw new Error("لا يوجد اختبار");
+  }*/
 
   // Check if student has access to the course level
   const hasAccess = await checkCourseLevelAccess(userId, courseLevelId);
   if (!hasAccess) {
-    throw new Error(QUIZ_NO_ACCESS);
+    throw new Error("لا يمكنك الوصول للاختبار");
   }
 
   return questions;
