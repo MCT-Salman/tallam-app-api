@@ -183,8 +183,8 @@ export const adminUpdateLesson = async (req, res, next) => {
     if (youtubeUrl) {
       let ytValid = false;
       if (isYouTubeUrl(youtubeUrl)) {
-        const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 20000 });
-        ytValid = yt.available === true;
+       // const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 20000 });
+        ytValid = true;//yt.available === true;
       } else {
         const yt = await checkUrl(youtubeUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' } });
         ytValid = yt.valid;
