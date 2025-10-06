@@ -53,7 +53,7 @@ export const adminUpdateLevel = async (req, res, next) => {
       order: req.body.order ? parseInt(req.body.order,10): 1,
       priceUSD: req.body.priceUSD ? parseFloat(req.body.priceUSD) : null, 
       priceSAR: req.body.priceSAR ? parseFloat(req.body.priceSAR) : null,
-      isFree: req.body.isFree,
+      isFree: req.body.isFree === "true",
       previewUrl : req.body.previewUrl,
       downloadUrl : req.body.downloadUrl,
       isActive: req.body.isActive || true,

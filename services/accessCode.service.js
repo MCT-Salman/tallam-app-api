@@ -177,11 +177,17 @@ export const getCourseLevelsByUserId = async (userId) => {
     },
     include: {
       courseLevel: {
-        include: {
+         select: {
+          id: true,
+          title: true,
+          order: true,
+          imageUrl: true,
+          createdAt: true,
+          updatedAt: true,
           course: { select: { id: true, title: true } }
         }
       }
     },
     orderBy: { usedAt: 'desc' }
-  }).then(codes => codes.map(code => ({ ...code.courseLevel, accessCodeId: code.id })));
+  }).then(codes => codes.map(code => ({ ...code.courseLevel })));
 };

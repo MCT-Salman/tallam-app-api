@@ -8,7 +8,12 @@ export const levelCreateRules = [
   body("order").exists().isInt({ min: 0 }).withMessage("المستوى مطلوب"),
   body("priceUSD").exists().isFloat({ min: 0 }).withMessage("السعر مطلوب"),
   body("priceSAR").exists().isFloat({ min: 0 }).withMessage("السعر مطلوب"),
-  body("imageUrl").exists().withMessage("الصورة مطلوبة"),
+  body("imageUrl").custom((value, { req }) => {
+    if (!req.file) {
+      throw new Error("الصورة مطلوبة");
+    }
+    return true;
+  }),
   body("previewUrl").exists({ checkFalsy: true }).withMessage("الفيديو مطلوب").isString().isLength({ min: 1 }).withMessage("الفيديو مطلوب ولا يمكن أن يكون فارغ"),
 ];
 
