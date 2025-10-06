@@ -1,5 +1,7 @@
-// URL checking utility using Node's built-in fetch (Node 18+)
+// URL checking utility using Axios
 // Determines if a URL is reachable and returns details.
+
+import axios from 'axios';
 
 /**
  * Check a URL by issuing a request and determining validity.
@@ -18,47 +20,60 @@ export async function checkUrl(url, opts = {}) {
   const allowRedirects = opts.allowRedirects !== false;
   const headers = opts.headers ?? {};
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
-
-  const runFetch = async (method) => {
-    const res = await fetch(url, {
+  const runAxios = async (method) => {
+    return axios({
       method,
-      redirect: allowRedirects ? 'follow' : 'manual',
+      url,
+      timeout: timeoutMs,
+      maxRedirects: allowRedirects ? 5 : 0,
       headers,
-      signal: controller.signal,
+      validateStatus: function (status) {
+        return status < 500; // Resolve only if status is less than 500
+      }
     });
-    return res;
   };
 
   try {
     // Try HEAD first
     let method = 'HEAD';
-    let res = await runFetch(method);
+    let response = await runAxios(method);
 
     // Some servers reject HEAD; retry with GET on common codes
-    if ([403, 405, 501].includes(res.status)) {
+    if ([403, 405, 501].includes(response.status)) {
       method = 'GET';
-      res = await runFetch(method);
+      response = await runAxios(method);
     }
 
-    const status = res.status;
-    const ok = res.ok;
-    const redirected = res.type === 'opaqueredirect' || res.redirected === true || (status >= 300 && status < 400);
+    const status = response.status;
+    const ok = response.status >= 200 && response.status < 300;
+    const redirected = response.status >= 300 && response.status < 400;
 
     // Final URL resolution
-    let finalUrl = null;
-    try { finalUrl = res.url || url; } catch { finalUrl = url; }
+    let finalUrl = response.config.url || url;
 
     // Consider valid if status in 200-299 or (3xx and redirects allowed)
     const valid = (status >= 200 && status < 300) || (allowRedirects && status >= 300 && status < 400);
 
     return { valid, status, ok, method, redirected, finalUrl };
   } catch (err) {
-    const isAbort = err?.name === 'AbortError';
-    return { valid: false, status: null, ok: false, method: 'HEAD', redirected: false, finalUrl: null, error: isAbort ? 'timeout' : String(err?.message || err) };
-  } finally {
-    clearTimeout(timeout);
+    let errorMessage = 'unknown';
+    if (err.code === 'ECONNABORTED') {
+      errorMessage = 'timeout';
+    } else if (err.response) {
+      // Server responded with error status
+      return {
+        valid: false,
+        status: err.response.status,
+        ok: false,
+        method: 'HEAD',
+        redirected: false,
+        finalUrl: null,
+        error: `HTTP ${err.response.status}`
+      };
+    } else {
+      errorMessage = String(err?.message || err);
+    }
+    return { valid: false, status: null, ok: false, method: 'HEAD', redirected: false, finalUrl: null, error: errorMessage };
   }
 }
 
@@ -100,25 +115,37 @@ export function isYouTubeUrl(url) {
  */
 export async function checkYouTubeAvailability(targetUrl, opts = {}) {
   const timeoutMs = Number(opts.timeoutMs ?? 8000);
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const endpoint = `https://www.youtube.com/oembed?url=${encodeURIComponent(targetUrl)}&format=json`;
+
   try {
-    const res = await fetch(endpoint, {
-      method: 'GET',
-      redirect: 'follow',
+    const response = await axios.get(endpoint, {
+      timeout: timeoutMs,
       headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' },
-      signal: controller.signal,
+      validateStatus: function (status) {
+        return status < 500;
+      }
     });
-    const status = res.status;
-    const ok = res.ok;
+
+    const status = response.status;
+    const ok = response.status >= 200 && response.status < 300;
     // Available if oEmbed returns 200
     const available = status === 200;
     return { available, status, ok };
   } catch (err) {
-    const isAbort = err?.name === 'AbortError';
-    return { available: false, status: null, ok: false, error: isAbort ? 'timeout' : String(err?.message || err) };
-  } finally {
-    clearTimeout(timeout);
+    let errorMessage = 'unknown';
+    if (err.code === 'ECONNABORTED') {
+      errorMessage = 'timeout';
+    } else if (err.response) {
+      // Server responded with error status
+      return {
+        available: false,
+        status: err.response.status,
+        ok: false,
+        error: `HTTP ${err.response.status}`
+      };
+    } else {
+      errorMessage = String(err?.message || err);
+    }
+    return { available: false, status: null, ok: false, error: errorMessage };
   }
 }
