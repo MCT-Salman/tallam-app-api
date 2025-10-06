@@ -118,35 +118,27 @@ export const adminListLessonsByLevel = async (req, res, next) => {
   }
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
+
 export const adminCreateLessonForLevel = async (req, res, next) => {
-  try { 
-    // Validate external URLs before creating the lesson
+  try {
     const invalidFields = [];
-    // Normalize possible lowercase keys
-    const youtubeUrl = (req.body.youtubeUrl || req.body.youtubeurl || '').trim();
-    const googleDriveUrl = (req.body.googleDriveUrl || req.body.googledriveurl || '').trim();
+    const defaultHeaders = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'
+    };
+
+    const youtubeUrl = (req.body.youtubeUrl ?? req.body.youtubeurl ?? '').trim();
+    const googleDriveUrl = (req.body.googleDriveUrl ?? req.body.googledriveurl ?? '').trim();
 
     let ytDetail = null;
-    if (youtubeUrl) {
-      let ytValid = false;
 
-      const yt = await checkUrl(youtubeUrl, {
-        timeoutMs: 20000,
-        allowRedirects: true,
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' }
-      });
-
-      if (yt.valid) {
-        const ytCheck = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 20000 });
-        ytDetail = ytCheck;
-        ytValid = ytCheck.available === true;
-      }
-
-      if (!ytValid) invalidFields.push('youtubeUrl');
+    if (youtubeUrl && isYouTubeUrl(youtubeUrl)) {
+      const ytCheck = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 8000 });
+      ytDetail = ytCheck;
+      if (!ytCheck.available) invalidFields.push('youtubeUrl');
     }
-    
+
     if (googleDriveUrl) {
-      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' } });
+      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 8000, allowRedirects: true, headers: defaultHeaders });
       if (!gd.valid) invalidFields.push('googleDriveUrl');
     }
 
@@ -161,43 +153,51 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
     const lesson = await createLessonForLevel(parseInt(req.params.courseLevelId,10), {
       title: req.body.title,
       description: req.body.description,
-      youtubeUrl: youtubeUrl,
+      youtubeUrl,
       youtubeId: req.body.youtubeId,
       googleDriveUrl: googleDriveUrl || null,
-      durationSec: req.body.durationSec? parseInt(req.body.durationSec,10): null,
-      orderIndex: req.body.orderIndex? parseInt(req.body.orderIndex,10): 0,
+      durationSec: req.body.durationSec ? Number(req.body.durationSec) : null,
+      orderIndex: req.body.orderIndex ? Number(req.body.orderIndex) : 0,
       isFreePreview: !!req.body.isFreePreview
-    }); 
-    res.status(201).json({ 
-      success: true, 
+    });
+
+    res.status(201).json({
+      success: true,
       message: "تم إنشاء الدرس بنجاح",
-      data: {
-        ...serializeResponse(lesson)
-      }
-    }); 
+      data: { ...serializeResponse(lesson) }
+    });
+
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
   }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
+
 export const adminUpdateLesson = async (req, res, next) => {
   try { 
     // Validate URLs if provided on update
-    //const invalidFields = [];
-    const youtubeUrl = req.body.youtubeUrl || req.body.youtubeurl;
-    const googleDriveUrl = req.body.googleDriveUrl || req.body.googledriveurl;
+    const invalidFields = [];
+    const defaultHeaders = {
+      'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'
+    };
+
+    const youtubeUrl = (req.body.youtubeUrl ?? req.body.youtubeurl ?? '').trim();
+    const googleDriveUrl = (req.body.googleDriveUrl ?? req.body.googledriveurl ?? '').trim();
 
     if (youtubeUrl) {
       let ytValid = false;
       if (isYouTubeUrl(youtubeUrl)) {
-       // const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 20000 });
-        ytValid = true;//yt.available === true;
+         const ytCheck = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 8000 });
+         ytValid = ytCheck.available === true;
       } else {
-        const yt = await checkUrl(youtubeUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' } });
+        const yt = await checkUrl(youtubeUrl, { timeoutMs: 8000, allowRedirects: true, headers: defaultHeaders });
         ytValid = yt.valid;
       }
       if (!ytValid) invalidFields.push('youtubeUrl');
     }
+
     if (googleDriveUrl) {
-      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' } });
+      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 8000, allowRedirects: true, headers: defaultHeaders });
       if (!gd.valid) invalidFields.push('googleDriveUrl');
     }
 
@@ -212,13 +212,14 @@ export const adminUpdateLesson = async (req, res, next) => {
     const lesson = await updateLesson(parseInt(req.params.id,10), {
       title: req.body.title,
       description: req.body.description,
-      youtubeUrl: youtubeUrl,
-      youtubeId: req.body.youtubeId,
-      googleDriveUrl: googleDriveUrl,
-      durationSec: req.body.durationSec? parseInt(req.body.durationSec,10): undefined,
-      orderIndex: req.body.orderIndex? parseInt(req.body.orderIndex,10): undefined,
-      isFreePreview: req.body.isFreePreview
+      youtubeUrl: youtubeUrl || undefined,
+      youtubeId: req.body.youtubeId ?? undefined,
+      googleDriveUrl: googleDriveUrl || undefined,
+      durationSec: req.body.durationSec !== undefined ? parseInt(req.body.durationSec,10) : undefined,
+      orderIndex: req.body.orderIndex !== undefined ? parseInt(req.body.orderIndex,10) : undefined,
+      isFreePreview: req.body.isFreePreview !== undefined ? !!req.body.isFreePreview : undefined
     }); 
+
     res.json({ 
       success: true, 
       message: "تم تحديث الدرس بنجاح",
@@ -226,9 +227,13 @@ export const adminUpdateLesson = async (req, res, next) => {
         ...serializeResponse(lesson)
       }
     }); 
+
+  } catch (e) {
+    e.statusCode = e.statusCode || 400; 
+    next(e);
   }
-  catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
+
 export const adminToggleLesson = async (req, res, next) => {
   try { 
     const lesson = await toggleLesson(parseInt(req.params.id,10), !!req.body.isActive); 
