@@ -121,7 +121,7 @@ export const adminListLessonsByLevel = async (req, res, next) => {
 
 export const adminCreateLessonForLevel = async (req, res, next) => {
   try {
-    const invalidFields = [];
+  /*  const invalidFields = [];
     const defaultHeaders = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'
     };
@@ -148,7 +148,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
         message: `روابط غير صالحة: ${invalidFields.join(', ')}`,
         data: { errors: invalidFields, youtube: ytDetail }
       });
-    }
+    }*/
 
     const lesson = await createLessonForLevel(parseInt(req.params.courseLevelId,10), {
       title: req.body.title,
@@ -176,7 +176,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
 export const adminUpdateLesson = async (req, res, next) => {
   try { 
     // Validate URLs if provided on update
-    const invalidFields = [];
+  /*  const invalidFields = [];
     const defaultHeaders = {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36'
     };
@@ -207,7 +207,7 @@ export const adminUpdateLesson = async (req, res, next) => {
         message: `روابط غير صالحة: ${invalidFields.join(', ')}`,
         data: { errors: invalidFields }
       });
-    }
+    }*/
 
     const lesson = await updateLesson(parseInt(req.params.id,10), {
       title: req.body.title,
