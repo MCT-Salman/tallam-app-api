@@ -130,7 +130,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
     if (youtubeUrl) {
       let ytValid = false;
       if (isYouTubeUrl(youtubeUrl)) {
-        const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 8000 });
+        const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 20000 });
         ytDetail = yt;
         ytValid = yt.available === true;
       } else {
