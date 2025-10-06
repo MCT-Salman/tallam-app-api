@@ -123,23 +123,28 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
     // Validate external URLs before creating the lesson
     const invalidFields = [];
     // Normalize possible lowercase keys
-    const youtubeUrl = req.body.youtubeUrl || req.body.youtubeurl;
-    const googleDriveUrl = req.body.googleDriveUrl || req.body.googledriveurl;
+    const youtubeUrl = (req.body.youtubeUrl || req.body.youtubeurl || '').trim();
+    const googleDriveUrl = (req.body.googleDriveUrl || req.body.googledriveurl || '').trim();
 
     let ytDetail = null;
     if (youtubeUrl) {
       let ytValid = false;
-      if (isYouTubeUrl(youtubeUrl)) {
-        const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 20000 });
-        ytDetail = yt;
-        ytValid = yt.available === true;
-      } else {
-        const yt = await checkUrl(youtubeUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' } });
-        ytDetail = yt;
-        ytValid = yt.valid;
+
+      const yt = await checkUrl(youtubeUrl, {
+        timeoutMs: 20000,
+        allowRedirects: true,
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' }
+      });
+
+      if (yt.valid) {
+        const ytCheck = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 20000 });
+        ytDetail = ytCheck;
+        ytValid = ytCheck.available === true;
       }
+
       if (!ytValid) invalidFields.push('youtubeUrl');
     }
+    
     if (googleDriveUrl) {
       const gd = await checkUrl(googleDriveUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' } });
       if (!gd.valid) invalidFields.push('googleDriveUrl');
