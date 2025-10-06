@@ -180,6 +180,7 @@ export const getCourseLevelsByUserId = async (userId) => {
          select: {
           id: true,
           name: true,
+          description: true,
           order: true,
           imageUrl: true,
           createdAt: true,

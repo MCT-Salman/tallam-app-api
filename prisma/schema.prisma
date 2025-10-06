@@ -203,6 +203,7 @@ model Instructor {
 model CourseLevel {
   id          Int      @id @default(autoincrement())
   name        String
+  description String?
   order       Int?
   priceUSD    Float?
   priceSAR    Float?

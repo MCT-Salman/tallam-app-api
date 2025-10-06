@@ -5,6 +5,7 @@ export const idParam = param("id").isInt({ gt: 0 }).withMessage("id غير صا�
 
 export const levelCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
+  body("description").optional().isString().isLength({ max: 1000 }).withMessage("الوصف يجب أن يكون أقل من 1000 حرف"),
   body("order").exists().isInt({ min: 0 }).withMessage("المستوى مطلوب"),
   body("priceUSD").exists().isFloat({ min: 0 }).withMessage("السعر مطلوب"),
   body("priceSAR").exists().isFloat({ min: 0 }).withMessage("السعر مطلوب"),

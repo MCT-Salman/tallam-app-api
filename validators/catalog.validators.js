@@ -22,6 +22,7 @@ export const specializationCreateRules = [
     }),
 ];
 
+
 export const subjectCreateRules = [
   body("name")
     .exists({ checkFalsy: true })

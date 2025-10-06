@@ -13,6 +13,7 @@ export const adminCreateLevel = async (req, res, next) => {
     const imageUrl = req.file ? `/uploads/images/courselevel/${req.file.filename}` : null;
     const level = await createLevel(parseInt(req.params.courseId,10), { 
       name: req.body.title, 
+      description: req.body.description,
       order: req.body.order ? parseInt(req.body.order,10): 1,
       instructorId: parseInt(req.body.instructorId,10),
       priceUSD: req.body.priceUSD ? parseFloat(req.body.priceUSD) : null, 
@@ -50,6 +51,7 @@ export const adminUpdateLevel = async (req, res, next) => {
     const imageUrl = req.file ? `/uploads/images/courselevel/${req.file.filename}` : null;
     const level = await updateLevel(parseInt(req.params.id,10), { 
       name: req.body.title, 
+      description: req.body.description,
       order: req.body.order ? parseInt(req.body.order,10): 1,
       priceUSD: req.body.priceUSD ? parseFloat(req.body.priceUSD) : null, 
       priceSAR: req.body.priceSAR ? parseFloat(req.body.priceSAR) : null,
@@ -123,7 +125,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
     // Normalize possible lowercase keys
     const youtubeUrl = req.body.youtubeUrl || req.body.youtubeurl;
     const googleDriveUrl = req.body.googleDriveUrl || req.body.googledriveurl;
-/*
+
     let ytDetail = null;
     if (youtubeUrl) {
       let ytValid = false;
@@ -132,14 +134,14 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
         ytDetail = yt;
         ytValid = yt.available === true;
       } else {
-        const yt = await checkUrl(youtubeUrl, { timeoutMs: 8000, allowRedirects: true, headers: { 'User-Agent': 'Taalam/1.0' } });
+        const yt = await checkUrl(youtubeUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
         ytDetail = yt;
         ytValid = yt.valid;
       }
       if (!ytValid) invalidFields.push('youtubeUrl');
     }
     if (googleDriveUrl) {
-      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 8000, allowRedirects: true, headers: { 'User-Agent': 'Taalam/1.0' } });
+      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
       if (!gd.valid) invalidFields.push('googleDriveUrl');
     }
 
@@ -149,7 +151,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
         message: `روابط غير صالحة: ${invalidFields.join(', ')}`,
         data: { errors: invalidFields, youtube: ytDetail }
       });
-    }*/
+    }
 
     const lesson = await createLessonForLevel(parseInt(req.params.courseLevelId,10), {
       title: req.body.title,
@@ -178,19 +180,19 @@ export const adminUpdateLesson = async (req, res, next) => {
     const youtubeUrl = req.body.youtubeUrl || req.body.youtubeurl;
     const googleDriveUrl = req.body.googleDriveUrl || req.body.googledriveurl;
 
-   /* if (youtubeUrl) {
+    if (youtubeUrl) {
       let ytValid = false;
       if (isYouTubeUrl(youtubeUrl)) {
-        const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 8000 });
+        const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 20000 });
         ytValid = yt.available === true;
       } else {
-        const yt = await checkUrl(youtubeUrl, { timeoutMs: 8000, allowRedirects: true, headers: { 'User-Agent': 'Taalam/1.0' } });
+        const yt = await checkUrl(youtubeUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
         ytValid = yt.valid;
       }
       if (!ytValid) invalidFields.push('youtubeUrl');
     }
     if (googleDriveUrl) {
-      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 8000, allowRedirects: true, headers: { 'User-Agent': 'Taalam/1.0' } });
+      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
       if (!gd.valid) invalidFields.push('googleDriveUrl');
     }
 
@@ -200,7 +202,7 @@ export const adminUpdateLesson = async (req, res, next) => {
         message: `روابط غير صالحة: ${invalidFields.join(', ')}`,
         data: { errors: invalidFields }
       });
-    }*/
+    }
 
     const lesson = await updateLesson(parseInt(req.params.id,10), {
       title: req.body.title,

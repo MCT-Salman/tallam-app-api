@@ -159,6 +159,7 @@ export const listLevelsByCourseAndInstructor = async (courseId, instructorId, pa
       select: {
         id: true,
         name: true,
+        description: true,
         order: true,
         imageUrl: true,
       },
@@ -208,6 +209,7 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
     select: {
       id: true,
       name: true,
+      description: true,
       priceUSD: true,
       priceSAR: true,
       previewUrl: true,
@@ -250,6 +252,7 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
         // الحقول المباشرة من CourseLevel
         id: true,
         name: true,
+        description: true,
         priceUSD: true,
         priceSAR: true,
         previewUrl: true,

@@ -107,7 +107,7 @@ export async function checkYouTubeAvailability(targetUrl, opts = {}) {
     const res = await fetch(endpoint, {
       method: 'GET',
       redirect: 'follow',
-      headers: { 'User-Agent': 'Taalam/1.0' },
+      headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
       signal: controller.signal,
     });
     const status = res.status;

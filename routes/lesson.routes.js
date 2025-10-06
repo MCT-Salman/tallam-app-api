@@ -16,7 +16,7 @@ const r = Router();
 // Admin - Levels
 r.get("/admin/courses/:courseId/levels", requireAuth, requireRole(["ADMIN"]), validate(courseIdParam), adminListLevels);
 r.post("/admin/courses/:courseId/levels", requireAuth, requireRole(["ADMIN"]), validate(courseIdParam),uploadCourseLevelImage.single('imageUrl'), validate(levelCreateRules), adminCreateLevel);
-r.put("/admin/levels/:id", requireAuth, requireRole(["ADMIN"]), uploadCourseLevelImage.single('imageUrl'), validate(idParam), validate(levelCreateRules), adminUpdateLevel);
+r.put("/admin/levels/:id", requireAuth, requireRole(["ADMIN"]), uploadCourseLevelImage.single('imageUrl'), validate(levelCreateRules), adminUpdateLevel);
 r.put("/admin/levels/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleLevel);
 r.delete("/admin/levels/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteLevel);
 
