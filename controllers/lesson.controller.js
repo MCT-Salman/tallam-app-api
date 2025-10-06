@@ -127,7 +127,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
     const googleDriveUrl = req.body.googleDriveUrl || req.body.googledriveurl;
 
     let ytDetail = null;
-    if (youtubeUrl) {
+   /* if (youtubeUrl) {
       let ytValid = false;
       if (isYouTubeUrl(youtubeUrl)) {
         const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 8000 });
@@ -139,7 +139,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
         ytValid = yt.valid;
       }
       if (!ytValid) invalidFields.push('youtubeUrl');
-    }
+    }*/
     if (googleDriveUrl) {
       const gd = await checkUrl(googleDriveUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
       if (!gd.valid) invalidFields.push('googleDriveUrl');
