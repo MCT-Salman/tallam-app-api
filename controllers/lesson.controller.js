@@ -127,21 +127,21 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
     const googleDriveUrl = req.body.googleDriveUrl || req.body.googledriveurl;
 
     let ytDetail = null;
-   /* if (youtubeUrl) {
+    if (youtubeUrl) {
       let ytValid = false;
       if (isYouTubeUrl(youtubeUrl)) {
         const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 8000 });
         ytDetail = yt;
         ytValid = yt.available === true;
       } else {
-        const yt = await checkUrl(youtubeUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+        const yt = await checkUrl(youtubeUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' } });
         ytDetail = yt;
         ytValid = yt.valid;
       }
       if (!ytValid) invalidFields.push('youtubeUrl');
-    }*/
+    }
     if (googleDriveUrl) {
-      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' } });
       if (!gd.valid) invalidFields.push('googleDriveUrl');
     }
 
@@ -186,13 +186,13 @@ export const adminUpdateLesson = async (req, res, next) => {
         const yt = await checkYouTubeAvailability(youtubeUrl, { timeoutMs: 20000 });
         ytValid = yt.available === true;
       } else {
-        const yt = await checkUrl(youtubeUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+        const yt = await checkUrl(youtubeUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' } });
         ytValid = yt.valid;
       }
       if (!ytValid) invalidFields.push('youtubeUrl');
     }
     if (googleDriveUrl) {
-      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } });
+      const gd = await checkUrl(googleDriveUrl, { timeoutMs: 20000, allowRedirects: true, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36' } });
       if (!gd.valid) invalidFields.push('googleDriveUrl');
     }
 
