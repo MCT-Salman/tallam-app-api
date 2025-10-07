@@ -5,7 +5,7 @@ export const idParam = param("id").isInt({ gt: 0 }).withMessage("id غير صا�
 
 export const levelCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
-  body("description").optional().isString().isLength({ max: 1000 }).withMessage("الوصف يجب أن يكون أقل من 1000 حرف"),
+  body("description").optional().isString().isLength({ max: 10000 }).withMessage("الوصف يجب أن يكون أقل من 10000 حرف"),
   body("order").exists().isInt({ min: 0 }).withMessage("المستوى مطلوب"),
   body("priceUSD").exists().isFloat({ min: 0 }).withMessage("السعر مطلوب"),
   body("priceSAR").exists().isFloat({ min: 0 }).withMessage("السعر مطلوب"),
@@ -18,6 +18,21 @@ export const levelCreateRules = [
   body("previewUrl").exists({ checkFalsy: true }).withMessage("الفيديو مطلوب").isString().isLength({ min: 1 }).withMessage("الفيديو مطلوب ولا يمكن أن يكون فارغ"),
 ];
 
+export const levelUpdateRules = levelCreateRules.map(rule => {
+  // إذا الـ rule على imageUrl نخليه يعتمد على req.file فقط
+  if (rule.builder.fields.includes("imageUrl")) {
+    return body("imageUrl").custom((value, { req }) => {
+      if (req.file) {
+        return true; // لو تم رفع صورة جديدة
+      }
+      return true;   // لو ما في ملف، نسمح بالمرور
+    });
+  }
+  // باقي الحقول نخليها optional
+  return rule.optional();
+});
+
+
 export const lessonCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
   body("youtubeUrl").exists({ checkFalsy: true }).withMessage("رابط يوتيوب مطلوب").isString(),
@@ -26,6 +41,8 @@ export const lessonCreateRules = [
   body("orderIndex").optional().isInt({ min: 0 }),
   body("isFreePreview").optional().isBoolean()
 ];
+
+export const lessonUpdateRules = lessonCreateRules.map(rule => rule.optional());
 
 export const toggleActiveRules = [
   body("isActive").isBoolean().withMessage("isActive غير صالح")

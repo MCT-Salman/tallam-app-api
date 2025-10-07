@@ -17,10 +17,14 @@ export const createQuestionRules = [
   body('order').optional().isInt(),
 ];
 
+export const updateQuestionRules = createQuestionRules.map(rule => rule.optional());
+
 export const createOptionRules = [
   body('text').exists({ checkFalsy: true }).withMessage('نص الخيار مطلوب'),
   body('isCorrect').optional().isBoolean(),
 ];
+
+export const updateOptionRules = createOptionRules.map(rule => rule.optional());
 
 export const submitQuizRules = [
   body('answers').isArray({ min: 1 }).withMessage('يجب تقديم إجابات'),

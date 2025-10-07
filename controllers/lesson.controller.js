@@ -18,7 +18,7 @@ export const adminCreateLevel = async (req, res, next) => {
       instructorId: parseInt(req.body.instructorId,10),
       priceUSD: req.body.priceUSD ? parseFloat(req.body.priceUSD) : null, 
       priceSAR: req.body.priceSAR ? parseFloat(req.body.priceSAR) : null,
-      isFree: req.body.isFree,
+      isFree: req.body.isFree === "true",
       previewUrl : req.body.previewUrl,
       downloadUrl : req.body.downloadUrl,
       isActive: req.body.isActive || true,

@@ -3,9 +3,12 @@ import { body, param, query } from "express-validator";
 export const idParam = param("id").isInt({ gt: 0 }).withMessage("معرّف غير صالح");
 export const courseIdParam = param("courseId").isInt({ gt: 0 }).withMessage("courseId غير صالح");
 export const courseLevelIdParam = param("courseLevelId").isInt({ gt: 0 }).withMessage("courseLevelId غير صالح");
+
 export const domainCreateRules = [
   body("name").exists({ checkFalsy: true }).withMessage("الاسم مطلوب").isString().isLength({ min: 2 }).withMessage("الاسم قصير")
 ];
+
+export const domainUpdateRules = domainCreateRules.map(rule => rule.optional());
 
 export const specializationCreateRules = [
   body("name")
@@ -22,6 +25,19 @@ export const specializationCreateRules = [
     }),
 ];
 
+export const specializationUpdateRules = specializationCreateRules.map(rule => {
+  // لو الـ rule خاصة بالصورة، نخليها اختيارية
+  if (rule.builder.fields.includes("imageUrl")) {
+    return body("imageUrl").custom((value, { req }) => {
+      if (req.file) {
+        return true; // لو في ملف جديد
+      }
+      return true;   // لو ما في ملف، نسمح بالمرور
+    });
+  }
+  // باقي الحقول نخليها optional
+  return rule.optional();
+});
 
 export const subjectCreateRules = [
   body("name")
@@ -35,6 +51,8 @@ export const subjectCreateRules = [
     .withMessage("domainId غير صالح")
 ];
 
+export const subjectUpdateRules = subjectCreateRules.map(rule => rule.optional());
+
 export const instructorCreateRules = [
   body("name").exists({ checkFalsy: true }).withMessage("الاسم مطلوب").isString().isLength({ min: 2 }).withMessage("الاسم قصير"),
   body("bio").exists({ checkFalsy: true }).withMessage("السيرة الذاتية مطلوبة").isString(),
@@ -47,7 +65,19 @@ export const instructorCreateRules = [
   body("specializationId").isInt({ gt: 0 }).withMessage("specializationId غير صالح")
 ];
 
-export const instructorUpdateRules = instructorCreateRules.map(rule => rule.optional());
+export const instructorUpdateRules = instructorCreateRules.map(rule => {
+  // إذا الـ rule على avatarUrl نخليه يعتمد على req.file فقط
+  if (rule.builder.fields.includes("avatarUrl")) {
+    return body("avatarUrl").custom((value, { req }) => {
+      if (req.file) {
+        return true; // لو تم رفع صورة جديدة
+      }
+      return true;   // لو ما في ملف، نسمح بالمرور
+    });
+  }
+  // باقي الحقول نخليها optional
+  return rule.optional();
+});
 
 export const courseCreateRules = [
   body("title").exists({ checkFalsy: true }).withMessage("العنوان مطلوب").isString().isLength({ min: 2 }).withMessage("العنوان قصير"),
@@ -61,7 +91,19 @@ export const courseCreateRules = [
   body("specializationId").isInt({ gt: 0 }).withMessage("specializationId غير صالح")
 ];
 
-export const courseUpdateRules = courseCreateRules.map(rule => rule.optional());
+export const courseUpdateRules = courseCreateRules.map(rule => {
+  // إذا الـ rule على imageUrl نخليه يعتمد على req.file فقط
+  if (rule.builder.fields.includes("imageUrl")) {
+    return body("imageUrl").custom((value, { req }) => {
+      if (req.file) {
+        return true; // لو تم رفع صورة جديدة
+      }
+      return true;   // لو ما في ملف، نسمح بالمرور
+    });
+  }
+  // باقي الحقول نخليها optional
+  return rule.optional();
+});
 
 export const toggleActiveRules = [
   body("isActive").isBoolean().withMessage("isActive غير صالح")
