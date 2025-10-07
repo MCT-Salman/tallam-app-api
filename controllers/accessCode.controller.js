@@ -1,5 +1,6 @@
 import * as AccessCodeService from '../services/accessCode.service.js';
 import { serializeResponse } from '../utils/serialize.js';
+import prisma from "../prisma/client.js";
 import {
   COURSE_NOT_FOUND,
   FAILURE_REQUEST,
@@ -14,6 +15,7 @@ export const adminGenerateCodes = async (req, res, next) => {
   try {
     const { courseLevelId, userId, validityInMonths, couponId, amountPaid, notes } = req.body;
     const adminId = req.user.id;
+
     if (!req.file) {
       return res.status(400).json({
         success: false,
@@ -21,11 +23,35 @@ export const adminGenerateCodes = async (req, res, next) => {
         data: {}
       });
     }
-    const receiptImageUrl =  `/uploads/images/financial/${req.file.filename}`;
+
+    const parsedCourseLevelId = courseLevelId ? parseInt(courseLevelId, 10) : null;
+    const parsedUserId = userId ? parseInt(userId, 10) : null;
+
+    // ✅ 1. التحقق من وجود كود لم ينتهِ بعد
+    const existingActiveCode = await prisma.accessCode.findFirst({
+      where: {
+        usedBy: parsedUserId,
+        courseLevelId: parsedCourseLevelId,
+        expiresAt: {
+          gt: new Date() // يعني أن الكود ما زال صالحًا (لم ينتهِ بعد)
+        }
+      },
+    });
+
+    if (existingActiveCode) {
+      return res.status(400).json({
+        success: false,
+        message: "لا يمكن إنشاء كود جديد، يوجد كود فعّال لنفس المستخدم في هذا المستوى (لم ينتهِ بعد).",
+        data: {}
+      });
+    }
+
+    // ✅ 2. إنشاء الكود الجديد لأن لا يوجد كود صالح حاليًا
+    const receiptImageUrl = `/uploads/images/financial/${req.file.filename}`;
 
     const result = await AccessCodeService.generateAccessCodes({
-      courseLevelId: courseLevelId ? parseInt(courseLevelId, 10) : null,
-      userId : userId ? parseInt(userId, 10) : null,
+      courseLevelId: parsedCourseLevelId,
+      userId: parsedUserId,
       validityInMonths: validityInMonths ? parseInt(validityInMonths, 10) : null,
       issuedBy: adminId,
       couponId: couponId ? parseInt(couponId, 10) : null,
@@ -39,6 +65,7 @@ export const adminGenerateCodes = async (req, res, next) => {
       message: `تم توليد الكود ${result.code} بنجاح.`,
       data: serializeResponse(result),
     });
+
   } catch (error) {
     if (error.message === COURSE_NOT_FOUND) {
       error.statusCode = NOT_FOUND_STATUS_CODE;
@@ -48,6 +75,8 @@ export const adminGenerateCodes = async (req, res, next) => {
     next(error);
   }
 };
+
+
 
 export const adminGetAllCodes = async (req, res, next) => {
   try {

@@ -36,6 +36,7 @@ import appSettingsRoutes from './routes/appSettings.routes.js';
 import reviewRoutes from './routes/review.routes.js';
 import suggestionRoutes from './routes/suggestion.routes.js';
 import setupRoutes from './routes/setup.routes.js';
+import storyRoutes from './routes/story.routes.js';
 
 const app = express();
 // تفعيل الثقة بالـ Proxy (فعّلها عند التشغيل خلف Nginx/Cloudflare/Load Balancer)
@@ -143,7 +144,6 @@ app.get('/', (req, res) => {
   });
 });
 
-app.use('/api/setup', setupRoutes);
 
 // تطبيق المسارات
 // لا نطبق authLimiter على جميع مسارات /api/auth حتى لا تتأثر مسارات مثل /profile
@@ -165,8 +165,8 @@ app.use('/api/files', fileRoutes);
 app.use('/api/coupons', couponRoutes);
 app.use('/api/settings', appSettingsRoutes); // Routes for app settings
 app.use('/api/suggestions', suggestionRoutes);
-
 app.use('/api/setup', setupRoutes);
+app.use('/api/story', storyRoutes);
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 // معالجة الأخطاء 404

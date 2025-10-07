@@ -842,9 +842,187 @@ Authorization: Bearer <access_token>
 }
 ```
 
+# 📁 Files Management Routes (`/api/files`)
+
+## للإدارة (Admin Endpoints)
+
+### 1. عرض جميع الملفات
+**GET** `/api/files/admin/files`
+*يتطلب مصادقة - إدارة*
+
+#### Query Parameters:
+- `page` (number, optional): رقم الصفحة (افتراضي: 1)
+- `limit` (number, optional): عدد العناصر في الصفحة (افتراضي: 10)
+- `courseLevelId` (number, optional): فلترة حسب مستوى الدورة
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم جلب الملفات بنجاح",
+  "data": [
+    {
+      "id": 1,
+      "name": "دليل البرمجة.pdf",
+      "url": "/uploads/files/general/دليل البرمجة.pdf",
+      "type": "application/pdf",
+      "size": 2048576,
+      "courseLevel": {
+        "id": 1,
+        "name": "المستوى الأول"
+      }
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 50,
+    "pages": 5
+  }
+}
+```
+
+### 2. رفع ملف جديد
+**POST** `/api/files/admin/files`
+*يتطلب مصادقة - إدارة*
+
+#### Request Body (multipart/form-data):
+```json
+{
+  "file": "file", // الملف المرفوع
+  "courseLevelId": 1, // اختياري - ربط الملف بمستوى دورة
+  "meta": "{\"description\": \"دليل البرمجة الأساسية\"}" // اختياري - بيانات إضافية JSON
+}
+```
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم رفع الملف وإنشاؤه بنجاح",
+  "data": {
+    "id": 1,
+    "name": "دليل البرمجة.pdf",
+    "url": "/uploads/files/general/دليل البرمجة.pdf",
+    "type": "application/pdf",
+    "size": 2048576
+  }
+}
+```
+
+### 3. عرض ملف محدد
+**GET** `/api/files/admin/files/:id`
+*يتطلب مصادقة - إدارة*
+
+#### Response:
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "دليل البرمجة.pdf",
+    "url": "/uploads/files/general/دليل البرمجة.pdf",
+    "type": "application/pdf",
+    "size": 2048576,
+    "courseLevel": {
+      "id": 1,
+      "name": "المستوى الأول"
+    }
+  }
+}
+```
+
+### 4. تحديث ملف
+**PUT** `/api/files/admin/files/:id`
+*يتطلب مصادقة - إدارة*
+
+#### Request Body (multipart/form-data):
+```json
+{
+  "file": "file", // اختياري - ملف جديد للاستبدال
+  "name": "دليل البرمجة المحدث.pdf", // اختياري
+  "courseLevelId": 2, // اختياري
+  "meta": "{\"version\": \"2.0\"}" // اختياري
+}
+```
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم تحديث الملف بنجاح",
+  "data": {
+    "id": 1,
+    "name": "دليل البرمجة المحدث.pdf",
+    "url": "/uploads/files/general/دليل البرمجة المحدث.pdf"
+  }
+}
+```
+
+### 5. حذف ملف
+**DELETE** `/api/files/admin/files/:id`
+*يتطلب مصادقة - إدارة*
+
+#### Response:
+```json
+{
+  "success": true,
+  "message": "تم حذف الملف بنجاح"
+}
+```
+
+## للطلاب (Public Endpoints)
+
+### 1. عرض ملفات مستوى دورة
+**GET** `/api/files/levels/:id`
+*يتطلب مصادقة - طالب*
+
+#### Query Parameters:
+- `page` (number, optional): رقم الصفحة (افتراضي: 1)
+- `limit` (number, optional): عدد العناصر في الصفحة (افتراضي: 10)
+
+#### Response:
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": 1,
+      "name": "دليل البرمجة.pdf",
+      "url": "/uploads/files/general/دليل البرمجة.pdf",
+      "type": "application/pdf",
+      "size": 2048576
+    }
+  ],
+  "pagination": {
+    "page": 1,
+    "limit": 10,
+    "total": 5,
+    "pages": 1
+  }
+}
+```
+
+### 2. الوصول لملف محدد
+**GET** `/api/files/file/:id`
+*يتطلب مصادقة - طالب*
+
+#### Response:
+```json
+{
+  "success": true,
+  "data": {
+    "id": 1,
+    "name": "دليل البرمجة.pdf",
+    "url": "/uploads/files/general/دليل البرمجة.pdf",
+    "type": "application/pdf",
+    "size": 2048576
+  }
+}
+```
+
 ---
 
-# ⚠️ Error Responses
 
 ### مثال على خطأ في التحقق من البيانات:
 ```json

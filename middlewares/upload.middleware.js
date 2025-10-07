@@ -122,6 +122,12 @@ export const uploadNoticeImage = multer({
   limits: { fileSize: 5 * 1024 * 1024 }
 });
 
+export const uploadStoryImage = multer({
+  storage: createStorage('stories'),
+  fileImageFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }
+});
+
 // Generic files upload (allow any mimetype) under uploads/files/general
 export const uploadAnyFile = multer({
   storage: createFileStorage('general'),
