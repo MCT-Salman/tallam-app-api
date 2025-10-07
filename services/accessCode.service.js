@@ -185,7 +185,8 @@ export const getCourseLevelsByUserId = async (userId) => {
           imageUrl: true,
           createdAt: true,
           updatedAt: true,
-          course: { select: { id: true, title: true } }
+          course: { select: { id: true, title: true } },
+          instructor : { select: { id: true, name: true } }
         }
       }
     },

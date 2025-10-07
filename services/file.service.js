@@ -14,8 +14,13 @@ export const listFiles = async (courseLevelId, pagination = {}) => {
     prisma.file.count({ where : {courseLevelId} })
   ]);
 
+  const formattedItems = items.map(file => ({
+    ...file,
+    size: parseFloat((file.size / (1024 * 1024)).toFixed(2))
+  }));
+
   return {
-    data: items,
+    data: formattedItems,
     pagination: {
       page,
       limit,
