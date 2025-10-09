@@ -50,6 +50,8 @@ model User {
   AuditLog       AuditLog[]
   CodeRequest    CodeRequest[]
   Admin          Admin[]
+
+  @@map("user")
 }
 
 model Admin {
@@ -59,6 +61,8 @@ model Admin {
   username     String    @unique
   email        String    @unique
   passwordHash String
+
+  @@map("admin")
 }
 
 model Session {
@@ -77,6 +81,7 @@ model Session {
 
   @@index([userId])
   @@index([realIp])
+  @@map("session")
 }
 
 model RefreshToken {
@@ -94,6 +99,7 @@ model RefreshToken {
   @@index([userId])
   @@index([sessionId])
   @@index([tokenHash])
+  @@map("refreshToken")
 }
 
 model LoginAttempt {
@@ -110,6 +116,7 @@ model LoginAttempt {
   @@index([identifier])
   @@index([ip])
   @@index([createdAt])
+  @@map("loginAttempt")
 }
 
 model OtpCode {
@@ -124,6 +131,7 @@ model OtpCode {
   createdAt DateTime @default(now())
 
   @@index([phone])
+  @@map("otpCode")
 }
 
 // ---------- Content taxonomy ----------
@@ -135,6 +143,8 @@ model Domain {
   subjects        Subject[]
   createdAt       DateTime         @default(now())
   updatedAt       DateTime         @updatedAt
+
+  @@map("domain")
 }
 
 model Subject {
@@ -149,6 +159,7 @@ model Subject {
   updatedAt        DateTime       @updatedAt
 
   @@index([domainId])
+  @@map("subject")
 }
 
 model Specialization {
@@ -165,6 +176,7 @@ model Specialization {
   updatedAt    DateTime  @updatedAt
 
   @@index([subjectId])
+  @@map("specialization")
 }
 
 model Course {
@@ -181,6 +193,7 @@ model Course {
   updatedAt            DateTime         @updatedAt
 
   @@index([specializationId])
+  @@map("course")
 }
 
 model Instructor {
@@ -197,6 +210,7 @@ model Instructor {
   courseLevels CourseLevel[]
 
   @@index([specializationId])
+  @@map("instructor")
 }
 
 
@@ -204,7 +218,7 @@ model Instructor {
 model CourseLevel {
   id          Int      @id @default(autoincrement())
   name        String
-  description String?          
+  description String?
   order       Int?
   priceUSD    Float?
   priceSAR    Float?
@@ -232,6 +246,7 @@ model CourseLevel {
 
   @@index([courseId])
   @@index([instructorId])
+  @@map("courseLevel")
 }
 
 model Lesson {
@@ -252,6 +267,7 @@ model Lesson {
   progress          LessonProgress[]
 
   @@index([courseLevelId])
+  @@map("lesson")
 }
 
 
@@ -261,7 +277,7 @@ model AccessCode {
   code      String    @unique
   courseLevelId Int
   courseLevel CourseLevel @relation(fields: [courseLevelId], references: [id])
-  validityInMonths Int? 
+  validityInMonths Int?
   issuedBy  Int?
   issuedAt  DateTime  @default(now())
   usedBy    Int
@@ -274,6 +290,7 @@ model AccessCode {
 
   @@index([courseLevelId])
   @@index([usedBy])
+  @@map("accessCode")
 }
 
 // ---------- Access / Purchase /  yments ----------
@@ -291,6 +308,7 @@ model Transaction {
 
   @@index([accessCodeId])
   @@index([couponId])
+  @@map("transaction")
 }
 
 model CodeRequest {
@@ -306,6 +324,7 @@ model CodeRequest {
 
   @@index([userId])
   @@index([courseLevelId])
+  @@map("codeRequest")
 }
 
 
@@ -326,6 +345,7 @@ model Coupon {
   updatedAt DateTime  @updatedAt
 
   @@index([courseLevelId])
+  @@map("coupon")
 }
 
 // ---------- Quizzes & Results ----------
@@ -337,6 +357,8 @@ model Question {
   text          String
   order         Int?
   options       Option[]
+
+  @@map("question")
 }
 
 model Option {
@@ -345,6 +367,8 @@ model Option {
   question   Question @relation(fields: [questionId], references: [id])
   text       String
   isCorrect  Boolean  @default(false)
+
+  @@map("option")
 }
 
 model QuizResult {
@@ -359,6 +383,7 @@ model QuizResult {
 
   @@index([userId])
   @@index([courseLevelId])
+  @@map("quizResult")
 }
 
 model CourseProgress {
@@ -374,6 +399,7 @@ model CourseProgress {
   updatedAt DateTime @updatedAt
 
   @@unique([userId, courseLevelId])
+  @@map("courseProgress")
 }
 
 model LessonProgress {
@@ -388,6 +414,7 @@ model LessonProgress {
 
   @@unique([userId, lessonId])
   @@index([lessonId])
+  @@map("lessonProgress")
 }
 
 // ---------- Notifications / Stories / Ads ----------
@@ -417,6 +444,7 @@ model Notification {
   @@index([userId])
   @@index([createdAt])
   @@index([type])
+  @@map("notification")
 }
 
 model Story {
@@ -428,6 +456,8 @@ model Story {
   orderIndex Int?
   isActive   Boolean   @default(true)
   createdAt  DateTime  @default(now())
+
+  @@map("story")
 }
 
 model Advertisement {
@@ -439,6 +469,8 @@ model Advertisement {
   startsAt  DateTime?
   endsAt    DateTime?
   createdAt DateTime  @default(now())
+
+  @@map("advertisement")
 }
 
 // ---------- Ratings / Feedback / Support ----------
@@ -454,6 +486,7 @@ model Review {
 
   @@index([userId])
   @@index([courseLevelId])
+  @@map("review")
 }
 
 model SupportMessage {
@@ -466,6 +499,7 @@ model SupportMessage {
   createdAt DateTime @default(now())
 
   @@index([userId])
+  @@map("supportMessage")
 }
 
 model Suggestion {
@@ -479,6 +513,7 @@ model Suggestion {
 
   @@index([userId])
   @@index([courseLevelId])
+  @@map("suggestion")
 }
 
 // ---------- Utilities / Admin logs / Settings ----------
@@ -495,6 +530,7 @@ model File {
   createdAt     DateTime    @default(now())
 
   @@index([courseLevelId])
+  @@map("file")
 }
 
 model AuditLog {
@@ -505,6 +541,8 @@ model AuditLog {
   resource  String?
   meta      Json?
   createdAt DateTime @default(now())
+
+  @@map("auditLog")
 }
 
 model RateLimit {
@@ -516,6 +554,7 @@ model RateLimit {
   updatedAt DateTime  @updatedAt
 
   @@index([key])
+  @@map("rateLimit")
 }
 
 //------------ settings --------------
@@ -526,4 +565,6 @@ model AppSettings {
   value     String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@map("appSettings")
 }
