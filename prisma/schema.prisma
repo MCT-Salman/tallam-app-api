@@ -30,6 +30,7 @@ model User {
   isVerified   Boolean   @default(false)
   isActive     Boolean   @default(true)
   expiresAt    DateTime?
+  fcmToken     String? // Firebase Cloud Messaging token for push notifications
   accessCodes  AccessCode[]
   lessonProgress LessonProgress[]
 
@@ -390,19 +391,32 @@ model LessonProgress {
 }
 
 // ---------- Notifications / Stories / Ads ----------
+enum NotificationType {
+  GENERAL
+  COURSE_NEW
+  COURSE_UPDATE
+  LESSON_NEW
+  QUIZ_AVAILABLE
+  SYSTEM
+}
+
 model Notification {
-  id        Int      @id @default(autoincrement())
+  id        Int              @id @default(autoincrement())
   userId    Int?
-  user      User?    @relation(fields: [userId], references: [id])
+  user      User?            @relation(fields: [userId], references: [id])
   title     String
   body      String
+  type      NotificationType @default(GENERAL)
   data      Json?
-  isRead    Boolean  @default(false)
+  isRead    Boolean          @default(false)
   link      String?
-  createdAt DateTime @default(now())
+  imageUrl  String?
+  sentToFCM Boolean          @default(false)
+  createdAt DateTime         @default(now())
 
   @@index([userId])
   @@index([createdAt])
+  @@index([type])
 }
 
 model Story {

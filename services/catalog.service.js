@@ -1,5 +1,6 @@
 import { DomainModel, SpecializationModel, SubjectModel, InstructorModel, CourseModel } from "../models/index.js";
 import prisma from "../prisma/client.js";
+import { sendNewCourseNotification, sendNewCourseLevelNotification } from "./notification.service.js";
 import { getBooleanSetting } from './appSettings.service.js';
 // Domains
 export const createDomain = (name) => prisma.domain.create({ data: { name } });
@@ -160,7 +161,7 @@ export const DeleteInstructor = (id) => prisma.instructor.delete({ where: { id }
  * @returns {Promise<Course>}
  */
 export const createCourse = async (courseData) => {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const course = await tx.course.create({
       data: courseData,
     });
@@ -173,6 +174,16 @@ export const createCourse = async (courseData) => {
       },
     });
   });
+
+  // Send notification for new course creation (async, don't wait)
+  try {
+    await sendNewCourseNotification(result);
+    console.log(`✅ Notification sent for new course: ${result.title}`);
+  } catch (error) {
+    console.error(`❌ Failed to send notification for new course: ${result.title}`, error.message);
+  }
+
+  return result;
 };
 
 /**

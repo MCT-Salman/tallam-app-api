@@ -1,4 +1,5 @@
 import prisma from "../prisma/client.js";
+import { sendNewCourseLevelNotification } from './notification.service.js';
 
 // Reusable select for nested course details
 export const courseSelect = {
@@ -15,14 +16,25 @@ export const courseSelect = {
 };
 
 // Levels
-export const createLevel = (courseId, data) =>
-  prisma.courseLevel.create({
+export const createLevel = async (courseId, data) => {
+  const level = await prisma.courseLevel.create({
     data: { ...data, courseId },
     include: {
       course: { select: courseSelect },
       instructor: true
     }
   });
+
+  // Send new course level notification
+  try {
+    await sendNewCourseLevelNotification(level);
+    console.log(`✅ تم إرسال إشعار المستوى الجديد: ${level.name}`);
+  } catch (error) {
+    console.error(`❌ فشل إرسال إشعار المستوى الجديد: ${error.message}`);
+  }
+
+  return level;
+};
 
 export const listLevelsByCourse = async (courseId, pagination = {}) => {
   const { page = 1, limit = 10 } = pagination;
@@ -162,6 +174,8 @@ export const listLevelsByCourseAndInstructor = async (courseId, instructorId, pa
         description: true,
         order: true,
         imageUrl: true,
+        course: { select: { id: true, title: true } },
+        instructor: { select: { id: true, name: true } }
       },
       skip,
       take
@@ -214,6 +228,7 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
       priceSAR: true,
       previewUrl: true,
       order: true,
+      imageUrl: true,
       ...baseInclude,
       lessons: {
         select: {
@@ -221,7 +236,8 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
           title: true,
           description: true,
           durationSec: true,
-          orderIndex: true
+          orderIndex: true,
+          courseLevelId: true,
         }
       }
     }
@@ -267,7 +283,8 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
             orderIndex: true,
             youtubeUrl: true,
             youtubeId: true,
-            googleDriveUrl: true
+            googleDriveUrl: true,
+            courseLevelId: true,
           },
         },
         /* files: {

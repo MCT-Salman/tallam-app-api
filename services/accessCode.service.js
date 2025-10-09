@@ -1,5 +1,6 @@
 import { customAlphabet } from 'nanoid';
 import prisma from "../prisma/client.js";
+import { sendCourseSubscriptionNotification } from './notification.service.js';
 
 // Define a custom alphabet for generating codes (uppercase letters and numbers, no ambiguous chars)
 const nanoid = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 10);
@@ -122,9 +123,21 @@ export const activateCode = async (code, userId, courseLevelId) => {
         include: {
           course: { select: { id: true, title: true } }
         }
+      },
+      user: {
+        select: { id: true, name: true, phone: true }
       }
     }
   });
+
+  // Send subscription notification
+  try {
+    await sendCourseSubscriptionNotification(fullCode.user, fullCode.courseLevel);
+    console.log(`✅ تم إرسال إشعار الاشتراك للمستخدم: ${fullCode.user.name}`);
+  } catch (error) {
+    console.error(`❌ فشل إرسال إشعار الاشتراك: ${error.message}`);
+  }
+
   return fullCode;
 };
 

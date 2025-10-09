@@ -9,6 +9,7 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import { xssSanitizer } from "./middlewares/xss.middleware.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
+import { initializeFirebase } from './utils/firebase.js';
 
 // تحميل متغيرات البيئة
 config();
@@ -37,6 +38,7 @@ import reviewRoutes from './routes/review.routes.js';
 import suggestionRoutes from './routes/suggestion.routes.js';
 import setupRoutes from './routes/setup.routes.js';
 import storyRoutes from './routes/story.routes.js';
+import notificationRoutes from './routes/notification.routes.js';
 
 const app = express();
 // تفعيل الثقة بالـ Proxy (فعّلها عند التشغيل خلف Nginx/Cloudflare/Load Balancer)
@@ -167,6 +169,7 @@ app.use('/api/settings', appSettingsRoutes); // Routes for app settings
 app.use('/api/suggestions', suggestionRoutes);
 app.use('/api/setup', setupRoutes);
 app.use('/api/story', storyRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 app.get("/health", (req, res) => res.json({ ok: true }));
 // معالجة الأخطاء 404
@@ -255,7 +258,10 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🔒 Enhanced authentication active`);
   console.log(`🌐 IP tracking improved`);
   console.log(`⚡ Rate limiting enabled`);
-  
+
+  // Initialize Firebase for push notifications
+  initializeFirebase();
+
   if (process.env.NODE_ENV === 'development') {
     console.log(`📖 API Documentation: http://localhost:${PORT}/`);
   }

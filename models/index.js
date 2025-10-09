@@ -18,6 +18,7 @@ import * as QuizModel from './quiz.model.js';
 import * as QuestionModel from './question.model.js';
 import * as OptionModel from './option.model.js';
 import * as QuizResultModel from './quizResult.model.js';
+import * as NotificationModel from './notification.model.js';
 
 export {
   UserModel,
@@ -40,4 +41,5 @@ export {
   QuestionModel,
   OptionModel,
   QuizResultModel,
+  NotificationModel,
 };

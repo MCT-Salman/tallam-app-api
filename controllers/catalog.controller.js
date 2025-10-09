@@ -7,6 +7,7 @@ import {
   createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic, listCoursesAdmin,
   listInstructorsForCourse,
 } from "../services/catalog.service.js";
+import { checkAndSendExpirationNotifications } from "../services/notification.service.js";
 
 // Admin: Domains
 export const adminCreateDomain = async (req, res, next) => {
@@ -504,6 +505,18 @@ export const publicListSpecializations = async (req, res, next) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const result = await listSpecializations({ page, limit });
+
+    // Check for access code expiration notifications if user is authenticated
+    if (req.user && req.user.id) {
+      try {
+        const expirationCheck = await checkAndSendExpirationNotifications(req.user.id);
+        console.log(`🔔 فحص انتهاء الصلاحية للمستخدم ${req.user.id}: ${expirationCheck.notificationsSent} إشعار تم إرساله`);
+      } catch (error) {
+        console.error(`❌ خطأ في فحص انتهاء الصلاحية: ${error.message}`);
+        // Don't fail the main request if notification check fails
+      }
+    }
+
     res.json({
       success: true,
       message: "تم جلب قائمة التخصصات بنجاح",
@@ -522,6 +535,18 @@ export const publicListCoursesBySpecialization = async (req, res, next) => {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
     const result = await listCoursesPublic({ specializationId }, { page, limit });
+
+    // Check for access code expiration notifications if user is authenticated
+    if (req.user && req.user.id) {
+      try {
+        const expirationCheck = await checkAndSendExpirationNotifications(req.user.id);
+        console.log(`🔔 فحص انتهاء الصلاحية للمستخدم ${req.user.id}: ${expirationCheck.notificationsSent} إشعار تم إرساله`);
+      } catch (error) {
+        console.error(`❌ خطأ في فحص انتهاء الصلاحية: ${error.message}`);
+        // Don't fail the main request if notification check fails
+      }
+    }
+
     res.json({
       success: true,
       message: "تم جلب قائمة الكورسات بنجاح",
