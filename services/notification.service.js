@@ -342,7 +342,7 @@ export const sendNewCourseNotification = async (course) => {
         courseTitle: course.title,
         action: 'view_course'
       },
-      link: `/courses/${course.id}`,
+      link: `/api/catalog/courses/${course.id}/instructors`,
       imageUrl: course.imageUrl || '/images/new-course-icon.png'
     };
 
@@ -376,7 +376,7 @@ export const sendCourseSubscriptionNotification = async (user, courseLevel) => {
         courseTitle: courseLevel.course?.title,
         action: 'view_course_level'
       },
-      link: `/courses/${courseLevel.courseId}/levels/${courseLevel.id}`,
+      link: `/api/lessons/levels/${courseLevel.id}`,
       imageUrl: courseLevel.imageUrl || courseLevel.course?.imageUrl || '/images/subscription-success.png'
     };
 
@@ -435,7 +435,7 @@ export const sendNewCourseLevelNotification = async (courseLevel) => {
         courseTitle: courseLevel.course?.title,
         action: 'view_new_level'
       },
-      link: `/courses/${courseLevel.courseId}/levels/${courseLevel.id}`,
+      link: `/api/lessons/levels/${courseLevel.id}`,
       imageUrl: courseLevel.imageUrl || courseLevel.course?.imageUrl || '/images/new-level-icon.png'
     };
 
@@ -536,7 +536,7 @@ export const checkAndSendExpirationNotifications = async (userId) => {
             warningType: '3_days',
             action: 'renew_subscription'
           },
-          link: `/courses/${code.courseLevel.course.id}/levels/${code.courseLevelId}`,
+          link: `/api/lessons/levels/${code.courseLevelId}`,
           imageUrl: '/images/warning-icon.png'
         }, true);
         notificationsSent++;
@@ -573,7 +573,7 @@ export const checkAndSendExpirationNotifications = async (userId) => {
             warningType: 'same_day',
             action: 'urgent_renewal'
           },
-          link: `/courses/${code.courseLevel.course.id}/levels/${code.courseLevelId}`,
+          link: `/api/lessons/levels/${code.courseLevelId}`,
           imageUrl: '/images/urgent-warning-icon.png'
         }, true);
         notificationsSent++;

@@ -20,7 +20,7 @@ export const studentGetNotifications = async (req, res, next) => {
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
       message: "تم جلب الإشعارات بنجاح",
-      data: serializeResponse(result)
+      data: result
     });
   } catch (error) {
     error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;

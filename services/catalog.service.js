@@ -49,7 +49,7 @@ export const listSpecializations = async (pagination = {}) => {
         id: true,
         name: true,
         imageUrl: true,
-        isActive:true
+        isActive: true
       }
     }),
     prisma.specialization.count()
@@ -361,14 +361,21 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
   const skip = (page - 1) * limit;
   const take = limit;
 
-  // 1️⃣ جلب المستويات الخاصة بالكورس مع المدرسين وعدد المشتركين لكل مستوى
+  // جلب الدورة
+  const course = await prisma.course.findUnique({
+    where: { id: courseId },
+    select: { id: true, title: true },
+  });
+  if (!course) throw new Error("الدورة غير موجودة");
+
+  // جلب المستويات والمدرسين
   const [levels, total] = await Promise.all([
     prisma.courseLevel.findMany({
       where: { courseId, isActive: true },
       select: {
         id: true,
         instructor: { select: { id: true, name: true, bio: true, avatarUrl: true } },
-        _count: { select: { accessCodes: true } }, // subscribers لكل مستوى
+        _count: { select: { accessCodes: true } },
       },
       skip,
       take,
@@ -376,15 +383,7 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
     prisma.courseLevel.count({ where: { courseId, isActive: true } }),
   ]);
 
-  const course = await prisma.course.findUnique({
-    where: { id: courseId },
-    select: { id: true, title: true },
-  });
-  if (!course) {
-    throw new Error("الدورة غير موجودة");
-  }
-
-  // 2️⃣ تجميع مستويات كل مدرس
+  // تجميع بيانات المدرسين
   const instructorMap = new Map();
   levels.forEach(level => {
     const instr = level.instructor;
@@ -395,6 +394,8 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
         name: instr.name,
         bio: instr.bio,
         avatarUrl: instr.avatarUrl,
+        courseId,
+        coursetitle: course.title,
         levelIds: [],
         totalSubscribers: 0,
       });
@@ -404,7 +405,6 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
     instructorData.totalSubscribers += level._count.accessCodes || 0;
   });
 
-  // 3️⃣ التحقق من تفعيل التقييم
   const allowRating = await getBooleanSetting("allowRating", true);
 
   let ratingMap = new Map();
@@ -417,7 +417,6 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
     ratings.forEach(r => ratingMap.set(r.courseLevelId, r._avg.rating || 0));
   }
 
-  // 4️⃣ بناء بيانات المدرسين مع/بدون تقييم
   const instructors = Array.from(instructorMap.values()).map(instr => {
     let avgRating = null;
     if (allowRating) {
@@ -425,16 +424,12 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
         instr.levelIds.reduce((sum, id) => sum + (ratingMap.get(id) || 0), 0) /
         (instr.levelIds.length || 1);
       avgRating = Number(avgRating.toFixed(2));
+      if (isNaN(avgRating)) avgRating = 0;
     }
 
     return {
-      id: instr.id,
-      name: instr.name,
-      bio: instr.bio,
-      avatarUrl: instr.avatarUrl,
-      coursetitle: course.title,
-      avgRating, // ممكن يكون null إذا التقييم مطفي
-      totalSubscribers: instr.totalSubscribers,
+      ...instr,
+      avgRating,
     };
   });
 
@@ -449,6 +444,7 @@ export const listInstructorsForCourse = async (courseId, pagination = {}) => {
     },
   };
 };
+
 
 
 
