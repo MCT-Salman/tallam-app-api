@@ -402,6 +402,11 @@ export const sendNewCourseLevelNotification = async (courseLevel) => {
   try {
     console.log(`📚 إرسال إشعار مستوى جديد: ${courseLevel.name}`);
 
+    const userIds = await prisma.user.findMany({
+      select: { id: true },
+      where: { role: 'STUDENT' }
+    }).then(users => users.map(user => user.id));
+
     const instructor = await prisma.instructor.findUnique({
       where: { id: courseLevel.instructorId },
       select: { id: true, name: true }
@@ -425,7 +430,7 @@ export const sendNewCourseLevelNotification = async (courseLevel) => {
     };
 
     const result = await createNotificationsForUsers(userIds, notificationData, true);
-    console.log(`✅ تم إرسال إشعارات المستوى الجديد لـ ${subscribedUsers.length} مستخدم`);
+    console.log(`✅ تم إرسال إشعارات المستوى الجديد لـ ${userIds.length} مستخدم`);
     return result;
   } catch (error) {
     console.error('Error sending new course level notification:', error);
