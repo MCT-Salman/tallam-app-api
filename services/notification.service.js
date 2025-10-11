@@ -372,8 +372,8 @@ export const sendCourseSubscriptionNotification = async (user, courseLevel) => {
       data: {
         courseLevelId: courseLevel.id,
         courseLevelName: courseLevel.name,
-        courseId: courseLevel.courseId,
-        courseTitle: courseLevel.course?.title,
+       // courseId: courseLevel.courseId,
+     //   courseTitle: courseLevel.course?.title,
         action: 'view_course_level'
       },
       link: `/api/lessons/levels/${courseLevel.id}`,
@@ -427,7 +427,7 @@ export const sendNewCourseLevelNotification = async (courseLevel) => {
     const notificationData = {
       title: 'مستوى جديد متاح! 📚',
       body: `تم إضافة مستوى جديد: ${courseLevel.name} في دورة ${courseLevel.course?.title || 'الدورة'}`,
-      type: 'LESSON_NEW',
+      type: 'LEVEL_NEW',
       data: {
         courseLevelId: courseLevel.id,
         courseLevelName: courseLevel.name,
