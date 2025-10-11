@@ -402,27 +402,10 @@ export const sendNewCourseLevelNotification = async (courseLevel) => {
   try {
     console.log(`📚 إرسال إشعار مستوى جديد: ${courseLevel.name}`);
 
-    // Get users who have access to this course
-    const subscribedUsers = await prisma.accessCode.findMany({
-      where: {
-        courseLevel: { courseId: courseLevel.courseId },
-        used: true,
-        OR: [
-          { expiresAt: null },
-          { expiresAt: { gt: new Date() } }
-        ]
-      },
-      select: { usedBy: true },
-      distinct: ['usedBy']
+    const instructor = await prisma.instructor.findUnique({
+      where: { id: courseLevel.instructorId },
+      select: { id: true, name: true }
     });
-
-    if (subscribedUsers.length === 0) {
-      console.log(`⚠️ لا يوجد مستخدمين مشتركين في الكورس ${courseLevel.courseId}`);
-      return { success: true, count: 0 };
-    }
-
-    console.log(`👥 تم العثور على ${subscribedUsers.length} مستخدم مشترك في الكورس`);
-    const userIds = subscribedUsers.map(code => code.usedBy);
 
     const notificationData = {
       title: 'مستوى جديد متاح! 📚',
@@ -432,6 +415,8 @@ export const sendNewCourseLevelNotification = async (courseLevel) => {
         courseLevelId: courseLevel.id,
         courseLevelName: courseLevel.name,
         courseId: courseLevel.courseId,
+        instructorId: instructor.id,
+        instructorName: instructor.name,
         courseTitle: courseLevel.course?.title,
         action: 'view_new_level'
       },
