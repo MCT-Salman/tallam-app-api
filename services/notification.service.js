@@ -427,7 +427,7 @@ export const sendNewCourseLevelNotification = async (courseLevel) => {
     const notificationData = {
       title: 'مستوى جديد متاح! 📚',
       body: `تم إضافة مستوى جديد: ${courseLevel.name} في دورة ${courseLevel.course?.title || 'الدورة'}`,
-      type: 'LEVEL_NEW',
+      type: 'LESSON_NEW',
       data: {
         courseLevelId: courseLevel.id,
         courseLevelName: courseLevel.name,
