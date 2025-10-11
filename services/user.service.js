@@ -34,6 +34,7 @@ export const getAllUsers = async (filters = {}, skip = 0, take = 20) => {
     role: true,
     country: true,
     isActive: true,
+    fcmToken: true,
     isVerified: true,
     expiresAt: true,
     createdAt: true,
