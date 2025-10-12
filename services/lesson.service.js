@@ -199,7 +199,7 @@ export const listLevelsByCourseAndInstructor = async (courseId, instructorId, pa
     }
   };
 };
-
+/*
 export const DetailLevel = async (courseLevelId, userId = null) => {
   const baseInclude = {
     course: {
@@ -303,11 +303,90 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
              title: true,
            },
          },*/
-      },
+   /*   },
     });
 
     return { ...fullResult, issubscribed: true };
   }
   // Otherwise, return basic details
   return { ...result, issubscribed: false };
+};*/
+export const DetailLevel = async (courseLevelId, userId = null) => {
+  const baseInclude = {
+    course: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+      }
+    },
+    instructor: {
+      select: {
+        id: true,
+        name: true,
+      }
+    }
+  };
+
+  // جلب كل المعلومات الأساسية + الدروس مع كل الحقول الممكنة
+  const result = await prisma.courseLevel.findUnique({
+    where: { id: courseLevelId },
+    select: {
+      id: true,
+      name: true,
+      description: true,
+      priceUSD: true,
+      priceSAR: true,
+      previewUrl: true,
+      order: true,
+      imageUrl: true,
+      isFree: true,
+      ...baseInclude,
+      lessons: {
+        select: {
+          id: true,
+          title: true,
+          description: true,
+          durationSec: true,
+          orderIndex: true,
+          courseLevelId: true,
+          isFreePreview: true,
+          youtubeUrl: true,
+          youtubeId: true,
+          googleDriveUrl: true,
+        }
+      }
+    }
+  });
+
+  if (!result) throw new Error("المستوى غير موجود");
+
+  // إذا المستخدم غير مسجل
+  let isSubscribed = false;
+  if (userId) {
+    const accessCode = await prisma.accessCode.findFirst({
+      where: {
+        usedBy: userId,
+        courseLevelId,
+        used: true
+      }
+    });
+    if (accessCode || result.isFree) {
+      isSubscribed = true;
+    }
+  }
+
+  // فلترة الحقول الإضافية في الدروس حسب isFreePreview أو الاشتراك
+  const lessons = result.lessons.map(lesson => {
+    if (isSubscribed || lesson.isFreePreview) {
+      // إذا مسموح، نرسل كل الحقول
+      return lesson;
+    } else {
+      // إذا غير مسموح، نرسل فقط الحقول الأساسية
+      const { id, title, durationSec, orderIndex, courseLevelId, isFreePreview } = lesson;
+      return { id, title, durationSec, orderIndex, courseLevelId, isFreePreview };
+    }
+  });
+
+  return { ...result, lessons, issubscribed: isSubscribed };
 };
