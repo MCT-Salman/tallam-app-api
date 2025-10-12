@@ -238,6 +238,7 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
           durationSec: true,
           orderIndex: true,
           courseLevelId: true,
+          isFreePreview: true,
         }
       }
     }
@@ -285,6 +286,7 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
             youtubeId: true,
             googleDriveUrl: true,
             courseLevelId: true,
+            isFreePreview: true,
           },
         },
         /* files: {
