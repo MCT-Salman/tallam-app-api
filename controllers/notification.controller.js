@@ -138,7 +138,8 @@ export const adminGetAllNotifications = async (req, res, next) => {
  */
 export const adminCreateNotification = async (req, res, next) => {
   try {
-    const { userId, title, body, type = 'GENERAL', data, link, imageUrl } = req.body;
+    const { userId, title, body, type = 'GENERAL', data, link } = req.body;
+    const imageUrl = `/uploads/iconsnotication/Custom-8.png`;
 
     const notification = await NotificationService.createNotification({
       userId: userId ? parseInt(userId) : null,
@@ -166,7 +167,8 @@ export const adminCreateNotification = async (req, res, next) => {
  */
 export const adminCreateBroadcastNotification = async (req, res, next) => {
   try {
-    const { title, body, type = 'GENERAL', data, link, imageUrl } = req.body;
+    const { title, body, type = 'GENERAL', data, link } = req.body;
+    const imageUrl = `/uploads/iconsnotication/Custom-8.png`;
 
     const result = await NotificationService.createBroadcastNotification({
       title,
@@ -193,8 +195,8 @@ export const adminCreateBroadcastNotification = async (req, res, next) => {
  */
 export const adminCreateNotificationForUsers = async (req, res, next) => {
   try {
-    const { userIds, title, body, type = 'GENERAL', data, link, imageUrl } = req.body;
-
+    const { userIds, title, body, type = 'GENERAL', data, link } = req.body;
+    const imageUrl = `/uploads/iconsnotication/Custom-8.png`;
     if (!Array.isArray(userIds) || userIds.length === 0) {
       return res.status(BAD_REQUEST_STATUS_CODE).json({
         success: FAILURE_REQUEST,

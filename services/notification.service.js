@@ -343,7 +343,7 @@ export const sendNewCourseNotification = async (course) => {
         action: 'view_course'
       },
       link: `/api/catalog/courses/${course.id}/instructors`,
-      imageUrl: course.imageUrl || '/images/new-course-icon.png'
+      imageUrl: '/uploads/iconsnotication/Addnew-8.png'
     };
 
     const result = await createBroadcastNotification(notificationData, true);
@@ -372,12 +372,10 @@ export const sendCourseSubscriptionNotification = async (user, courseLevel) => {
       data: {
         courseLevelId: courseLevel.id,
         courseLevelName: courseLevel.name,
-       // courseId: courseLevel.courseId,
-     //   courseTitle: courseLevel.course?.title,
         action: 'view_course_level'
       },
       link: `/api/lessons/levels/${courseLevel.id}`,
-      imageUrl: courseLevel.imageUrl || courseLevel.course?.imageUrl || '/images/subscription-success.png'
+      imageUrl: '/uploads/iconsnotication/Subscripe-8.png'
     };
 
     const result = await createNotification({
@@ -426,7 +424,7 @@ export const sendNewCourseLevelNotification = async (courseLevel) => {
         action: 'view_new_level'
       },
       link: `/api/lessons/levels/${courseLevel.id}`,
-      imageUrl: courseLevel.imageUrl || courseLevel.course?.imageUrl || '/images/new-level-icon.png'
+      imageUrl: '/uploads/iconsnotication/level-8.png'
     };
 
     const result = await createNotificationsForUsers(userIds, notificationData, true);
@@ -527,7 +525,7 @@ export const checkAndSendExpirationNotifications = async (userId) => {
             action: 'renew_subscription'
           },
           link: `/api/lessons/levels/${code.courseLevelId}`,
-          imageUrl: '/images/warning-icon.png'
+          imageUrl: '/uploads/iconsnotication/Alert-8.png'
         }, true);
         notificationsSent++;
       }
@@ -564,7 +562,7 @@ export const checkAndSendExpirationNotifications = async (userId) => {
             action: 'urgent_renewal'
           },
           link: `/api/lessons/levels/${code.courseLevelId}`,
-          imageUrl: '/images/urgent-warning-icon.png'
+          imageUrl: '/uploads/iconsnotication/Alert-8.png'
         }, true);
         notificationsSent++;
       }

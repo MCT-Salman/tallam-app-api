@@ -1,7 +1,7 @@
 import { body, param, query } from 'express-validator';
 
 // Notification types enum
-const NOTIFICATION_TYPES = ['GENERAL', 'COURSE_NEW', 'COURSE_UPDATE', 'LESSON_NEW', 'QUIZ_AVAILABLE', 'SYSTEM'];
+const NOTIFICATION_TYPES = ['GENERAL', 'COURSE_NEW', 'COURSE_UPDATE', 'LESSON_NEW', 'SYSTEM'];
 
 /**
  * Validation rules for creating a notification
