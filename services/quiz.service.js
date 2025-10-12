@@ -250,13 +250,14 @@ export const getQuizForStudent = async (courseLevelId, userId) => {
     },
   });
 
- /* if (!questions || questions.length === 0) {
-    throw new Error("لا يوجد اختبار");
-  }*/
+ const isfree = await prisma.courseLevel.findUnique({
+    where: { id: courseLevelId },
+    select: { isFree: true },
+  });
 
   // Check if student has access to the course level
   const hasAccess = await checkCourseLevelAccess(userId, courseLevelId);
-  if (!hasAccess) {
+  if (!hasAccess || !isfree.isFree) {
     throw new Error("لا يمكنك الوصول للاختبار");
   }
 
