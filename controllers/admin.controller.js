@@ -1,4 +1,4 @@
-import { createSubAdmin, setUserRole, toggleUserActive, adminLogin as adminLoginService } from "../services/admin.service.js";
+import { createAdmin, setUserRole, toggleUserActive, adminLogin as adminLoginService } from "../services/admin.service.js";
 import { SUCCESS_REQUEST, SUCCESS_LOGIN } from "../validators/messagesResponse.js";
 
 /**
@@ -6,13 +6,14 @@ import { SUCCESS_REQUEST, SUCCESS_LOGIN } from "../validators/messagesResponse.j
  * @desc create new account with subadmin role
  * @access private (only admin)
  */
-export const addSubAdmin = async (req, res, next) => {
+export const addAdmin = async (req, res, next) => {
   try {
-    const { phone, name, birthDate } = req.body;
-    const user = await createSubAdmin(phone, name, birthDate);
-    res.json({ 
-      success: true, 
-      message: "تم إنشاء حساب المشرف الفرعي بنجاح",
+    const { phone, name, sex, birthDate, country, countryCode, role, expiresAt, username, email, password } = req.body;
+
+    const user = await createAdmin(phone, name, sex, birthDate, country, countryCode, role, expiresAt, username, email, password);
+    res.json({
+      success: true,
+      message: "تم إنشاء حساب المشرف بنجاح",
       data: {
         ...user
       }
@@ -32,8 +33,8 @@ export const changeRole = async (req, res, next) => {
   try {
     const { userId, role } = req.body;
     const updated = await setUserRole(userId, role);
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message: "تم تغيير الدور بنجاح",
       data: {
         ...updated
@@ -55,8 +56,8 @@ export const deactivateUser = async (req, res, next) => {
     const { userId, active } = req.body;
     const updated = await toggleUserActive(userId, active);
     const message = active ? "تم تفعيل الحساب بنجاح" : "تم تعطيل الحساب بنجاح";
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       message,
       data: {
         ...updated

@@ -19,7 +19,7 @@ export const createNotification = async (notificationData, sendPush = true) => {
       // Validate FCM token before sending
       if (validateFCMToken(notification.user.fcmToken)) {
         try {
-          console.log(`📱 إرسال إشعار فوري للمستخدم: ${notification.user.name || notification.userId}`);
+          console.log(`إرسال إشعار فوري للمستخدم: ${notification.user.name || notification.userId}`);
 
           const pushResult = await sendPushNotification(
             notification.user.fcmToken,
@@ -96,7 +96,7 @@ export const createNotificationsForUsers = async (userIds, notificationData, sen
 
         if (fcmTokens.length > 0) {
           try {
-            console.log(`📱 إرسال إشعارات فورية لـ ${fcmTokens.length} مستخدم`);
+            console.log(` إرسال إشعارات فورية لـ ${fcmTokens.length} مستخدم`);
 
             await sendPushNotificationToMultiple(
               fcmTokens,
@@ -151,7 +151,7 @@ export const createNotificationsForUsers = async (userIds, notificationData, sen
  */
 export const createBroadcastNotification = async (notificationData, sendPush = true) => {
   try {
-    console.log(`📢 إنشاء إشعار عام لجميع المستخدمين النشطين...`);
+    console.log(` إنشاء إشعار عام لجميع المستخدمين النشطين...`);
 
     // Get all active users
     const activeUsers = await prisma.user.findMany({
@@ -159,7 +159,7 @@ export const createBroadcastNotification = async (notificationData, sendPush = t
       select: { id: true, name: true, fcmToken: true }
     });
 
-    console.log(`👥 تم العثور على ${activeUsers.length} مستخدم نشط`);
+    console.log(` تم العثور على ${activeUsers.length} مستخدم نشط`);
 
     const userIds = activeUsers.map(user => user.id);
     const usersWithFCM = activeUsers.filter(user => user.fcmToken && validateFCMToken(user.fcmToken));
@@ -331,10 +331,10 @@ export const updateUserFCMToken = async (userId, fcmToken) => {
  */
 export const sendNewCourseNotification = async (course) => {
   try {
-    console.log(`🎓 إرسال إشعار دورة جديدة: ${course.title}`);
+    console.log(`إرسال إشعار دورة جديدة: ${course.title}`);
 
     const notificationData = {
-      title: 'دورة جديدة متاحة! 🎓',
+      title: 'دورة جديدة متاحة',
       body: `تم إضافة دورة جديدة: ${course.title}`,
       type: 'COURSE_NEW',
       data: {
@@ -363,10 +363,10 @@ export const sendNewCourseNotification = async (course) => {
  */
 export const sendCourseSubscriptionNotification = async (user, courseLevel) => {
   try {
-    console.log(`🎉 إرسال إشعار اشتراك للمستخدم: ${user.name} في ${courseLevel.name}`);
+    console.log(` إرسال إشعار اشتراك للمستخدم: ${user.name} في ${courseLevel.name}`);
 
     const notificationData = {
-      title: 'تم الاشتراك بنجاح! 🎉',
+      title: 'تم الاشتراك بنجاح',
       body: `مرحباً ${user.name}، تم تفعيل اشتراكك في: ${courseLevel.name}`,
       type: 'COURSE_UPDATE',
       data: {
@@ -398,7 +398,7 @@ export const sendCourseSubscriptionNotification = async (user, courseLevel) => {
  */
 export const sendNewCourseLevelNotification = async (courseLevel) => {
   try {
-    console.log(`📚 إرسال إشعار مستوى جديد: ${courseLevel.name}`);
+    console.log(`إرسال إشعار مستوى جديد: ${courseLevel.name}`);
 
     const userIds = await prisma.user.findMany({
       select: { id: true },
@@ -411,7 +411,7 @@ export const sendNewCourseLevelNotification = async (courseLevel) => {
     });
 
     const notificationData = {
-      title: 'مستوى جديد متاح! 📚',
+      title: 'مستوى جديد متاح',
       body: `تم إضافة مستوى جديد: ${courseLevel.name} في دورة ${courseLevel.course?.title || 'الدورة'}`,
       type: 'LESSON_NEW',
       data: {
@@ -514,7 +514,7 @@ export const checkAndSendExpirationNotifications = async (userId) => {
 
         await createNotification({
           userId: userId,
-          title: 'تنبيه: انتهاء صلاحية الاشتراك قريباً ⚠️',
+          title: 'تنبيه: انتهاء صلاحية الاشتراك قريباً',
           body: `سينتهي اشتراكك في "${code.courseLevel.name}" خلال 3 أيام. يرجى تجديد الاشتراك لمواصلة الوصول للمحتوى.`,
           type: 'SYSTEM',
           data: {
@@ -551,7 +551,7 @@ export const checkAndSendExpirationNotifications = async (userId) => {
 
         await createNotification({
           userId: userId,
-          title: 'تحذير عاجل: انتهاء صلاحية الاشتراك اليوم! 🚨',
+          title: 'تحذير عاجل: انتهاء صلاحية الاشتراك اليوم',
           body: `سينتهي اشتراكك في "${code.courseLevel.name}" اليوم! يرجى تجديد الاشتراك فوراً لتجنب فقدان الوصول.`,
           type: 'SYSTEM',
           data: {
@@ -588,7 +588,7 @@ export const checkAndSendExpirationNotifications = async (userId) => {
  */
 export const sendInstantPushToAllUsers = async (notificationData) => {
   try {
-    console.log(`📢 إرسال إشعار فوري لجميع المستخدمين النشطين...`);
+    console.log(`إرسال إشعار فوري لجميع المستخدمين النشطين...`);
 
     // Get all active users with valid FCM tokens
     const activeUsers = await prisma.user.findMany({
@@ -655,7 +655,7 @@ export const sendInstantPushToAllUsers = async (notificationData) => {
  */
 export const sendInstantPushToUser = async (userId, notificationData) => {
   try {
-    console.log(`📱 إرسال إشعار فوري للمستخدم: ${userId}`);
+    console.log(`إرسال إشعار فوري للمستخدم: ${userId}`);
 
     // Get user with FCM token
     const user = await prisma.user.findUnique({

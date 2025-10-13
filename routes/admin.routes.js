@@ -1,9 +1,9 @@
 import { Router } from "express";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { requireRole } from "../middlewares/role.middleware.js";
-import { addSubAdmin, changeRole, deactivateUser, adminLogin } from "../controllers/admin.controller.js";
+import { addAdmin, changeRole, deactivateUser, adminLogin } from "../controllers/admin.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
-import { adminLoginRules } from "../validators/admin.validators.js";
+import { adminLoginRules , addAdminRules } from "../validators/admin.validators.js";
 
 const r = Router();
 
@@ -11,7 +11,7 @@ const r = Router();
 r.post("/login", validate(adminLoginRules), adminLogin);
 
 // كل المسارات هنا للمدير الرئيسي فقط
-r.post("/create-subadmin", requireAuth, requireRole(["ADMIN"]), addSubAdmin);
+r.post("/create-admin", requireAuth, requireRole(["ADMIN"]),validate(addAdminRules), addAdmin);
 r.put("/set-role", requireAuth, requireRole(["ADMIN"]), changeRole);
 r.put("/toggle-active", requireAuth, requireRole(["ADMIN"]), deactivateUser);
 

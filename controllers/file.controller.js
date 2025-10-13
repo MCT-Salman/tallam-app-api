@@ -6,8 +6,8 @@ export const adminListFiles = async (req, res, next) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
     const limit = parseInt(req.query.limit, 10) || 10;
-    const courseLevelId = req.query.courseLevelId ? parseInt(req.query.courseLevelId, 10) : undefined;
-    const result = await listFiles({ courseLevelId }, { page, limit });
+    const courseLevelId = req.params.courseLevelId ? parseInt(req.params.courseLevelId, 10) : undefined;
+    const result = await listFiles(courseLevelId, { page, limit });
     res.json({ success: true, message: "تم جلب الملفات بنجاح", data: serializeResponse(result.data), pagination: result.pagination });
   } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };

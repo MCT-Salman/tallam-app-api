@@ -1,7 +1,7 @@
 import { body, param, query } from "express-validator";
 
 export const idParam = param("id").isInt({ gt: 0 }).withMessage("id غير صالح");
-
+export const courseLevelIdParam = param("courseLevelId").isInt({ gt: 0 }).withMessage("courseLevelId غير صالح");
 export const fileCreateRules = [
   body("courseLevelId").optional().isInt({ gt: 0 }).withMessage("courseLevelId غير صالح"),
   body("meta").optional().isString().withMessage("meta يجب أن يكون نص JSON")
