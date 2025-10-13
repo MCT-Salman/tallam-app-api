@@ -88,44 +88,44 @@ const fileFilter = (req, file, cb) => {
 export const uploadSpecializationImage = multer({
   storage: createStorage('specializations'),
   fileImageFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 50 * 1024 * 1024 }
 });
 
 export const uploadCourseImage = multer({
   storage: createStorage('course'),
   fileImageFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 50 * 1024 * 1024 }
 });
 
 export const uploadCourseLevelImage = multer({
   storage: createStorage('courselevel'),
   fileImageFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 50 * 1024 * 1024 }
 });
 
 
 export const uploadInstructorImage = multer({
   storage: createStorage('instructors'),
   fileImageFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 50 * 1024 * 1024 }
 });
 
 export const uploadUserAvatar = multer({
   storage: createStorage('user'),
   fileImageFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 50 * 1024 * 1024 }
 });
 
 export const uploadNoticeImage = multer({
   storage: createStorage('financial'),
   fileImageFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 50 * 1024 * 1024 }
 });
 
 export const uploadStoryImage = multer({
   storage: createStorage('stories'),
   fileImageFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }
+  limits: { fileSize: 50 * 1024 * 1024 }
 });
 
 // Generic files upload (allow any mimetype) under uploads/files/general
