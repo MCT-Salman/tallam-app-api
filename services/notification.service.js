@@ -436,6 +436,62 @@ export const sendNewCourseLevelNotification = async (courseLevel) => {
   }
 };
 
+
+export const sendNewLessonNotification = async (lesson) => {
+  try {
+    console.log(`إرسال إشعار درس جديد: ${lesson.name}`);
+
+    const userIds = (await prisma.user.findMany({
+      select: { id: true },
+      where: { role: 'STUDENT' }
+    })).map(u => u.id);
+
+    const courseLevel = await prisma.courseLevel.findUnique({
+      where: { id: lesson.courseLevelId },
+      select: { 
+        id: true, 
+        name: true, 
+        instructorId: true, 
+        courseId: true,
+        course: { select: { id: true, title: true } }
+      }
+    });
+    if (!courseLevel) throw new Error('المستوى غير موجود');
+
+    const instructor = await prisma.instructor.findUnique({
+      where: { id: courseLevel.instructorId },
+      select: { id: true, name: true }
+    });
+
+    const notificationData = {
+      title: 'درس جديد متاح',
+      body: `تم إضافة درس جديد ضمن المستوى ${courseLevel.name} في دورة ${courseLevel.course?.title || 'الدورة'}`,
+      type: 'LESSON_NEW',
+      data: {
+        courseLevelId: courseLevel.id,
+        courseLevelName: courseLevel.name,
+        courseId: courseLevel.courseId,
+        instructorId: instructor?.id,
+        instructorName: instructor?.name,
+        courseTitle: courseLevel.course?.title,
+        action: 'view_new_level'
+      },
+      link: `/api/lessons/levels/${courseLevel.id}`,
+      imageUrl: '/uploads/iconsnotication/level-8.png'
+    };
+
+    // 5️⃣ إرسال الإشعارات
+    const result = await createNotificationsForUsers(userIds, notificationData, true);
+
+    console.log(`✅ تم إرسال إشعارات الدرس الجديد لـ ${userIds.length} مستخدم`);
+    return result;
+
+  } catch (error) {
+    console.error('❌ Error sending new lesson notification:', error);
+    throw error;
+  }
+};
+
 /**
  * Check and send access code expiration notifications
  * @param {number} userId - User ID to check codes for

@@ -1,14 +1,14 @@
 import { serializeResponse } from "../utils/serialize.js";
 import {
   createDomain, listDomains, updateDomain, toggleDomain, DeleteDomain,
-  createSpecialization, listSpecializations, listSpecializationsBySubject, updateSpecialization, toggleSpecialization, DeleteSpecialization,
+  getSpecializationById, createSpecialization, listSpecializations, listSpecializationsBySubject, updateSpecialization, toggleSpecialization, DeleteSpecialization,
   createSubject, listSubjects, listSubjectsByDomain, updateSubject, toggleSubject, DeleteSubject,
   createInstructor, listInstructors, updateInstructor, toggleInstructor, DeleteInstructor,
   createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic, listCoursesAdmin,
   listInstructorsForCourse,
 } from "../services/catalog.service.js";
 import { checkAndSendExpirationNotifications } from "../services/notification.service.js";
-
+import { deleteFile } from "../utils/deleteFile.js";
 // Admin: Domains
 export const adminCreateDomain = async (req, res, next) => {
   try {
@@ -243,16 +243,40 @@ export const adminListSpecializationsBySubject = async (req, res, next) => {
 
 export const adminUpdateSpecialization = async (req, res, next) => {
   try {
-    const updateData = { name: req.body.name };
-    if (req.body.subjectId) updateData.subjectId = parseInt(req.body.subjectId, 10);
-    if (req.file) updateData.imageUrl = `/uploads/images/specializations/${req.file.filename}`;
-    const s = await updateSpecialization(parseInt(req.params.id, 10), updateData);
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      if (req.file) deleteFile(`/specializations/${req.file.filename}`);
+      return res.status(400).json({ success: false, message: "معرّف غير صالح" });
+    }
+
+    const existing = await getSpecializationById(id);
+    if (!existing) {
+      if (req.file) deleteFile(`/specializations/${req.file.filename}`);
+      return res.status(404).json({ success: false, message: "التخصص غير موجود" });
+    }
+
+    const updateData = {};
+
+    if (req.body.name !== undefined) updateData.name = req.body.name;
+
+    if (req.body.subjectId !== undefined) updateData.subjectId = parseInt(req.body.subjectId, 10);
+
+    if (req.file) {
+      // حذف الصورة القديمة إن وُجدت
+      if (existing.imageUrl) deleteFile(existing.imageUrl);
+      updateData.imageUrl = `uploads/images/specializations/${req.file.filename}`;
+    }
+
+    const updated = await updateSpecialization(id, updateData);
+
     res.json({
       success: true,
       message: "تم تحديث التخصص بنجاح",
-      data: serializeResponse(s)
+      data: serializeResponse(updated),
     });
   } catch (e) {
+    // حذف الصورة الجديدة في حال فشل العملية
+    if (req.file) deleteFile(`/specializations/${req.file.filename}`);
     e.statusCode = e.statusCode || 400;
     next(e);
   }

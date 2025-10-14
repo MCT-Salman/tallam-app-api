@@ -1,5 +1,6 @@
 import { serializeResponse } from "../utils/serialize.js";
 import { createStory, listStories, getStoryById, updateStory, deleteStory, getActiveStories } from "../services/story.service.js";
+import { deleteFile } from "../utils/deleteFile.js";
 
 export const adminListStories = async (req, res, next) => {
   try {
@@ -39,18 +40,49 @@ export const adminGetStory = async (req, res, next) => {
 export const adminUpdateStory = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      return res.status(400).json({ success: false, message: "معرّف غير صالح" });
+    }
+    const existingStory = await getStoryById(id);
+    if (!existingStory) {
+      return res.status(404).json({ success: false, message: "القصة غير موجودة" });
+    }
+
     const data = {};
 
-    if (req.body.title !== undefined) data.title = req.body.title;
-    if (req.body.imageUrl !== undefined) data.imageUrl = req.file ? `/uploads/images/stories/${req.file.filename}` : null;
-    if (req.body.startedAt !== undefined) data.startedAt = req.body.startedAt ? new Date(req.body.startedAt) : null;
-    if (req.body.endedAt !== undefined) data.endedAt = req.body.endedAt ? new Date(req.body.endedAt) : null;
-    if (req.body.orderIndex !== undefined) data.orderIndex = req.body.orderIndex ? parseInt(req.body.orderIndex, 10) : null;
-    if (req.body.isActive !== undefined) data.isActive = req.body.isActive === 'true';
+    if (req.body.title !== undefined)
+      data.title = req.body.title;
+
+    if (req.file) {
+      // حذف الصورة القديمة إذا تم رفع جديدة
+      deleteFile(existingStory.imageUrl);
+      data.imageUrl = `/uploads/images/stories/${req.file.filename}`;
+    }
+
+    if (req.body.startedAt !== undefined)
+      data.startedAt = req.body.startedAt ? new Date(req.body.startedAt) : null;
+
+    if (req.body.endedAt !== undefined)
+      data.endedAt = req.body.endedAt ? new Date(req.body.endedAt) : null;
+
+    if (req.body.orderIndex !== undefined)
+      data.orderIndex = req.body.orderIndex ? parseInt(req.body.orderIndex, 10) : null;
+
+    if (req.body.isActive !== undefined)
+      data.isActive = req.body.isActive === "true" || req.body.isActive === true;
 
     const updated = await updateStory(id, data);
-    res.json({ success: true, message: "تم تحديث القصة بنجاح", data: serializeResponse(updated) });
-  } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+
+    res.json({
+      success: true,
+      message: "تم تحديث القصة بنجاح",
+      data: serializeResponse(updated),
+    });
+
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
 };
 
 export const adminDeleteStory = async (req, res, next) => {

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { requireAuth, requireRole } from "../middlewares/auth.middleware.js";
 import {
+  GetContactSetting,
   adminGetSettings,
   adminGetSetting,
   adminCreateSetting,
@@ -11,6 +12,8 @@ import {
 
 const router = Router();
 
+// All routes in this file are for students
+router.get("/contact",requireAuth, requireRole(['STUDENT']), GetContactSetting);
 // Admin routes for managing settings
 router.use(requireAuth);
 router.use(requireRole(['ADMIN', 'SUBADMIN']));

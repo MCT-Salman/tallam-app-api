@@ -10,6 +10,25 @@ import {
   deleteSetting
 } from "../services/appSettings.service.js";
 
+// --- Student Controllers ---
+export const GetContactSetting = async (req, res, next) => {
+  try {
+    const value = await getSetting('whatsapp');
+    const value2 = await getSetting('telegram');
+    res.json({
+      success: true,
+      message: "تم جلب إعدادات التطبيق بنجاح",
+      data: {
+        'whatsapp': value,
+        'telegram': value2,
+      }
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || 400;
+    next(error);
+  }
+};
+
 /**
  * Get all app settings (Admin only)
  * GET /api/admin/settings

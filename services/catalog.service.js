@@ -33,6 +33,7 @@ export const toggleDomain = (id, isActive) => prisma.domain.update({ where: { id
 export const DeleteDomain = (id) => prisma.domain.delete({ where: { id } });
 
 // Specializations
+export const getSpecializationById = (id) => prisma.specialization.findUnique({ where: { id } });
 export const createSpecialization = (data) => prisma.specialization.create({ data });
 
 export const listSpecializations = async (pagination = {}) => {
@@ -176,12 +177,12 @@ export const createCourse = async (courseData) => {
   });
 
   // Send notification for new course creation (async, don't wait)
-  try {
+/*  try {
     await sendNewCourseNotification(result);
     console.log(`✅ Notification sent for new course: ${result.title}`);
   } catch (error) {
     console.error(`❌ Failed to send notification for new course: ${result.title}`, error.message);
-  }
+  }*/
 
   return result;
 };

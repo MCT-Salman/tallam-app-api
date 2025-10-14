@@ -1,5 +1,5 @@
 import prisma from "../prisma/client.js";
-import { sendNewCourseLevelNotification } from './notification.service.js';
+import { sendNewLessonNotification } from './notification.service.js';
 
 // Reusable select for nested course details
 export const courseSelect = {
@@ -16,6 +16,17 @@ export const courseSelect = {
 };
 
 // Levels
+
+export const getLevelById = async (id) => {
+  return prisma.courseLevel.findUnique({
+    where: { id },
+    include: {
+      course: { select: courseSelect },
+      instructor: true
+    }
+  });
+};
+
 export const createLevel = async (courseId, data) => {
   const level = await prisma.courseLevel.create({
     data: { ...data, courseId },
@@ -26,12 +37,12 @@ export const createLevel = async (courseId, data) => {
   });
 
   // Send new course level notification
-  try {
-    await sendNewCourseLevelNotification(level);
-    console.log(`✅ تم إرسال إشعار المستوى الجديد: ${level.name}`);
-  } catch (error) {
-    console.error(`❌ فشل إرسال إشعار المستوى الجديد: ${error.message}`);
-  }
+  /* try {
+     await sendNewCourseLevelNotification(level);
+     console.log(`✅ تم إرسال إشعار المستوى الجديد: ${level.name}`);
+   } catch (error) {
+     console.error(`❌ فشل إرسال إشعار المستوى الجديد: ${error.message}`);
+   }*/
 
   return level;
 };
@@ -94,12 +105,20 @@ export const createLessonForLevel = async (courseLevelId, data) => {
   });
   if (!level) throw new Error("المستوى غير موجود");
 
-  return prisma.lesson.create({
+  const lesson = await prisma.lesson.create({
     data: { ...data, courseLevelId },
     include: {
       courseLevel: { include: { course: { select: courseSelect } } }
     }
   });
+
+  try {
+    await sendNewLessonNotification(lesson);
+    console.log(`✅ Notification sent for new course: ${lesson.title}`);
+  } catch (error) {
+    console.error(`❌ Failed to send notification for new course: ${lesson.title}`, error.message);
+  }
+  return lesson;
 };
 
 export const listLessonsByLevel = async (courseLevelId, pagination = {}) => {
@@ -303,13 +322,13 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
              title: true,
            },
          },*/
-   /*   },
-    });
+/*   },
+ });
 
-    return { ...fullResult, issubscribed: true };
-  }
-  // Otherwise, return basic details
-  return { ...result, issubscribed: false };
+ return { ...fullResult, issubscribed: true };
+}
+// Otherwise, return basic details
+return { ...result, issubscribed: false };
 };*/
 export const DetailLevel = async (courseLevelId, userId = null) => {
   const baseInclude = {
