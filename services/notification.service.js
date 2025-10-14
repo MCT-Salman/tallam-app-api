@@ -464,8 +464,8 @@ export const sendNewLessonNotification = async (lesson) => {
     });
 
     const notificationData = {
-      title: 'درس جديد متاح',
-      body: `تم إضافة درس جديد ضمن المستوى ${courseLevel.name} في دورة ${courseLevel.course?.title || 'الدورة'}`,
+      title: 'كورس جديد متاح',
+      body: `تم إضافة كورس جديد ${courseLevel.course?.title} ${courseLevel.name}`,
       type: 'LESSON_NEW',
       data: {
         courseLevelId: courseLevel.id,

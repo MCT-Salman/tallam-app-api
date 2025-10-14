@@ -111,12 +111,16 @@ export const createLessonForLevel = async (courseLevelId, data) => {
       courseLevel: { include: { course: { select: courseSelect } } }
     }
   });
-
-  try {
-    await sendNewLessonNotification(lesson);
-    console.log(`✅ Notification sent for new course: ${lesson.title}`);
-  } catch (error) {
-    console.error(`❌ Failed to send notification for new course: ${lesson.title}`, error.message);
+  const count = await prisma.lesson.count({
+    where: { courseLevelId }
+  });
+  if (count === 1) {
+    try {
+      await sendNewLessonNotification(lesson);
+      console.log(`✅ Notification sent for new course: ${lesson.title}`);
+    } catch (error) {
+      console.error(`❌ Failed to send notification for new course: ${lesson.title}`, error.message);
+    }
   }
   return lesson;
 };
