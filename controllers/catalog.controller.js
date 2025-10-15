@@ -3,7 +3,7 @@ import {
   createDomain, listDomains, updateDomain, toggleDomain, DeleteDomain,
   getSpecializationById, createSpecialization, listSpecializations, listSpecializationsBySubject, updateSpecialization, toggleSpecialization, DeleteSpecialization,
   createSubject, listSubjects, listSubjectsByDomain, updateSubject, toggleSubject, DeleteSubject,
-  createInstructor, listInstructors, updateInstructor, toggleInstructor, DeleteInstructor,
+  getInstructorById, createInstructor, listInstructors, updateInstructor, toggleInstructor, DeleteInstructor,
   createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic, listCoursesAdmin,
   listInstructorsForCourse,
 } from "../services/catalog.service.js";
@@ -348,16 +348,39 @@ export const adminListInstructors = async (req, res, next) => {
 };
 export const adminUpdateInstructor = async (req, res, next) => {
   try {
-    const updateData = { name: req.body.name, bio: req.body.bio };
-    if (req.body.specializationId) updateData.specializationId = parseInt(req.body.specializationId, 10);
-    if (req.file) updateData.avatarUrl = `/uploads/images/instructors/${req.file.filename}`;
-    const i = await updateInstructor(parseInt(req.params.id, 10), updateData);
+    const id = parseInt(req.params.id, 10);
+    if (isNaN(id)) {
+      if (req.file) deleteFile(`/instructors/${req.file.filename}`);
+      return res.status(400).json({ success: false, message: "معرّف غير صالح" });
+    }
+
+    const existing = await getInstructorById(id);
+    if (!existing) {
+      if (req.file) deleteFile(`/instructors/${req.file.filename}`);
+      return res.status(404).json({ success: false, message: "المدرب غير موجود" });
+    }
+
+    const updateData = {};
+
+    if (req.body.name !== undefined) updateData.name = req.body.name;
+    if (req.body.bio !== undefined) updateData.bio = req.body.bio;
+    if (req.body.specializationId !== undefined)
+      updateData.specializationId = parseInt(req.body.specializationId, 10);
+
+    if (req.file) {
+      if (existing.avatarUrl) deleteFile(existing.avatarUrl);
+      updateData.avatarUrl = `/uploads/images/instructors/${req.file.filename}`;
+    }
+    const updated = await updateInstructor(id, updateData);
+
     res.json({
       success: true,
-      message: "تم تحديث المدرب بنجاح",
-      data: serializeResponse(i)
+      message: "تم تحديث بيانات المدرب بنجاح",
+      data: serializeResponse(updated),
     });
+
   } catch (e) {
+    if (req.file) deleteFile(`/uploads/images/instructors/${req.file.filename}`);
     e.statusCode = e.statusCode || 400;
     next(e);
   }
@@ -413,16 +436,42 @@ export const adminCreateCourse = async (req, res, next) => {
 export const adminUpdateCourse = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
-    const updateData = { title: req.body.title, description: req.body.description };
-    if (req.body.specializationId) updateData.specializationId = parseInt(req.body.specializationId, 10);
-    if (req.file) updateData.imageUrl = `/uploads/images/course/${req.file.filename}`;
-    const c = await updateCourse(id, updateData);
+    if (isNaN(id)) {
+      if (req.file) deleteFile(`/course/${req.file.filename}`);
+      return res.status(400).json({ success: false, message: "معرّف غير صالح" });
+    }
+
+    const existing = await getCourseById(id);
+    if (!existing) {
+      if (req.file) deleteFile(`/course/${req.file.filename}`);
+      return res.status(404).json({ success: false, message: "الكورس غير موجود" });
+    }
+
+    const updateData = {};
+
+    if (req.body.title !== undefined) updateData.title = req.body.title;
+    if (req.body.description !== undefined) updateData.description = req.body.description;
+    if (req.body.specializationId !== undefined)
+      updateData.specializationId = parseInt(req.body.specializationId, 10);
+
+    if (req.file) {
+      if (existing.imageUrl) deleteFile(existing.imageUrl);
+      updateData.imageUrl = `/uploads/images/course/${req.file.filename}`;
+    }
+
+    const updated = await updateCourse(id, updateData);
+
     res.json({
       success: true,
       message: "تم تحديث الكورس بنجاح",
-      data: serializeResponse(c)
+      data: serializeResponse(updated),
     });
-  } catch (e) { e.statusCode = e.statusCode || 400; next(e); }
+
+  } catch (e) {
+    if (req.file) deleteFile(`/uploads/images/course/${req.file.filename}`);
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
 };
 
 export const adminDeleteCourse = async (req, res, next) => {

@@ -126,6 +126,7 @@ export const toggleSubject = (id, isActive) => prisma.subject.update({ where: { 
 export const DeleteSubject = (id) => prisma.subject.delete({ where: { id } });
 
 // Instructors
+export const getInstructorById = (id) => prisma.instructor.findUnique({ where: { id } });
 export const createInstructor = (data) => prisma.instructor.create({ data });
 export const listInstructors = async (pagination = {}) => {
   const { page = 1, limit = 10 } = pagination;

@@ -199,7 +199,7 @@ export const getCourseLevelsByUserId = async (userId) => {
           createdAt: true,
           updatedAt: true,
           course: { select: { id: true, title: true } },
-          instructor : { select: { id: true, name: true } }
+          instructor : { select: { id: true, name: true, avatarUrl: true } }
         }
       }
     },

@@ -15,14 +15,14 @@ import { getRealIP } from "../utils/ip.js";
 import { UserModel, SessionModel, OtpCodeModel } from "../models/index.js";
 import { BAD_REQUEST_STATUS_CODE, SUCCESS_CREATE_STATUS_CODE, SUCCESS_STATUS_CODE } from "../validators/statusCode.js";
 import { FAILURE_REQUEST, OTP_SUCCESS_VERIFY, PHONE_NUMBER_REQUIRED, REFERESH_TOKEN_REQUIRED, SUCCESS_LOGIN, SUCCESS_REFERESH_TOKEN, SUCCESS_REGISTER, SUCCESS_REQUEST, UPDATE_PROFILE_INFO_SUCCESSFULLY, USER_NOT_FOUND_FORGET, USER_NOT_FOUND_PROFILE } from "../validators/messagesResponse.js";
-
+import { deleteFile } from "../utils/deleteFile.js";
 /** 
  * تسجيل مستخدم جديد
  */
 export const register = async (req, res, next) => {
   try {
     const { phone, name, birthDate, sex } = req.body;
-    const avatarUrl = req.file ? `/uploads/avatars/${req.file.filename}` : null;
+    const avatarUrl = req.file ? `/uploads/images/user/${req.file.filename}` : null;
 
     const result = await registerUser(phone, name, birthDate, sex, avatarUrl, req);
 
@@ -304,44 +304,59 @@ export const getProfile = async (req, res, next) => {
 export const updateProfile = async (req, res, next) => {
   try {
     const userId = req.user.id;
+
+    // 🔹 جلب بيانات المستخدم الحالية أولاً
+    const existing = await UserModel.findById(userId);
+    if (!existing) {
+      if (req.file) deleteFile(`/user/${req.file.filename}`);
+      return res.status(404).json({
+        success: FAILURE_REQUEST,
+        message: "المستخدم غير موجود",
+      });
+    }
+
     const { name, birthDate, sex } = req.body;
-    const avatarUrl = req.file ? `/uploads/avatars/${req.file.filename}` : undefined;
-
     const updateData = {};
-    if (name) updateData.name = name;
-    if (birthDate) updateData.birthDate = new Date(birthDate);
-    if (sex) updateData.sex = sex;
-    if (avatarUrl) updateData.avatarUrl = avatarUrl;
 
- 
-    const user = await UserModel.updateById(
-      userId,
-      updateData,
-      {
-        id: true,
-        phone: true,
-        name: true,
-        birthDate: true,
-        avatarUrl: true,
-        role: true,
-        sex: true,
-        country: true,
-        countryCode: true,
-        isVerified: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true
-      }
-    );
+    // 🔹 فقط القيم المرسلة
+    if (name !== undefined) updateData.name = name;
+    if (birthDate !== undefined) updateData.birthDate = new Date(birthDate);
+    if (sex !== undefined) updateData.sex = sex;
+
+    // 🔹 معالجة الصورة
+    if (req.file) {
+      // حذف الصورة القديمة (إن وُجدت)
+      if (existing.avatarUrl) deleteFile(existing.avatarUrl);
+      updateData.avatarUrl = `/uploads/images/user/${req.file.filename}`;
+    }
+
+    // 🔹 تحديث المستخدم
+    const user = await UserModel.updateById(userId, updateData, {
+      id: true,
+      phone: true,
+      name: true,
+      birthDate: true,
+      avatarUrl: true,
+      role: true,
+      sex: true,
+      country: true,
+      countryCode: true,
+      isVerified: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true
+    });
 
     res.json({
       success: SUCCESS_REQUEST,
       message: UPDATE_PROFILE_INFO_SUCCESSFULLY,
-      data: {
-        ...serializeResponse(user)
-      }
+      data: serializeResponse(user),
     });
+
   } catch (error) {
+    // ❗ حذف الصورة الجديدة إذا فشل التحديث
+    if (req.file) deleteFile(`/user/${req.file.filename}`);
+
     res.status(BAD_REQUEST_STATUS_CODE).json({
       success: FAILURE_REQUEST,
       message: error.message,

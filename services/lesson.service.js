@@ -198,7 +198,7 @@ export const listLevelsByCourseAndInstructor = async (courseId, instructorId, pa
         order: true,
         imageUrl: true,
         course: { select: { id: true, title: true } },
-        instructor: { select: { id: true, name: true } }
+        instructor: { select: { id: true, name: true, avatarUrl: true } }
       },
       skip,
       take

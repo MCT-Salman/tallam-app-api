@@ -17,7 +17,7 @@ import {
   optionalAuth, 
   logRequest 
 } from '../middlewares/auth.middleware.js';
-import { uploadAvatar } from '../utils/upload.js';
+import { uploadUserAvatar } from "../middlewares/upload.middleware.js";;
 import { validate } from '../middlewares/validate.middleware.js';
 import { registerRules, loginRules, refreshRules, forgotRequestOtpRules, forgotVerifyOtpRules, profileUpdateRules } from '../validators/auth.validators.js';
 import { normalizePhoneE164 } from '../middlewares/phone.middleware.js';
@@ -30,7 +30,7 @@ const router = express.Router();
 router.use(logRequest);
 
 // مسارات المصادقة العامة (لا تتطلب مصادقة)
-router.post('/register',  uploadAvatar.single('avatar'), normalizePhoneE164, validate(registerRules), register);
+router.post('/register',  uploadUserAvatar.single('avatar'), normalizePhoneE164, validate(registerRules), register);
 router.post('/login',  normalizePhoneE164, validate(loginRules), login);
 router.post('/refresh',  validate(refreshRules), refresh);
 // router.post('/register', authRateLimit, uploadAvatar.single('avatar'), normalizePhoneE164, validate(registerRules), register);
@@ -53,7 +53,7 @@ router.delete('/sessions/:sessionId', revokeSessionById);
 
 // إدارة الملف الشخصي
 router.get('/profile', getProfile);
-router.put('/profile', uploadAvatar.single('avatar'), validate(profileUpdateRules), updateProfile);
+router.put('/profile', uploadUserAvatar.single('avatar'), validate(profileUpdateRules), updateProfile);
 
 export default router;
 

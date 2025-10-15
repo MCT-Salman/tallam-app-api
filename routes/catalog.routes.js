@@ -18,7 +18,7 @@ import {
   publicListSpecializations, publicListCoursesBySpecialization, publicListCoursesByInstructor,
   publicListDomains, publicListSubjects, publicListInstructors
 } from "../controllers/catalog.controller.js";
-import { uploadCourseImage, uploadSpecializationImage, uploadInstructorImage, uploadUserAvatar } from "../middlewares/upload.middleware.js";
+import { uploadCourseImage, uploadSpecializationImage, uploadInstructorImage } from "../middlewares/upload.middleware.js";
 
 const r = Router();
 
