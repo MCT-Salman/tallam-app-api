@@ -367,7 +367,7 @@ export const sendCourseSubscriptionNotification = async (user, courseLevel) => {
 
     const notificationData = {
       title: 'تم الاشتراك بنجاح',
-      body: `مرحباً ${user.name}، تم تفعيل اشتراكك في: ${courseLevel.name}`,
+      body: `مرحباً ${user.name}، تم تفعيل اشتراكك في: ${courseLevel.name} من المادة ${courseLevel.course?.title} للمدرس ${courseLevel.instructor?.name}`,
       type: 'COURSE_UPDATE',
       data: {
         courseLevelId: courseLevel.id,

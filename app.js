@@ -88,7 +88,13 @@ const PORT = process.env.PORT || 5000;
 // }); 
 
 // Middleware الأساسي
-app.use(helmet()); // حماية أمنية
+app.use(
+  helmet({
+    contentSecurityPolicy: false, // تعطيل CSP إذا كنت تريد السماح ببعض الموارد من أي مكان
+  })
+);
+// تفعيل سياسة الموارد عبر الأصل (Cross-Origin Resource Policy)
+app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(compression()); // ضغط الاستجابات
 app.use(cors({
   // origin: process.env.FRONTEND_URL || '*',
