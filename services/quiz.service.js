@@ -124,13 +124,13 @@ export const updateQuestion = async (questionId, data) => {
       order,
       options: options
         ? {
-            // Delete all old options and add new ones
-            deleteMany: {},
-            create: options.map((o) => ({
-              text: o.text,
-              isCorrect: o.isCorrect ?? false,
-            })),
-          }
+          // Delete all old options and add new ones
+          deleteMany: {},
+          create: options.map((o) => ({
+            text: o.text,
+            isCorrect: o.isCorrect ?? false,
+          })),
+        }
         : undefined,
     },
     include: {
@@ -250,7 +250,7 @@ export const getQuizForStudent = async (courseLevelId, userId) => {
     },
   });
 
- const isfree = await prisma.courseLevel.findUnique({
+  const isfree = await prisma.courseLevel.findUnique({
     where: { id: courseLevelId },
     select: { isFree: true },
   });
@@ -272,7 +272,7 @@ export const submitQuiz = async (courseLevelId, userId, answers) => {
       options: true,
     },
   });
-  c
+
   if (!questions || questions.length === 0) throw new Error(QUIZ_NOT_FOUND);
 
   const isfree = await prisma.courseLevel.findUnique({
