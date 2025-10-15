@@ -30,7 +30,7 @@ r.delete("/admin/lessons/:id", requireAuth, requireRole(["ADMIN"]), validate(idP
 // Public
 r.get("/courses/:courseId/levels", validate(courseIdParam), publicListLevelsWithLessons);//test
 r.get("/courses/:courseId/instructors/:instructorId/levels", validate(courseIdParam), validate(instructorIdParam), publicListLevelsByCourseAndInstructor);
-r.get("/levels/:courseLevelId", requireAuth ,validate(courseLevelIdParam), publicDetailLevel);
+r.get("/levels/:courseLevelId", optionalAuth ,validate(courseLevelIdParam), publicDetailLevel);
 r.get("/levels/:courseLevelId/lessons", validate(courseLevelIdParam), publicListLessonsByLevel);//test
 
 export default r;
