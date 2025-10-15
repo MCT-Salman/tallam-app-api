@@ -20,7 +20,7 @@ router.use(requireAuth);
 router.use(requireRole(['ADMIN']));
 
 // Get all transactions with filtering and pagination
-router.get("/", validate(transactionListValidationRules), adminGetTransactions);
+router.get("/", adminGetTransactions);
 
 // Get a specific transaction by ID
 router.get("/:id", validate(transactionIdParam), adminGetTransaction);

@@ -158,7 +158,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/code-requests', codeRequestRoutes);
 app.use('/api/access-codes', accessCodeRoutes);
 app.use('/api/admin', quizRoutes); // Using /api/admin prefix for quiz management
-app.use('/api/admin/transactions', transactionRoutes); // Using /api/admin/transactions prefix for transaction management
+app.use('/api/transactions/admin/', transactionRoutes); // Using /api/admin/transactions prefix for transaction management
 app.use('/api/quizzes', studentQuizRoutes); // Routes for students to take quizzes
 app.use('/api/progress', progressRoutes); // Routes for students to track progress
 app.use('/api/catalog', catalogRoutes);
