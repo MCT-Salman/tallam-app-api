@@ -256,7 +256,7 @@ export const getQuizForStudent = async (courseLevelId, userId) => {
   });
   // Check if student has access to the course level
   const hasAccess = await checkCourseLevelAccess(userId, courseLevelId);
-  if (!hasAccess || !!isfree.isFree) {
+  if (!hasAccess && !isfree.isFree) {
     throw new Error("لا يمكنك الوصول للاختبار");
   }
 
