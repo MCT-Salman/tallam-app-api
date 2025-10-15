@@ -186,7 +186,10 @@ export const getCourseLevelsByUserId = async (userId) => {
   return prisma.accessCode.findMany({
     where: {
       usedBy: userId,
-      used: true
+      used: true,
+      expiresAt: {
+        gt: new Date()
+      }
     },
     include: {
       courseLevel: {
