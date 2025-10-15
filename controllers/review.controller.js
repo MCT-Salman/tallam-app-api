@@ -6,7 +6,8 @@ import {
   getReviewById,
   updateReview,
   deleteReview,
-  getReviewStats
+  getReviewStats,
+  getReviewsForCourseLevelAdmin
 } from "../services/review.service.js";
 
 /**
@@ -207,6 +208,31 @@ export const publicGetReviewStats = async (req, res, next) => {
       success: true,
       message: "تم جلب إحصائيات التقييمات بنجاح",
       data: stats
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || 400;
+    next(error);
+  }
+};
+
+/**
+ * Admin: Get all reviews with filtering and pagination
+ * GET /api/reviews/all
+ */
+export const adminGetAllReviews = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 10, courseLevelId, userId } = req.query;
+
+    const result = await getReviewsForCourseLevelAdmin(courseLevelId, { page, limit }, userId);
+
+    res.json({
+      success: true,
+      message: "تم جلب التقييمات بنجاح",
+      data: {
+        reviews: serializeResponse(result.reviews),
+        stats: result.stats,
+        pagination: result.pagination
+      }
     });
   } catch (error) {
     error.statusCode = error.statusCode || 400;

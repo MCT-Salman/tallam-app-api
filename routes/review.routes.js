@@ -1,13 +1,15 @@
 import { Router } from "express";
 import { validate } from "../middlewares/validate.middleware.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
+import { requireRole } from "../middlewares/role.middleware.js";
 import {
   studentCreateReview,
   publicGetReviewsForCourseLevel,
   studentGetMyReview,
   studentUpdateReview,
   studentDeleteReview,
-  publicGetReviewStats
+  publicGetReviewStats,
+  adminGetAllReviews
 } from "../controllers/review.controller.js";
 import {
   createReviewRules,
@@ -27,12 +29,14 @@ router.get("/courselevels/:courseLevelId/stats", validate(courseLevelIdParam), p
 // Student routes - authentication required
 router.use(requireAuth); // All routes below require authentication
 
-router.post("/courselevels/:courseLevelId", validate(courseLevelIdParam), validate(createReviewRules), studentCreateReview);
+router.post("/courselevels/:courseLevelId", requireRole(['STUDENT']), validate(courseLevelIdParam), validate(createReviewRules), studentCreateReview);
 
-router.get("/courselevels/:courseLevelId/mine", validate(courseLevelIdParam), studentGetMyReview);
+router.get("/courselevels/:courseLevelId/mine", requireRole(['STUDENT']), validate(courseLevelIdParam), studentGetMyReview);
 
-router.put("/:reviewId", validate(reviewIdParam), validate(updateReviewRules), studentUpdateReview);
+router.put("/:reviewId", requireRole(['STUDENT']), validate(reviewIdParam), validate(updateReviewRules), studentUpdateReview);
 
-router.delete("/:reviewId", validate(reviewIdParam), studentDeleteReview);
+router.delete("/:reviewId", requireRole(['STUDENT']), validate(reviewIdParam), studentDeleteReview);
+
+router.get("/all", requireRole(['ADMIN', 'SUBADMIN']), validate(reviewListQueryRules), adminGetAllReviews);
 
 export default router;

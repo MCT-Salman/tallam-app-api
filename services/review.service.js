@@ -244,3 +244,67 @@ export const getReviewStats = async (courseLevelId) => {
     }))
   };
 };
+
+/**
+ * Admin: Get all reviews with filtering and pagination
+ * @param {number} courseLevelId - ID of the course level (optional)
+ * @param {number} userId - ID of the user (optional)
+ * @param {Object} pagination - { page, limit }
+ * @returns {Promise<Object>} - Reviews with pagination info
+ */
+export const getReviewsForCourseLevelAdmin = async (courseLevelId, pagination = {}, userId) => {
+  const { page = 1, limit = 10 } = pagination;
+  const skip = (page - 1) * limit;
+  const take = limit;
+  // Check if course level exists
+  if (courseLevelId) {
+    courseLevelId = parseInt(courseLevelId, 10);
+    const courseLevel = await prisma.courseLevel.findUnique({
+      where: { id: courseLevelId },
+      select: { id: true, name: true }
+    });
+    if (!courseLevel) {
+      throw new Error("المستوى غير موجود");
+    }
+  }
+
+  // Get reviews with user info
+  const [reviews, total] = await Promise.all([
+    prisma.review.findMany({
+      where: { courseLevelId, userId },
+      skip,
+      take,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        user: {
+          select: { name: true, avatarUrl: true }
+        },
+        courseLevel: {
+          select: { name: true, course: { select: { title: true } } }
+        }
+      }
+    }),
+    prisma.review.count({ where: { courseLevelId, userId } })
+  ]);
+
+  // Calculate average rating
+  const avgRatingResult = await prisma.review.aggregate({
+    where: { courseLevelId, userId },
+    _avg: { rating: true },
+    _count: { rating: true }
+  });
+
+  return {
+    reviews,
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    },
+    stats: {
+      averageRating: Number(avgRatingResult._avg.rating?.toFixed(2) || 0),
+      totalReviews: avgRatingResult._count.rating
+    }
+  };
+};
