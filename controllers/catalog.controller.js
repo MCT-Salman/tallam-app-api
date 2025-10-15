@@ -264,7 +264,7 @@ export const adminUpdateSpecialization = async (req, res, next) => {
     if (req.file) {
       // حذف الصورة القديمة إن وُجدت
       if (existing.imageUrl) deleteFile(existing.imageUrl);
-      updateData.imageUrl = `uploads/images/specializations/${req.file.filename}`;
+      updateData.imageUrl = `/uploads/images/specializations/${req.file.filename}`;
     }
 
     const updated = await updateSpecialization(id, updateData);
@@ -468,7 +468,7 @@ export const adminUpdateCourse = async (req, res, next) => {
     });
 
   } catch (e) {
-    if (req.file) deleteFile(`/uploads/images/course/${req.file.filename}`);
+    if (req.file) deleteFile(`/course/${req.file.filename}`);
     e.statusCode = e.statusCode || 400;
     next(e);
   }

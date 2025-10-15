@@ -119,9 +119,17 @@ export const studentUpdateReview = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const reviewId = parseInt(req.params.reviewId, 10);
+
+    if (isNaN(reviewId)) {
+      return res.status(400).json({
+        success: false,
+        message: "معرّف التقييم غير صالح"
+      });
+    }
+
     const { rating, comment } = req.body;
 
-    // Validate rating if provided
+    // التحقق من صحة التقييم إذا تم إرساله
     if (rating !== undefined && (rating < 1 || rating > 5)) {
       return res.status(400).json({
         success: false,
@@ -129,18 +137,40 @@ export const studentUpdateReview = async (req, res, next) => {
       });
     }
 
-    const review = await updateReview(reviewId, userId, rating, comment);
+    // 🔹 جلب التقييم الحالي
+    const existingReview = await getReviewById(reviewId);
+    if (!existingReview) {
+      return res.status(404).json({
+        success: false,
+        message: "التقييم غير موجود"
+      });
+    }
+
+    const updateData = {};
+    if (rating !== undefined) updateData.rating = parseInt(rating, 10);
+    if (comment !== undefined) updateData.comment = comment;
+
+    // لا يوجد أي بيانات جديدة للتحديث
+    if (Object.keys(updateData).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "لم يتم إرسال أي بيانات للتحديث"
+      });
+    }
+    const updatedReview = await updateReview(reviewId, updateData);
 
     res.json({
       success: true,
       message: "تم تحديث التقييم بنجاح",
-      data: serializeResponse(review)
+      data: serializeResponse(updatedReview)
     });
+
   } catch (error) {
     error.statusCode = error.statusCode || 400;
     next(error);
   }
 };
+
 
 /**
  * Student: Delete their own review

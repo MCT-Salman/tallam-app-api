@@ -86,7 +86,7 @@ export const adminUpdateLevel = async (req, res, next) => {
     if (req.file) {
       // حذف القديمة إذا كانت موجودة
       if (existingLevel.imageUrl) deleteFile(existingLevel.imageUrl);
-      data.imageUrl = `uploads/images/courselevel/${req.file.filename}`;
+      data.imageUrl = `/uploads/images/courselevel/${req.file.filename}`;
     }
 
     const updated = await updateLevel(id, data);
