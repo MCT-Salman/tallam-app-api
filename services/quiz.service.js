@@ -272,12 +272,17 @@ export const submitQuiz = async (courseLevelId, userId, answers) => {
       options: true,
     },
   });
-
+  c
   if (!questions || questions.length === 0) throw new Error(QUIZ_NOT_FOUND);
+
+  const isfree = await prisma.courseLevel.findUnique({
+    where: { id: courseLevelId },
+    select: { isFree: true },
+  });
 
   // 2. Check if student has access to the course level
   const hasAccess = await checkCourseLevelAccess(userId, courseLevelId);
-  if (!hasAccess) throw new Error(QUIZ_NO_ACCESS);
+  if (!hasAccess && !isfree.isFree) throw new Error(QUIZ_NO_ACCESS);
 
   const questionMap = new Map(questions.map((q) => [q.id, q]));
 
