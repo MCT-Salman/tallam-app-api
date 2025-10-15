@@ -183,3 +183,18 @@ export const studentActivateCode = async (req, res, next) => {
     next(error);
   }
 };
+
+export const studentGetExpiredCourses = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const expiredCourses = await AccessCodeService.getExpiredCoursesByUserId(userId);
+    res.status(SUCCESS_STATUS_CODE).json({
+      success: SUCCESS_REQUEST,
+      message: 'تم جلب دوراتك المنتهية الصلاحية بنجاح.',
+      data: serializeResponse(expiredCourses),
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
+    next(error);
+  }
+};

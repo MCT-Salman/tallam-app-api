@@ -206,3 +206,30 @@ export const getCourseLevelsByUserId = async (userId) => {
     orderBy: { usedAt: 'desc' }
   }).then(codes => codes.map(code => ({ ...code.courseLevel })));
 };
+
+export const getExpiredCoursesByUserId = async (userId) => {
+  const codes = await prisma.accessCode.findMany({
+    where: {
+      usedBy: userId,
+      used: true,
+      expiresAt: {
+        lte: new Date()
+      }
+    },
+    include: {
+      courseLevel: {
+        select: { id: true }
+      }
+    },
+    orderBy: { usedAt: 'desc' }
+  });
+
+  // استخراج جميع IDs فقط
+  const levelIds = codes.map(code => code.courseLevel.id);
+
+  return {
+    count: levelIds.length,
+    levelIds
+  };
+};
+

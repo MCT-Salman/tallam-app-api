@@ -5,7 +5,7 @@ import { validate } from '../middlewares/validate.middleware.js';
 import { uploadNoticeImage } from '../middlewares/upload.middleware.js';
 import {
   adminGenerateCodes, adminGetAllCodes, adminGetCourseCodes, adminGetCodesByUserId,
-  studentGetMyCodes, studentGetMyCourses, studentActivateCode
+  studentGetMyCodes, studentGetMyCourses, studentActivateCode , studentGetExpiredCourses
 } from '../controllers/accessCode.controller.js';
 import { generateCodesRules, activateCodeRules } from '../validators/accessCode.validators.js';
 import { idParam ,courseIdParam, courseLevelIdParam } from '../validators/catalog.validators.js';
@@ -22,5 +22,6 @@ router.get('/admin/user/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), v
 router.get('/my-codes', requireAuth, requireRole(['STUDENT']), studentGetMyCodes);
 router.get('/my-courses', requireAuth, requireRole(['STUDENT']), studentGetMyCourses);
 router.post('/activate/level/:courseLevelId', requireAuth, requireRole(['STUDENT']), validate(courseLevelIdParam), validate(activateCodeRules), studentActivateCode);
+router.get('/my-courses/expired', requireAuth, requireRole(['STUDENT']), studentGetExpiredCourses);
 
 export default router;
