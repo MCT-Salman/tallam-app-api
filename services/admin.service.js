@@ -5,38 +5,7 @@ import { generateTokenPair, revokeUserRefreshTokensExceptSession } from "../util
 import { getRealIP } from "../utils/ip.js";
 import { hashPassword } from '../utils/hash.js';
 import { getCountryFromPhone } from "../utils/phoneCountry.js";
-/*
-export const createSubAdmin = async (phone, name, sex, birthDate, country, countryCode, role, username, email, password) => {
-  const exists = await UserModel.findByPhone(phone);
-  if (exists) throw new Error("رقم الهاتف موجود مسبقا");
-
-  const user = await UserModel.createUser({
-    phone,
-    name,
-    sex,
-    birthDate: new Date(birthDate),
-    country,
-    countryCode,
-    role,
-    isVerified: true
-  });
-
-  // تشفير كلمة المرور
-  const passwordHash = await hashPassword(password);
-
-  // إنشاء سجل الأدمن
-  const admin = await prisma.admin.create({
-    data: {
-      userId: user.id,
-      username,
-      email,
-      passwordHash
-    }
-  });
-  const {...safeUser } = user;
-  return safeUser;
-};*/
-export const createAdmin = async (phone, name, sex, birthDate, country, countryCode, role, expiresAt, username, email, password) => {
+export const createAdmin = async (phone, name, sex, birthDate, role, expiresAt, username, email, password) => {
   const existingUser = await UserModel.findByPhone(phone);
   if (existingUser) throw new Error("رقم الهاتف موجود مسبقًا");
 

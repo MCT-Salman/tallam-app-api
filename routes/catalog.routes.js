@@ -9,14 +9,14 @@ import {
   specializationUpdateRules
 } from "../validators/catalog.validators.js";
 import {
-  adminCreateDomain, adminListDomains, adminUpdateDomain, adminToggleDomain,adminDeleteDomain,
+  adminCreateDomain, adminListDomains, adminUpdateDomain, adminToggleDomain, adminDeleteDomain,
   adminCreateSpecialization, adminListSpecializations, adminListSubjectsByDomain, adminUpdateSpecialization, adminToggleSpecialization, adminDeleteSpecialization,
-  adminCreateSubject, adminListSubjects,adminListSpecializationsBySubject, adminUpdateSubject, adminToggleSubject, adminDeleteSubject,
+  adminCreateSubject, adminListSubjects, adminListSpecializationsBySubject, adminUpdateSubject, adminToggleSubject, adminDeleteSubject,
   adminCreateInstructor, adminListInstructors, adminUpdateInstructor, adminToggleInstructor, adminDeleteInstructor,
   adminCreateCourse, adminUpdateCourse, adminToggleCourse, adminDeleteCourse, adminListCourses,
   publicListCourses, publicGetCourse, publicListInstructorsForCourse,
   publicListSpecializations, publicListCoursesBySpecialization, publicListCoursesByInstructor,
-  publicListDomains, publicListSubjects, publicListInstructors
+  publicListDomains, publicListSubjects, publicListInstructors, adminListInstructorsForCourse
 } from "../controllers/catalog.controller.js";
 import { uploadCourseImage, uploadSpecializationImage, uploadInstructorImage } from "../middlewares/upload.middleware.js";
 
@@ -39,7 +39,7 @@ r.delete("/admin/subjects/:id", requireAuth, requireRole(["ADMIN"]), validate(id
 
 // Specializations
 r.get("/admin/specializations", requireAuth, requireRole(["ADMIN"]), adminListSpecializations);
-r.get("/admin/subjects/:id/specializations",validate(idParam),adminListSpecializationsBySubject);
+r.get("/admin/subjects/:id/specializations", validate(idParam), adminListSpecializationsBySubject);
 r.post("/admin/specializations", requireAuth, requireRole(["ADMIN"]), uploadSpecializationImage.single('imageUrl'), validate(specializationCreateRules), adminCreateSpecialization);
 r.put("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), uploadSpecializationImage.single('imageUrl'), validate(idParam), validate(specializationUpdateRules), adminUpdateSpecialization);
 r.put("/admin/specializations/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleSpecialization);
@@ -58,6 +58,7 @@ r.post("/admin/courses", requireAuth, requireRole(["ADMIN"]), uploadCourseImage.
 r.put("/admin/courses/:id", requireAuth, requireRole(["ADMIN"]), uploadCourseImage.single('imageUrl'), validate(idParam), validate(courseUpdateRules), adminUpdateCourse);
 r.put("/admin/courses/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleCourse);
 r.delete("/admin/courses/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteCourse);
+r.get("/admin/courses/:id/instructors", validate(idParam), adminListInstructorsForCourse);
 
 // Public routes
 r.get("/domains", publicListDomains);

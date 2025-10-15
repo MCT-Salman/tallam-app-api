@@ -11,12 +11,18 @@ export const deleteFile = (fileUrl) => {
   try {
     const relativePath = fileUrl.replace(/^\/?uploads\/images\//, "");
     const filePath = path.join(process.cwd(), "uploads", "images", relativePath);
-    console.log(`filePath: ${filePath}`);
+
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
-      console.log(` تم حذف الملف: ${fileUrl}`);
+      // File deleted successfully - log only in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log(`تم حذف الملف: ${fileUrl}`);
+      }
     }
   } catch (err) {
-    console.warn(" فشل حذف الملف:", err.message);
+    // Log errors only in development or production for debugging
+    if (process.env.NODE_ENV !== 'test') {
+      console.warn("فشل حذف الملف:", err.message);
+    }
   }
 };

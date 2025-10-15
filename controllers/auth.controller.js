@@ -1,4 +1,4 @@
-// ملاحظة: تم الاعتماد على UserModel/SessionModel بدلاً من prisma مباشرة في هذا الكونترولر
+
 import { serializeResponse } from "../utils/serialize.js";
 import {
   registerUser,
@@ -45,7 +45,6 @@ export const register = async (req, res, next) => {
 export const forgotRequestOtp = async (req, res, next) => {
   try {
     const { phone } = req.body;
-    // if (!phone) return res.status(BAD_REQUEST_STATUS_CODE).json({ success: FAILURE_REQUEST, message: PHONE_NUMBER_REQUIRED });
 
     const user = await UserModel.findByPhone(phone);
     if (!user) return res.status(BAD_REQUEST_STATUS_CODE).json({ success: FAILURE_REQUEST, message: USER_NOT_FOUND_FORGET, data: {} });
@@ -69,7 +68,6 @@ export const forgotRequestOtp = async (req, res, next) => {
 export const forgotVerifyOtp = async (req, res, next) => {
   try {
     const { phone, code } = req.body;
-    // if (!phone || !code) return res.status(400).json({ success: false, message: "الهاتف والرمز مطلوبان" });
 
     await verifyOtp(phone, code);
 
@@ -160,23 +158,6 @@ export const logout = async (req, res, next) => {
       data: {}
     });
   }
-  // try {
-  //   const { refreshToken } = req.body;
-  //   const userId = req.user.id;
-  //   const sessionId = req.user.sessionId; // من middleware
-
-  //   const result = await logoutUser(userId, sessionId, refreshToken);
-
-  //   res.json({
-  //     success: true,
-  //     data: {
-  //       message: result.message
-  //     }
-  //   });
-  // } catch (error) {
-  //   error.statusCode = error.statusCode || 400;
-  //   return next(error);
-  // }
 };
 
 /**
@@ -255,7 +236,6 @@ export const revokeSessionById = async (req, res, next) => {
  */
 export const getProfile = async (req, res, next) => {
   try {
-    // const userId = parseInt(req.user.id);
     const userId = req.user.id;
 
     const user = await UserModel.findById(userId, {
@@ -305,7 +285,7 @@ export const updateProfile = async (req, res, next) => {
   try {
     const userId = req.user.id;
 
-    // 🔹 جلب بيانات المستخدم الحالية أولاً
+    // جلب بيانات المستخدم الحالية أولاً
     const existing = await UserModel.findById(userId);
     if (!existing) {
       if (req.file) deleteFile(`/user/${req.file.filename}`);
@@ -318,19 +298,19 @@ export const updateProfile = async (req, res, next) => {
     const { name, birthDate, sex } = req.body;
     const updateData = {};
 
-    // 🔹 فقط القيم المرسلة
+    // فقط القيم المرسلة
     if (name !== undefined) updateData.name = name;
     if (birthDate !== undefined) updateData.birthDate = new Date(birthDate);
     if (sex !== undefined) updateData.sex = sex;
 
-    // 🔹 معالجة الصورة
+    // معالجة الصورة
     if (req.file) {
       // حذف الصورة القديمة (إن وُجدت)
       if (existing.avatarUrl) deleteFile(existing.avatarUrl);
       updateData.avatarUrl = `/uploads/images/user/${req.file.filename}`;
     }
 
-    // 🔹 تحديث المستخدم
+    // تحديث المستخدم
     const user = await UserModel.updateById(userId, updateData, {
       id: true,
       phone: true,
@@ -354,7 +334,7 @@ export const updateProfile = async (req, res, next) => {
     });
 
   } catch (error) {
-    // ❗ حذف الصورة الجديدة إذا فشل التحديث
+    // حذف الصورة الجديدة إذا فشل التحديث
     if (req.file) deleteFile(`/user/${req.file.filename}`);
 
     res.status(BAD_REQUEST_STATUS_CODE).json({

@@ -254,9 +254,13 @@ export const cleanupExpiredTokens = async () => {
       }
     });
 
-    console.log(`Cleaned up ${result.count} expired refresh tokens`);
+    // Log only in development or if significant cleanup occurred
+    if (process.env.NODE_ENV === 'development' || result.count > 0) {
+      console.log(`Cleaned up ${result.count} expired refresh tokens`);
+    }
     return result.count;
   } catch (error) {
+    // Always log errors for debugging
     console.error('Error cleaning up expired tokens:', error);
     return 0;
   }

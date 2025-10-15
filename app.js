@@ -193,7 +193,10 @@ app.use(errorHandler);
 
 // معالجة الأخطاء العامة
 app.use((error, req, res, next) => {
-  console.error('Error:', error);
+  // Log errors only in development or for debugging
+  if (process.env.NODE_ENV !== 'test') {
+    console.error('Error:', error);
+  }
   
   // أخطاء التحقق من صحة البيانات
   if (error.name === 'ValidationError') {
@@ -260,11 +263,13 @@ app.use((error, req, res, next) => {
 
 // بدء الخادم
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 Enhanced Backend Server running on port ${PORT}`);
-  console.log(`📱 Phone country detection enabled`);
-  console.log(`🔒 Enhanced authentication active`);
-  console.log(`🌐 IP tracking improved`);
-  console.log(`⚡ Rate limiting enabled`);
+  if (process.env.NODE_ENV !== 'test') {
+    console.log(`🚀 Enhanced Backend Server running on port ${PORT}`);
+    console.log(`📱 Phone country detection enabled`);
+    console.log(`🔒 Enhanced authentication active`);
+    console.log(`🌐 IP tracking improved`);
+    console.log(`⚡ Rate limiting enabled`);
+  }
 
   // Initialize Firebase for push notifications
   initializeFirebase();

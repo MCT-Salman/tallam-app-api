@@ -519,6 +519,24 @@ export const adminListCourses = async (req, res, next) => {
   catch (e) { e.statusCode = e.statusCode || 400; next(e); }
 };
 
+export const adminListInstructorsForCourse = async (req, res, next) => {
+  try {
+    const courseId = parseInt(req.params.id, 10);
+    const page = parseInt(req.query.page, 10) || 1;
+    const limit = parseInt(req.query.limit, 10) || 10;
+    const result = await listInstructorsForCourse(courseId, { page, limit });
+    res.json({
+      success: true,
+      message: "تم جلب قائمة المدربين بنجاح",
+      data: result.data,
+      pagination: result.pagination
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
 // Public: Domains
 export const publicListDomains = async (req, res, next) => {
   try {
