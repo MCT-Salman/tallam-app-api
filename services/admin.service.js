@@ -42,11 +42,11 @@ export const createAdmin = async (phone, name, sex, birthDate, country, countryC
 
   const existingEmail = await prisma.admin.findUnique({ where: { email } });
   if (existingEmail) throw new Error("البريد الإلكتروني مستخدم مسبقًا");
-  
+
   const passwordHash = await hashPassword(password);
- 
+
   const phoneInfo = getCountryFromPhone(phone);
-  
+
   const result = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
@@ -185,3 +185,208 @@ export const adminLogin = async (identifier, password, req) => {
     ...tokens
   };
 };
+
+/**
+ * Get all admins with pagination
+ */
+export const getAllAdmins = async (page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+
+  const [admins, total] = await Promise.all([
+    prisma.admin.findMany({
+      skip,
+      take: limit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            phone: true,
+            role: true,
+            isActive: true,
+            createdAt: true,
+            updatedAt: true
+          }
+        }
+      },
+      orderBy: {
+        id: 'desc'
+      }
+    }),
+    prisma.admin.count()
+  ]);
+
+  return {
+    admins: admins.map(admin => ({
+      id: admin.id,
+      username: admin.username,
+      email: admin.email,
+      user: admin.user
+    })),
+    pagination: {
+      page,
+      limit,
+      total,
+      totalPages: Math.ceil(total / limit)
+    }
+  };
+};
+
+/**
+ * Get admin by ID
+ */
+export const getAdminById = async (adminId) => {
+  const admin = await prisma.admin.findUnique({
+    where: { id: parseInt(adminId) },
+    include: {
+      user: {
+        select: {
+          id: true,
+          name: true,
+          phone: true,
+          role: true,
+          isActive: true,
+          createdAt: true,
+          updatedAt: true
+        }
+      }
+    }
+  });
+
+  if (!admin) {
+    throw new Error("المشرف غير موجود");
+  }
+
+  return {
+    id: admin.id,
+    username: admin.username,
+    email: admin.email,
+    user: admin.user
+  };
+};
+
+/**
+ * Update admin information
+ */
+export const updateAdmin = async (adminId, updateData) => {
+  const { username, email, password, name, phone, role, isActive } = updateData;
+
+  const admin = await prisma.admin.findUnique({
+    where: { id: parseInt(adminId) },
+    include: { user: true }
+  });
+
+  if (!admin) {
+    throw new Error("المشرف غير موجود");
+  }
+
+  // Check if email is being changed and if it's already taken
+  if (email && email !== admin.email) {
+    const existingEmail = await prisma.admin.findUnique({ where: { email } });
+    if (existingEmail) {
+      throw new Error("البريد الإلكتروني مستخدم مسبقاً");
+    }
+  }
+
+  // Check if username is being changed and if it's already taken
+  if (username && username !== admin.username) {
+    const existingUsername = await prisma.admin.findUnique({ where: { username } });
+    if (existingUsername) {
+      throw new Error("اسم المستخدم مستخدم مسبقاً");
+    }
+  }
+
+  // Check if phone is being changed and if it's already taken
+  if (phone && phone !== admin.user.phone) {
+    const existingPhone = await UserModel.findByPhone(phone);
+    if (existingPhone) {
+      throw new Error("رقم الهاتف مستخدم مسبقاً");
+    }
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    // Update admin table
+    const adminUpdateData = {};
+    if (username) adminUpdateData.username = username;
+    if (email) adminUpdateData.email = email;
+    if (password) adminUpdateData.passwordHash = await hashPassword(password);
+
+    let updatedAdmin = admin;
+    if (Object.keys(adminUpdateData).length > 0) {
+      updatedAdmin = await tx.admin.update({
+        where: { id: parseInt(adminId) },
+        data: adminUpdateData
+      });
+    }
+
+    // Update user table
+    const userUpdateData = {};
+    if (name) userUpdateData.name = name;
+    if (phone) {
+      const phoneInfo = getCountryFromPhone(phone);
+      userUpdateData.phone = phoneInfo.success ? phoneInfo.phone : phone;
+      userUpdateData.country = phoneInfo.success ? phoneInfo.countryName : null;
+      userUpdateData.countryCode = phoneInfo.success ? phoneInfo.countryCode : null;
+    }
+    if (role) userUpdateData.role = role;
+    if (isActive !== undefined) userUpdateData.isActive = isActive;
+
+    let updatedUser = admin.user;
+    if (Object.keys(userUpdateData).length > 0) {
+      updatedUser = await tx.user.update({
+        where: { id: admin.userId },
+        data: userUpdateData
+      });
+    }
+
+    return { admin: updatedAdmin, user: updatedUser };
+  });
+
+  return {
+    id: result.admin.id,
+    username: result.admin.username,
+    email: result.admin.email,
+    user: {
+      id: result.user.id,
+      name: result.user.name,
+      phone: result.user.phone,
+      role: result.user.role,
+      isActive: result.user.isActive
+    }
+  };
+};
+
+/**
+ * Delete admin ( delete user)
+ */
+export const deleteAdmin = async (adminId) => {
+  const admin = await prisma.admin.findUnique({
+    where: { id: parseInt(adminId) },
+    include: { user: true }
+  });
+
+  if (!admin) {
+    throw new Error("المشرف غير موجود");
+  }
+
+  await prisma.$transaction(async (tx) => {
+    // Delete admin record first
+    await tx.admin.delete({
+      where: { id: parseInt(adminId) }
+    });
+
+    // Delete user record
+    await tx.user.delete({
+      where: { id: admin.userId }
+    });
+  });
+
+  return {
+    id: admin.id,
+    username: admin.username,
+    email: admin.email,
+    message: "تم حذف المشرف بنجاح"
+  };
+};
+
+
