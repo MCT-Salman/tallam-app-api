@@ -59,7 +59,14 @@ export const getTransactions = async (filters = {}, pagination = {}, sorting = {
               select: {
                 id: true,
                 name: true,
-                phone: true
+                phone: true,
+                sex: true,
+                birthDate: true,
+                avatarUrl: true,
+                country: true,
+                countryCode: true,
+                role: true,
+                isActive: true
               }
             }
           }
@@ -121,10 +128,16 @@ export const getTransactionById = async (transactionId) => {
           },
           user: {
             select: {
-              id: true,
-              name: true,
-              phone: true,
-              country: true
+               id: true,
+                name: true,
+                phone: true,
+                sex: true,
+                birthDate: true,
+                avatarUrl: true,
+                country: true,
+                countryCode: true,
+                role: true,
+                isActive: true
             }
           }
         }
