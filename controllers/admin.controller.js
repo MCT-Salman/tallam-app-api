@@ -17,9 +17,9 @@ import { SUCCESS_REQUEST, SUCCESS_LOGIN } from "../validators/messagesResponse.j
  */
 export const addAdmin = async (req, res, next) => {
   try {
-    const { phone, name, sex, birthDate, country, countryCode, role, expiresAt, username, email, password } = req.body;
+    const { phone, name, sex, birthDate, country, countryCode, role, expiresAt, username, email, password, isActive } = req.body;
 
-    const user = await createAdmin(phone, name, sex, birthDate, country, countryCode, role, expiresAt, username, email, password);
+    const user = await createAdmin(phone, name, sex, birthDate, country, countryCode, role, expiresAt, username, email, password, isActive);
     res.json({
       success: true,
       message: "تم إنشاء حساب المشرف بنجاح",

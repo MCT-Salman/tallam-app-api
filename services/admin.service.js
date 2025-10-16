@@ -5,7 +5,7 @@ import { generateTokenPair, revokeUserRefreshTokensExceptSession } from "../util
 import { getRealIP } from "../utils/ip.js";
 import { hashPassword } from '../utils/hash.js';
 import { getCountryFromPhone } from "../utils/phoneCountry.js";
-export const createAdmin = async (phone, name, sex, birthDate, role, expiresAt, username, email, password) => {
+export const createAdmin = async (phone, name, sex, birthDate, country, countryCode, role, expiresAt, username, email, password, isActive) => {
   const existingUser = await UserModel.findByPhone(phone);
   if (existingUser) throw new Error("رقم الهاتف موجود مسبقًا");
 
@@ -15,7 +15,6 @@ export const createAdmin = async (phone, name, sex, birthDate, role, expiresAt, 
   const passwordHash = await hashPassword(password);
 
   const phoneInfo = getCountryFromPhone(phone);
-
   const result = await prisma.$transaction(async (tx) => {
     const user = await tx.user.create({
       data: {
@@ -28,6 +27,7 @@ export const createAdmin = async (phone, name, sex, birthDate, role, expiresAt, 
         country: phoneInfo.success ? phoneInfo.countryName : null,
         countryCode: phoneInfo.success ? phoneInfo.countryCode : null,
         expiresAt: expiresAt ? new Date(expiresAt) : null,
+        isActive: isActive !== undefined ? isActive : true
       },
     });
 
@@ -238,59 +238,47 @@ export const getAdminById = async (adminId) => {
  * Update admin information
  */
 export const updateAdmin = async (adminId, updateData) => {
-  const { username, email, password, name, phone, role, isActive } = updateData;
+  const {
+    phone, name, sex, birthDate, role,
+    expiresAt, username, email, password, isActive
+  } = updateData;
 
   const admin = await prisma.admin.findUnique({
     where: { id: parseInt(adminId) },
     include: { user: true }
   });
 
-  if (!admin) {
-    throw new Error("المشرف غير موجود");
-  }
+  if (!admin) throw new Error("المشرف غير موجود");
 
-  // Check if email is being changed and if it's already taken
   if (email && email !== admin.email) {
     const existingEmail = await prisma.admin.findUnique({ where: { email } });
-    if (existingEmail) {
-      throw new Error("البريد الإلكتروني مستخدم مسبقاً");
-    }
+    if (existingEmail) throw new Error("البريد الإلكتروني مستخدم مسبقاً");
   }
 
-  // Check if username is being changed and if it's already taken
   if (username && username !== admin.username) {
     const existingUsername = await prisma.admin.findUnique({ where: { username } });
-    if (existingUsername) {
-      throw new Error("اسم المستخدم مستخدم مسبقاً");
-    }
+    if (existingUsername) throw new Error("اسم المستخدم مستخدم مسبقاً");
   }
 
-  // Check if phone is being changed and if it's already taken
   if (phone && phone !== admin.user.phone) {
     const existingPhone = await UserModel.findByPhone(phone);
-    if (existingPhone) {
-      throw new Error("رقم الهاتف مستخدم مسبقاً");
-    }
+    if (existingPhone) throw new Error("رقم الهاتف مستخدم مسبقاً");
   }
 
   const result = await prisma.$transaction(async (tx) => {
-    // Update admin table
     const adminUpdateData = {};
     if (username) adminUpdateData.username = username;
     if (email) adminUpdateData.email = email;
     if (password) adminUpdateData.passwordHash = await hashPassword(password);
 
-    let updatedAdmin = admin;
-    if (Object.keys(adminUpdateData).length > 0) {
-      updatedAdmin = await tx.admin.update({
-        where: { id: parseInt(adminId) },
-        data: adminUpdateData
-      });
-    }
+    const updatedAdmin = Object.keys(adminUpdateData).length
+      ? await tx.admin.update({ where: { id: parseInt(adminId) }, data: adminUpdateData })
+      : admin;
 
-    // Update user table
     const userUpdateData = {};
     if (name) userUpdateData.name = name;
+    if (birthDate) userUpdateData.birthDate = new Date(birthDate);
+    if (sex) userUpdateData.sex = sex;
     if (phone) {
       const phoneInfo = getCountryFromPhone(phone);
       userUpdateData.phone = phoneInfo.success ? phoneInfo.phone : phone;
@@ -298,15 +286,13 @@ export const updateAdmin = async (adminId, updateData) => {
       userUpdateData.countryCode = phoneInfo.success ? phoneInfo.countryCode : null;
     }
     if (role) userUpdateData.role = role;
-    if (isActive !== undefined) userUpdateData.isActive = isActive;
+    if (isActive !== undefined)
+      userUpdateData.isActive = (isActive === true || isActive === 'true');
+    if (expiresAt) userUpdateData.expiresAt = new Date(expiresAt);
 
-    let updatedUser = admin.user;
-    if (Object.keys(userUpdateData).length > 0) {
-      updatedUser = await tx.user.update({
-        where: { id: admin.userId },
-        data: userUpdateData
-      });
-    }
+    const updatedUser = Object.keys(userUpdateData).length
+      ? await tx.user.update({ where: { id: admin.userId }, data: userUpdateData })
+      : admin.user;
 
     return { admin: updatedAdmin, user: updatedUser };
   });
@@ -320,10 +306,19 @@ export const updateAdmin = async (adminId, updateData) => {
       name: result.user.name,
       phone: result.user.phone,
       role: result.user.role,
+      sex: result.user.sex,
+      birthDate: result.user.birthDate,
+      country: result.user.country,
+      countryCode: result.user.countryCode,
+      expiresAt: result.user.expiresAt,
+      isVerified: result.user.isVerified,
+      createdAt: result.user.createdAt,
+      updatedAt: result.user.updatedAt,
       isActive: result.user.isActive
     }
   };
 };
+
 
 /**
  * Delete admin ( delete user)
