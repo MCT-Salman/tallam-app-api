@@ -121,6 +121,37 @@ export const adminGetCourseCodes = async (req, res, next) => {
   }
 };
 
+export const adminToggleAccessCode = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const isActive = !!req.body.isActive;
+    const updatedCode = await AccessCodeService.toggleAccessCode(id, isActive);
+    res.json({
+      success: true,
+      message: `تم ${isActive ? "تفعيل" : "تعطيل"} الكود بنجاح.`,
+      data: serializeResponse(updatedCode),
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
+    next(error);
+  }
+};
+
+export const adminDeleteAccessCode = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    await AccessCodeService.deleteAccessCode(id);
+    res.json({
+      success: true,
+      message: "تم حذف الكود بنجاح.",
+      data: {},
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
+    next(error);
+  }
+};
+
 // --- Student Controllers ---
 
 export const studentGetMyCodes = async (req, res, next) => {

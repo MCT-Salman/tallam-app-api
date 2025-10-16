@@ -93,7 +93,7 @@ export const activateCode = async (code, userId, courseLevelId) => {
     throw new Error('الكود غير صحيح أو لا ينتمي لهذا المستوى.');
   }
 
-  if (!existingAccessCode.isActive || existingAccessCode.used) {
+  if (existingAccessCode.used) {
     throw new Error('هذا الكود تم استخدامه مسبقاً.');
   }
 
@@ -110,7 +110,6 @@ export const activateCode = async (code, userId, courseLevelId) => {
     data: {
       usedAt: new Date(),
       used: true,
-      isActive: false, // Deactivate the code after use
       expiresAt,
     }
   });
@@ -187,6 +186,7 @@ export const getCourseLevelsByUserId = async (userId) => {
     where: {
       usedBy: userId,
       used: true,
+      isActive: true,
       expiresAt: {
         gt: new Date()
       }
@@ -210,11 +210,33 @@ export const getCourseLevelsByUserId = async (userId) => {
   }).then(codes => codes.map(code => ({ ...code.courseLevel })));
 };
 
+/**
+ * Get all expired courses for a specific user (for students and admins).
+ * @param {number} userId
+ * @returns {Promise<import('@prisma/client').AccessCode[]>}
+ */
+export const toggleAccessCode = async (id, isActive) => {
+  return prisma.accessCode.update({
+    where: { id },
+    data: { isActive },
+    include: {
+      courseLevel: {
+        select: { id: true, name: true, courseId: true, course: { select: { id: true, title: true } } }
+      }
+    }
+  });
+};
+
+export const deleteAccessCode = async (id) => {
+  return prisma.accessCode.delete({ where: { id } });
+};
+
 export const getExpiredCoursesByUserId = async (userId) => {
   const codes = await prisma.accessCode.findMany({
     where: {
       usedBy: userId,
       used: true,
+      isActive: true,
       expiresAt: {
         lte: new Date()
       }
