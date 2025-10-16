@@ -33,8 +33,22 @@ export const getCouponById = async (id) => {
 };
 
 export const updateCoupon = async (id, data) => {
+  const couponId = Number(id);
+  if (isNaN(couponId)) throw new Error("رقم الكوبون غير صالح");
+
   const update = { ...data };
-  if (update.code) update.code = update.code.trim().toUpperCase();
+
+  // تنسيق الكود
+  if (update.code) {
+    update.code = update.code.trim().toUpperCase();
+
+    // تحقق من تكرار الكود
+    const existing = await prisma.coupon.findUnique({ where: { code: update.code } });
+    if (existing && existing.id !== couponId) {
+      throw new Error("هذا الكود مستخدم مسبقًا لكوبون آخر");
+    }
+  }
+
   if (update.discount != null) update.discount = parseFloat(update.discount);
   if (update.isPercent != null) update.isPercent = Boolean(update.isPercent);
   if (update.expiry !== undefined) update.expiry = update.expiry ? new Date(update.expiry) : null;
@@ -42,8 +56,13 @@ export const updateCoupon = async (id, data) => {
   if (update.isActive != null) update.isActive = Boolean(update.isActive);
   if (update.courseLevelId != null) update.courseLevelId = Number(update.courseLevelId);
 
-  return prisma.coupon.update({ where: { id: Number(id) }, data: update });
+  const existingCoupon = await prisma.coupon.findUnique({ where: { id: couponId } });
+  if (!existingCoupon) throw new Error("الكوبون غير موجود");
+
+  return prisma.coupon.update({ where: { id: couponId }, data: update });
 };
+
+
 
 export const deleteCoupon = async (id) => {
   return prisma.coupon.delete({ where: { id: Number(id) } });
