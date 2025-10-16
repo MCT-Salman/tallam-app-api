@@ -9,6 +9,7 @@ import {
   adminUpdateCoupon,
   adminDeleteCoupon,
   adminListByLevel,
+  adminGetfinalPrice,
   studentValidateCoupon,
   studentApplyCoupon,
 } from '../controllers/coupon.controller.js';
@@ -30,6 +31,8 @@ router.get('/admin/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), valida
 router.put('/admin/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(couponIdParam), validate(couponUpdateRules), adminUpdateCoupon);
 router.delete('/admin/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(couponIdParam), adminDeleteCoupon);
 router.get('/admin/level/:courseLevelId', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(courseLevelIdParam), adminListByLevel);
+router.get('/admin/coupon/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(couponIdParam), adminGetfinalPrice);
+
 
 // ----- Student Routes -----
 router.post('/validate', requireAuth, requireRole(['STUDENT']), validate(studentCouponRules), studentValidateCoupon);

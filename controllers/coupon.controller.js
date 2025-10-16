@@ -77,6 +77,18 @@ export const adminListByLevel = async (req, res, next) => {
   }
 };
 
+export const adminGetfinalPrice = async (req, res, next) => {
+  try {
+    const couponId = req.params.id;
+    const courseLevelId  = req.body.courseLevelId;
+    const coupon = await CouponService.getFinalPriceWithCoupon({ couponId, courseLevelId });
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم حساب السعر النهائي بنجاح.', data: coupon });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
+    next(error);
+  }
+};
+
 // -------- Student Controllers --------
 export const studentValidateCoupon = async (req, res, next) => {
   try {

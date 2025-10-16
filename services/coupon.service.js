@@ -1,5 +1,6 @@
 import { console } from "inspector";
 import prisma from "../prisma/client.js";
+import { disconnect } from "process";
 
 // -------- Admin Services --------
 export const createCoupon = async ({ code, discount, isPercent = true, expiry, maxUsage, isActive = true, courseLevelId, createdBy }) => {
@@ -75,6 +76,50 @@ export const listCouponsByCourseLevel = async (courseLevelId) => {
   });
 };
 
+export const getFinalPriceWithCoupon = async ({ couponId, courseLevelId }) => {
+  // تحويل المعرفات لأرقام والتحقق
+  const cLevelId = Number(courseLevelId);
+  const cId = Number(couponId);
+  if (isNaN(cLevelId) || isNaN(cId)) throw new Error("معرف الكورس أو الكوبون غير صالح");
+
+  // استخدام transaction لجلب البيانات دفعة واحدة
+  const [price, isDollar, coupon] = await prisma.$transaction([
+    prisma.courseLevel.findUnique({
+      where: { id: cLevelId },
+      select: { priceUSD: true, priceSAR: true }
+    }),
+    prisma.appSettings.findUnique({
+      where: { key: "isDollar" },
+      select: { value: true }
+    }),
+    prisma.coupon.findUnique({
+      where: { id: cId }
+    })
+  ]);
+
+  if (!price) throw new Error("مستوى الكورس غير موجود");
+  if (!isDollar) throw new Error("إعداد العملة غير موجود");
+  if (!coupon) throw new Error("الكوبون غير موجود");
+
+  // حساب السعر الأساسي حسب العملة
+  let finalPrice = isDollar.value === 'true' ? price.priceUSD : price.priceSAR;
+  const basePrice = finalPrice;
+
+  // تطبيق الخصم
+  if (coupon.isPercent) {
+    finalPrice = finalPrice - (finalPrice * (coupon.discount / 100));
+  } else {
+    finalPrice = finalPrice - coupon.discount;
+  }
+
+  // منع السعر النهائي من أن يصبح سالب
+  finalPrice = finalPrice < 0 ? 0 : finalPrice;
+
+  return {finalPrice , basePrice , discount : coupon.discount , isPercent : coupon.isPercent };
+};
+
+
+
 // -------- Student Services --------
 const baseCouponWhere = (code, courseLevelId) => ({
   code: code.trim().toUpperCase(),
@@ -99,7 +144,7 @@ export const applyCoupon = async ({ code, courseLevelId }) => {
     select: { priceUSD: true, priceSAR: true }
   });
 
-  const isDollar = await prisma.appSettings.findUnique({ // تأكد من الاسم هنا
+  const isDollar = await prisma.appSettings.findUnique({
     where: { key: "isDollar" },
     select: { value: true }
   });
