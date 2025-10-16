@@ -109,7 +109,7 @@ export const studentApplyCoupon = async (req, res, next) => {
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
       message: 'تم تطبيق الكوبون بنجاح.',
-      data: serializeResponse({ id: coupon.id, usedCount: coupon.usedCount, code: coupon.code })
+      data: serializeResponse({ id: coupon.id, usedCount: coupon.usedCount, code: coupon.code , finalPrice: coupon.finalPrice })
     });
   } catch (error) {
     error.statusCode = BAD_REQUEST_STATUS_CODE;

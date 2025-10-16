@@ -73,13 +73,31 @@ export const validateCoupon = async ({ code, courseLevelId }) => {
 };
 
 export const applyCoupon = async ({ code, courseLevelId }) => {
-  // Validate then atomically increment usedCount with constraint checks
   const coupon = await validateCoupon({ code, courseLevelId });
 
+  const price = await prisma.courseLevel.findUnique({
+    where: { id: courseLevelId },
+    select: { priceUSD: true, priceSAR: true }
+  });
+
+  const isDollar = await prisma.appSettings.findUnique({ // تأكد من الاسم هنا
+    where: { key: "isDollar" },
+    select: { value: true }
+  });
+
+  let finalPrice = isDollar.value === 'true' ? price.priceUSD : price.priceSAR;
+
+  if (coupon.isPercent) {
+    finalPrice = finalPrice - (finalPrice * (coupon.discount / 100));
+  } else {
+    finalPrice = finalPrice - coupon.discount;
+  }
 
   const updated = await prisma.coupon.update({
     where: { id: coupon.id },
     data: { usedCount: { increment: 1 } },
   });
-  return updated;
+
+  return { ...updated, finalPrice };
 };
+
