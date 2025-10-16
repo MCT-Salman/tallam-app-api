@@ -1,3 +1,4 @@
+import { console } from "inspector";
 import prisma from "../prisma/client.js";
 
 // -------- Admin Services --------
@@ -74,6 +75,7 @@ export const validateCoupon = async ({ code, courseLevelId }) => {
 export const applyCoupon = async ({ code, courseLevelId }) => {
   // Validate then atomically increment usedCount with constraint checks
   const coupon = await validateCoupon({ code, courseLevelId });
+
 
   const updated = await prisma.coupon.update({
     where: { id: coupon.id },

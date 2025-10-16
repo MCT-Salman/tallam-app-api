@@ -351,6 +351,11 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
     }
   };
 
+  const isDollar = await prisma.appSettings.findUnique({
+    where: { key: "isDollar" },
+    select: { value: true }
+  });
+
   // جلب كل المعلومات الأساسية + الدروس مع كل الحقول الممكنة
   const result = await prisma.courseLevel.findUnique({
     where: { id: courseLevelId },
@@ -411,5 +416,5 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
     }
   });
 
-  return { ...result, lessons, issubscribed: isSubscribed };
+  return { ...result, lessons, issubscribed: isSubscribed ,isDollar : isDollar.value === 'true' };
 };
