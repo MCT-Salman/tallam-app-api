@@ -128,3 +128,13 @@ export const studentApplyCoupon = async (req, res, next) => {
     next(error);
   }
 };
+
+export const adminListactiveByLevel = async (req, res, next) => {
+  try {
+    const coupons = await CouponService.listactiveCouponsByCourseLevel(req.params.courseLevelId);
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم جلب كوبونات المستوى بنجاح.', data: serializeResponse(coupons) });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
+    next(error);
+  }
+};

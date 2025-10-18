@@ -165,3 +165,15 @@ export const applyCoupon = async ({ code, courseLevelId }) => {
   return { ...updated, finalPrice };
 };
 
+export const listactiveCouponsByCourseLevel = async (courseLevelId) => {
+  const coupons = await prisma.coupon.findMany({
+    where: {
+      courseLevelId: Number(courseLevelId),
+      isActive: true,
+      expiry: { gt: new Date() },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  return coupons.filter(c => c.usedCount < c.maxUsage)
+};
