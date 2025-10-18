@@ -87,52 +87,51 @@ const fileFilter = (req, file, cb) => {
 // Middlewares for different folders
 export const uploadSpecializationImage = multer({
   storage: createStorage('specializations'),
-  fileImageFilter,
-  limits: { fileSize: 500 * 1024 * 1024 }
+  fileFilter: fileImageFilter,
+  limits: { fileSize: 50 * 1024 * 1024 } // 5MB for images
 });
 
 export const uploadCourseImage = multer({
   storage: createStorage('course'),
-  fileImageFilter,
-  limits: { fileSize: 500 * 1024 * 1024 }
+  fileFilter: fileImageFilter,
+  limits: { fileSize: 50 * 1024 * 1024 } // 5MB for images
 });
 
 export const uploadCourseLevelImage = multer({
   storage: createStorage('courselevel'),
-  fileImageFilter,
-  limits: { fileSize: 500 * 1024 * 1024 }
+  fileFilter: fileImageFilter,
+  limits: { fileSize: 50 * 1024 * 1024 } // 5MB for images
 });
-
 
 export const uploadInstructorImage = multer({
   storage: createStorage('instructors'),
-  fileImageFilter,
-  limits: { fileSize: 500 * 1024 * 1024 }
+  fileFilter: fileImageFilter,
+  limits: { fileSize: 50 * 1024 * 1024 } // 5MB for images
 });
 
 export const uploadUserAvatar = multer({
   storage: createStorage('user'),
-  fileImageFilter,
-  limits: { fileSize: 500 * 1024 * 1024 }
+  fileFilter: fileImageFilter,
+  limits: { fileSize: 50 * 1024 * 1024 } // 2MB for user avatars
 });
 
 export const uploadNoticeImage = multer({
   storage: createStorage('financial'),
-  fileImageFilter,
-  limits: { fileSize: 500 * 1024 * 1024 }
+  fileFilter: fileImageFilter,
+  limits: { fileSize: 50 * 1024 * 1024 } // 3MB for notices
 });
 
 export const uploadStoryImage = multer({
   storage: createStorage('stories'),
-  fileImageFilter,
-  limits: { fileSize: 500 * 1024 * 1024 }
+  fileFilter: fileImageFilter,
+  limits: { fileSize: 50 * 1024 * 1024 } // 5MB for stories
 });
 
 // Generic files upload (allow any mimetype) under uploads/files/general
 export const uploadAnyFile = multer({
   storage: createFileStorage('general'),
   fileFilter,
-  limits: { fileSize: 1000 * 1024 * 1024 } // 50MB
+  limits: { fileSize: 500 * 1024 * 1024 } // 50MB for general files
 });
 
 
