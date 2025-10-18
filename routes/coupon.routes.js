@@ -33,7 +33,7 @@ router.put('/admin/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), valida
 router.delete('/admin/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(couponIdParam), adminDeleteCoupon);
 router.get('/admin/level/:courseLevelId', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(courseLevelIdParam), adminListByLevel);
 router.get('/admin/level/:courseLevelId/active', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(courseLevelIdParam), adminListactiveByLevel);
-router.get('/admin/coupon/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(couponIdParam), adminGetfinalPrice);
+router.post('/admin/coupon/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(couponIdParam), adminGetfinalPrice);
 
 
 // ----- Student Routes -----
