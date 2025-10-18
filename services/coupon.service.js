@@ -115,7 +115,7 @@ export const getFinalPriceWithCoupon = async ({ couponId, courseLevelId }) => {
   // منع السعر النهائي من أن يصبح سالب
   finalPrice = finalPrice < 0 ? 0 : finalPrice;
 
-  return {finalPrice , basePrice , discount : coupon.discount , isPercent : coupon.isPercent };
+  return { finalPrice, basePrice, discount: coupon.discount, isPercent: coupon.isPercent };
 };
 
 
