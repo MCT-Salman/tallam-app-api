@@ -417,13 +417,17 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
     }
   });
 
-  const review = !!(await prisma.review.findFirst({
-    where: { userId, courseLevelId }
-  }));
+  let review = false;
+  let existingResult = false;
+  if (userId) {
+    review = !!(await prisma.review.findFirst({
+      where: { userId, courseLevelId }
+    }));
 
-  const existingResult = !!(await prisma.quizResult.findFirst({
-    where: { courseLevelId, userId },
-  }));
+    existingResult = !!(await prisma.quizResult.findFirst({
+      where: { courseLevelId, userId },
+    }));
+  }
 
   return { ...result, lessons, issubscribed: isSubscribed, isDollar: isDollar.value === 'true', review, existingResult };
 };
