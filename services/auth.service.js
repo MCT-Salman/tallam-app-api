@@ -20,8 +20,8 @@ export const registerUser = async (phone, name, birthDate, sex, avatarUrl, req) 
     if (exists) throw new Error(NUMBER_ALREADY_EXIST);
 
     // التحقق من OTP
-    //const otp = await OtpCodeModel.findForVerifeidNumber(phone);
-    //if (!otp) throw new Error(THIS_NUMBER_NOT_VERIFIED_BY_OTP);
+    const otp = await OtpCodeModel.findForVerifeidNumber(phone);
+    if (!otp) throw new Error(THIS_NUMBER_NOT_VERIFIED_BY_OTP);
 
     // تحليل رقم الهاتف لاستخراج معلومات الدولة
     const phoneInfo = getCountryFromPhone(phone);
@@ -134,7 +134,7 @@ export const loginUser = async (phone, req) => {
       throw new Error(PHONENUMBER_OR_PASSWORD_FAILED);
     }
 
-        // التحقق من حالة المستخدم
+    // التحقق من حالة المستخدم
     if (!user?.isVerified) {
       await rateLimiter.recordFailedAttempt(phone, realIp, userAgent, user.id, THIS_NUMBER_NOT_VERIFIED_BY_OTP);
       throw new Error(THIS_NUMBER_NOT_VERIFIED_BY_OTP);

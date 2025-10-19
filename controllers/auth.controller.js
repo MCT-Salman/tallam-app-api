@@ -98,13 +98,13 @@ export const login = async (req, res, next) => {
     const { phone } = req.body;
 
     const result = await loginUser(phone, req);
-      res.json({
-        success: SUCCESS_REQUEST,
-        message: SUCCESS_LOGIN,
-        data: {
-          ...serializeResponse(result)
-        }
-      });
+    res.json({
+      success: SUCCESS_REQUEST,
+      message: SUCCESS_LOGIN,
+      data: {
+        ...serializeResponse(result)
+      }
+    });
   } catch (error) {
     if (error.code === 'ACCOUNT_LOCKED') {
       error.statusCode = 429;
@@ -264,7 +264,7 @@ export const getProfile = async (req, res, next) => {
 
     res.json({
       success: SUCCESS_REQUEST,
-      message:"تم جلب البيانات بنجاح",
+      message: "تم جلب البيانات بنجاح",
       data: {
         ...serializeResponse(user)
       }

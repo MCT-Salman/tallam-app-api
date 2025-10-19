@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { OtpCodeModel, SessionModel, UserModel } from "../models/index.js";
 import { getRealIP } from "../utils/ip.js";
 import { generateTokenPair, revokeUserRefreshTokensExceptSession } from "../utils/jwt.js";
@@ -36,20 +37,32 @@ export const sendOtp = async (phone) => {
   await OtpCodeModel.createOtp(phone, code, expiresAt);
 
   // بعد إنشاء code و قبل الإرجاع
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`📩 OTP to ${phone}: ${code}`);
-    return {
-      success: SUCCESS_REQUEST,
-      message: `${OTP_SUCCESS_REQUEST}: ${code}`,
-      data: {}
-    };
-  }
+  /* if (process.env.NODE_ENV === 'development') {
+     console.log(`📩 OTP to ${phone}: ${code}`);
+     return {
+       success: SUCCESS_REQUEST,
+       message: `${OTP_SUCCESS_REQUEST}: ${code}`,
+       data: {}
+     };
+   }*/
+
+  const response = await axios.post('https://hypermsg.net/api/whatsapp/messages/send', {
+    phone_number: phone,
+    message: `رمز التحقق الخاص بك هو ${code}`,
+    whatsapp_number_id: 18
+  }, {
+    headers: {
+      'x-api-key': 'eOd1XQfCJIQyoV20SV8aFc0OL94k7JkdEvoh3tZaW2RZsHKQU2sxaWGmcAQiSts1',
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    }
+  });
 
   // في الإنتاج — لا تُرجع الكود ولا تطبعه
   return {
     success: SUCCESS_REQUEST,
     message: OTP_SUCCESS_REQUEST,
-    data: {}
+    data: response.data
   };
 
 
@@ -87,7 +100,7 @@ export const verifyOtp = async (phone, code, req) => {
   } else {
     const realIp = getRealIP(req);
     const userAgent = req.headers["user-agent"];
-  
+
     // إنشاء جلسة جديدة
     const session = await SessionModel.createSession({
       userId: user.id,
@@ -95,19 +108,19 @@ export const verifyOtp = async (phone, code, req) => {
       ip: req.ip,
       realIp
     });
-  
+
     // تحديث معرف الجلسة الحالية
     await UserModel.updateById(user.id, { currentSessionId: session.id });
-  
+
     // إنشاء التوكنات
     const tokens = await generateTokenPair(user.id, session.id, user.role);
-  
+
     // تسجيل محاولة ناجحة
     await rateLimiter.recordSuccessfulAttempt(phone, realIp, userAgent, user.id);
-  
+
     // إلغاء جميع Refresh Tokens الأخرى للمستخدم للحفاظ على جلسة واحدة فعّالة فقط
     await revokeUserRefreshTokensExceptSession(user.id, session.id);
-  
+
     const { isVerified: __, ...safeUser } = user;
     return {
       success: SUCCESS_REQUEST,
