@@ -16,7 +16,7 @@ const nanoid = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 10);
  * @param {number} params.issuedBy - The ID of the admin who issued the codes.
  * @returns {Promise<string[]>} - Array of generated codes.
  */
-export const generateAccessCodes = async ({ 
+export const generateAccessCodes = async ({
   courseLevelId, userId, validityInMonths, issuedBy, couponId, amountPaid, receiptImageUrl, notes }) => {
   // Validate level exists and implicitly validate course via level
   const level = await prisma.courseLevel.findUnique({
@@ -46,7 +46,7 @@ export const generateAccessCodes = async ({
       amountPaid: parseFloat(amountPaid),
       notes,
       accessCodeId: accessCode.id,
-      couponId: couponId 
+      couponId: couponId
     }
   });
   return accessCode;
@@ -174,7 +174,7 @@ export const getAccessCodesByUserId = async (userId) => {
       issuedAt: 'desc',
     },
   });
-};  
+};
 
 /**
  * Get all access codes for a specific user (for students and admins).
@@ -193,7 +193,7 @@ export const getCourseLevelsByUserId = async (userId) => {
     },
     include: {
       courseLevel: {
-         select: {
+        select: {
           id: true,
           name: true,
           description: true,
@@ -202,7 +202,7 @@ export const getCourseLevelsByUserId = async (userId) => {
           createdAt: true,
           updatedAt: true,
           course: { select: { id: true, title: true } },
-          instructor : { select: { id: true, name: true, avatarUrl: true } }
+          instructor: { select: { id: true, name: true, avatarUrl: true } }
         }
       }
     },
@@ -228,6 +228,7 @@ export const toggleAccessCode = async (id, isActive) => {
 };
 
 export const deleteAccessCode = async (id) => {
+  await prisma.transaction.deleteMany({ where: { accessCodeId: id } });
   return prisma.accessCode.delete({ where: { id } });
 };
 
@@ -235,11 +236,10 @@ export const getExpiredCoursesByUserId = async (userId) => {
   const codes = await prisma.accessCode.findMany({
     where: {
       usedBy: userId,
-      used: true,
-      isActive: true,
-      expiresAt: {
-        lte: new Date()
-      }
+      OR: [
+        { isActive: false },
+        { expiresAt: { lte: new Date() } }
+      ]
     },
     include: {
       courseLevel: {
