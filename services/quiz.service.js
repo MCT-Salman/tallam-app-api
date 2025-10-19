@@ -260,19 +260,7 @@ export const getQuizForStudent = async (courseLevelId, userId) => {
     throw new Error("لا يمكنك الوصول للاختبار");
   }
 
-  const review = !!(await prisma.review.findFirst({
-    where: { userId, courseLevelId }
-  }));
-  
-  const existingResult = !!(await prisma.quizResult.findFirst({
-    where: { courseLevelId, userId },
-  }));
-
-  return {
-    questions,
-    review,
-    existingResult
-  };
+  return questions
 };
 
 /** Student: Submit quiz answers and get result */

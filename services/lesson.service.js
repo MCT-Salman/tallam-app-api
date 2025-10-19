@@ -417,5 +417,13 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
     }
   });
 
-  return { ...result, lessons, issubscribed: isSubscribed ,isDollar : isDollar.value === 'true' };
+  const review = !!(await prisma.review.findFirst({
+    where: { userId, courseLevelId }
+  }));
+
+  const existingResult = !!(await prisma.quizResult.findFirst({
+    where: { courseLevelId, userId },
+  }));
+
+  return { ...result, lessons, issubscribed: isSubscribed, isDollar: isDollar.value === 'true', review, existingResult };
 };
