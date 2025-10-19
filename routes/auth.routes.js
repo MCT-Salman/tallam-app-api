@@ -31,7 +31,7 @@ router.use(logRequest);
 
 // مسارات المصادقة العامة (لا تتطلب مصادقة)
 router.post('/register', uploadUserAvatar.single('avatar'), normalizePhoneE164, validate(registerRules), register);
-//router.post('/login',  normalizePhoneE164, validate(loginRules), login);
+router.post('/login',  normalizePhoneE164, validate(loginRules), login);
 //router.post('/refresh',  validate(refreshRules), refresh);
 // router.post('/register', authRateLimit, uploadAvatar.single('avatar'), normalizePhoneE164, validate(registerRules), register);
 // router.post('/login', authRateLimit, normalizePhoneE164, validate(loginRules), login);
