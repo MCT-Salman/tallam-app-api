@@ -4,7 +4,7 @@ import { requireRole } from '../middlewares/role.middleware.js';
 import { validate } from '../middlewares/validate.middleware.js';
 import { uploadNoticeImage } from '../middlewares/upload.middleware.js';
 import {
-  adminGenerateCodes, adminGetAllCodes, adminGetCourseCodes, adminGetCodesByUserId, adminToggleAccessCode, adminDeleteAccessCode,
+  adminGenerateCodes, adminGetAllCodes, adminGetCourseCodes, adminGetCodesByUserId, adminUpdateAccessCode, adminToggleAccessCode, adminDeleteAccessCode,
   studentGetMyCodes, studentGetMyCourses, studentActivateCode, studentGetExpiredCourses
 } from '../controllers/accessCode.controller.js';
 import { generateCodesRules, activateCodeRules } from '../validators/accessCode.validators.js';
@@ -17,6 +17,7 @@ router.post('/admin/generate', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), 
 router.get('/admin/course/:courseId', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(courseIdParam), adminGetCourseCodes);
 router.get('/admin/all', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), adminGetAllCodes);
 router.get('/admin/user/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), adminGetCodesByUserId);
+router.put('/admin/access-code/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), adminUpdateAccessCode);
 router.put('/admin/access-code/:id/active', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), adminToggleAccessCode);
 router.delete('/admin/access-code/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), adminDeleteAccessCode);
 

@@ -121,6 +121,22 @@ export const adminGetCourseCodes = async (req, res, next) => {
   }
 };
 
+export const adminUpdateAccessCode = async (req, res, next) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const data = req.body;
+    const updatedCode = await AccessCodeService.updateAccessCode(id, data);
+    res.json({
+      success: true,
+      message: "تم تحديث الكود بنجاح.",
+      data: serializeResponse(updatedCode),
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
+    next(error);
+  }
+};
+
 export const adminToggleAccessCode = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);

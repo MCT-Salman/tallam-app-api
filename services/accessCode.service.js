@@ -211,6 +211,18 @@ export const getCourseLevelsByUserId = async (userId) => {
   }).then(codes => codes.map(code => ({ ...code.courseLevel })));
 };
 
+export const updateAccessCode = async (id, data) => {
+  return prisma.accessCode.update({
+    where: { id },
+    data,
+    include: {
+      courseLevel: {
+        select: { id: true, name: true, courseId: true, course: { select: { id: true, title: true } } }
+      }
+    }
+  });
+};
+
 /**
  * Get all expired courses for a specific user (for students and admins).
  * @param {number} userId
