@@ -363,7 +363,7 @@ export const sendNewCourseNotification = async (course) => {
  */
 export const sendCourseSubscriptionNotification = async (user, courseLevel) => {
   try {
-    console.log(` إرسال إشعار اشتراك للمستخدم: ${user.name} في ${courseLevel.name}`);
+    console.log(` إرسال إشعار اشتراك للمستخدم: ${user.name} في ${courseLevel.name}  للمدرس ${courseLevel.instructor?.name}`);
 
     const notificationData = {
       title: 'تم الاشتراك بنجاح',

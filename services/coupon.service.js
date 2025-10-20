@@ -22,7 +22,7 @@ export const listCoupons = async ({ skip = 0, take = 50 } = {}) => {
     skip: Number(skip),
     take: Number(take),
     orderBy: { createdAt: "desc" },
-    include: { courseLevel: { include: { course: true } } },
+    include: { courseLevel: { include: { course: true, instructor: { include: { specialization: true } } } } },
   });
 };
 

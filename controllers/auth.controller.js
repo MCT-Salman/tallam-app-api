@@ -266,7 +266,7 @@ export const getProfile = async (req, res, next) => {
       success: SUCCESS_REQUEST,
       message: "تم جلب البيانات بنجاح",
       data: {
-        ...serializeResponse(user)
+        ...serializeResponse(user)  
       }
     });
   } catch (error) {

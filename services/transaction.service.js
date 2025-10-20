@@ -50,7 +50,19 @@ export const getTransactions = async (filters = {}, pagination = {}, sorting = {
                 course: {
                   select: {
                     id: true,
-                    title: true
+                    title: true,
+                    specialization: {
+                      select: {
+                        id: true,
+                        name: true
+                      }
+                    }
+                  }
+                },
+                instructor: {
+                  select: {
+                    id: true,
+                    name: true
                   }
                 }
               }
@@ -122,6 +134,12 @@ export const getTransactionById = async (transactionId) => {
                       name: true
                     }
                   }
+                }
+              },
+              instructor: {
+                select: {
+                  id: true,
+                  name: true
                 }
               }
             }

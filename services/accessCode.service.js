@@ -120,7 +120,8 @@ export const activateCode = async (code, userId, courseLevelId) => {
     include: {
       courseLevel: {
         include: {
-          course: { select: { id: true, title: true } }
+          course: { select: { id: true, title: true } },
+          instructor: { select: { id: true, name: true } }
         }
       },
       user: {
