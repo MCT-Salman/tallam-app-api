@@ -15,23 +15,28 @@ enum Role {
   SUBADMIN
 }
 
+enum StatusCode {
+  ACTIVE
+  EXPIRED
+  CANCELLED
+}
 
 // ---------- Auth / Sessions / Security ----------
 model User {
-  id           Int       @id @default(autoincrement())
-  phone        String    @unique
-  name         String
-  birthDate    DateTime
-  avatarUrl    String?
-  role         Role      @default(STUDENT)
-  sex          String
-  country      String? // سيتم ملؤه تلقائياً من رقم الهاتف
-  countryCode  String? // رمز الدولة (+966, +20, إلخ)
-  isVerified   Boolean   @default(false)
-  isActive     Boolean   @default(true)
-  expiresAt    DateTime?
-  fcmToken     String? // Firebase Cloud Messaging token for push notifications
-  accessCodes  AccessCode[]
+  id             Int              @id @default(autoincrement())
+  phone          String           @unique
+  name           String
+  birthDate      DateTime
+  avatarUrl      String?
+  role           Role             @default(STUDENT)
+  sex            String
+  country        String? // سيتم ملؤه تلقائياً من رقم الهاتف
+  countryCode    String? // رمز الدولة (+966, +20, إلخ)
+  isVerified     Boolean          @default(false)
+  isActive       Boolean          @default(true)
+  expiresAt      DateTime?
+  fcmToken       String? // Firebase Cloud Messaging token for push notifications
+  accessCodes    AccessCode[]
   lessonProgress LessonProgress[]
 
   currentSessionId String?        @unique
@@ -55,11 +60,11 @@ model User {
 }
 
 model Admin {
-  id           Int       @id @default(autoincrement())
+  id           Int    @id @default(autoincrement())
   userId       Int
-  user         User      @relation(fields: [userId], references: [id])
-  username     String    @unique
-  email        String    @unique
+  user         User   @relation(fields: [userId], references: [id])
+  username     String @unique
+  email        String @unique
   passwordHash String
 
   @@map("admin")
@@ -136,101 +141,99 @@ model OtpCode {
 
 // ---------- Content taxonomy ----------
 model Domain {
-  id              Int              @id @default(autoincrement())
-  name            String
-  slug            String?          @unique
-  isActive        Boolean          @default(true)
-  subjects        Subject[]
-  createdAt       DateTime         @default(now())
-  updatedAt       DateTime         @updatedAt
+  id        Int       @id @default(autoincrement())
+  name      String
+  slug      String?   @unique
+  isActive  Boolean   @default(true)
+  subjects  Subject[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@map("domain")
 }
 
 model Subject {
-  id               Int            @id @default(autoincrement())
-  name             String
-  slug             String?        @unique
-  isActive         Boolean        @default(true)
-  domainId         Int?
-  domain           Domain?         @relation(fields: [domainId], references: [id])
-  specialization   Specialization[]
-  createdAt        DateTime       @default(now())
-  updatedAt        DateTime       @updatedAt
+  id             Int              @id @default(autoincrement())
+  name           String
+  slug           String?          @unique
+  isActive       Boolean          @default(true)
+  domainId       Int?
+  domain         Domain?          @relation(fields: [domainId], references: [id])
+  specialization Specialization[]
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
 
   @@index([domainId])
   @@map("subject")
 }
 
 model Specialization {
-  id           Int      @id @default(autoincrement())
-  name         String
-  slug         String?   @unique
-  imageUrl     String?
-  isActive     Boolean   @default(true)
-  subjectId    Int?
-  subject      Subject?         @relation(fields: [subjectId], references: [id])
-  instructors  Instructor[]
-  courses      Course[]
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id          Int          @id @default(autoincrement())
+  name        String
+  slug        String?      @unique
+  imageUrl    String?
+  isActive    Boolean      @default(true)
+  subjectId   Int?
+  subject     Subject?     @relation(fields: [subjectId], references: [id])
+  instructors Instructor[]
+  courses     Course[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([subjectId])
   @@map("specialization")
 }
 
 model Course {
-  id                   Int              @id @default(autoincrement())
-  title                String
-  slug                 String?          @unique
-  description          String?
-  imageUrl             String?
-  specializationId     Int
-  specialization       Specialization @relation(fields: [specializationId], references: [id])
-  isActive             Boolean          @default(true)
-  levels               CourseLevel[]
-  createdAt            DateTime         @default(now())
-  updatedAt            DateTime         @updatedAt
+  id               Int            @id @default(autoincrement())
+  title            String
+  slug             String?        @unique
+  description      String?
+  imageUrl         String?
+  specializationId Int
+  specialization   Specialization @relation(fields: [specializationId], references: [id])
+  isActive         Boolean        @default(true)
+  levels           CourseLevel[]
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
 
   @@index([specializationId])
   @@map("course")
 }
 
 model Instructor {
-  id        Int      @id @default(autoincrement())
-  name      String
-  bio       String?
-  avatarUrl String?
+  id               Int            @id @default(autoincrement())
+  name             String
+  bio              String?
+  avatarUrl        String?
   specializationId Int
   specialization   Specialization @relation(fields: [specializationId], references: [id])
   // courses    Course[]
-  isActive  Boolean  @default(true)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  courseLevels CourseLevel[]
+  isActive         Boolean        @default(true)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+  courseLevels     CourseLevel[]
 
   @@index([specializationId])
   @@map("instructor")
 }
 
-
-
 model CourseLevel {
-  id          Int      @id @default(autoincrement())
-  name        String
-  description String?
-  order       Int?
-  priceUSD    Float?
-  priceSAR    Float?
-  isFree      Boolean          @default(false)
-  isActive    Boolean          @default(true)
-  imageUrl    String?
-  previewUrl  String?
-  downloadUrl String?
-  courseId    Int
-  course      Course   @relation(fields: [courseId], references: [id])
-  instructorId  Int
-  instructor    Instructor  @relation(fields: [instructorId], references: [id])
+  id           Int              @id @default(autoincrement())
+  name         String
+  description  String?
+  order        Int?
+  priceUSD     Float?
+  priceSAR     Float?
+  isFree       Boolean          @default(false)
+  isActive     Boolean          @default(true)
+  imageUrl     String?
+  previewUrl   String?
+  downloadUrl  String?
+  courseId     Int
+  course       Course           @relation(fields: [courseId], references: [id])
+  instructorId Int
+  instructor   Instructor       @relation(fields: [instructorId], references: [id])
   lessons      Lesson[]
   questions    Question[]
   quizResults  QuizResult[]
@@ -241,8 +244,8 @@ model CourseLevel {
   coupons      Coupon[]
   files        File[]
   suggestions  Suggestion[]
-  createdAt   DateTime @default  (now())
-  updatedAt   DateTime @updatedAt
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
 
   @@index([courseId])
   @@index([instructorId])
@@ -250,43 +253,42 @@ model CourseLevel {
 }
 
 model Lesson {
-  id                Int              @id @default(autoincrement())
-  title             String
-  description       String?
-  youtubeUrl        String?
-  youtubeId         String?
-  googleDriveUrl    String?
-  durationSec       Int?
-  orderIndex        Int?
-  isFreePreview     Boolean          @default(false)
-  isActive          Boolean          @default(true)
-  courseLevelId     Int
-  courseLevel       CourseLevel     @relation(fields: [courseLevelId], references: [id])
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  progress          LessonProgress[]
+  id             Int              @id @default(autoincrement())
+  title          String
+  description    String?
+  youtubeUrl     String?
+  youtubeId      String?
+  googleDriveUrl String?
+  durationSec    Int?
+  orderIndex     Int?
+  isFreePreview  Boolean          @default(false)
+  isActive       Boolean          @default(true)
+  courseLevelId  Int
+  courseLevel    CourseLevel      @relation(fields: [courseLevelId], references: [id])
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  progress       LessonProgress[]
 
   @@index([courseLevelId])
   @@map("lesson")
 }
 
-
-
 model AccessCode {
-  id        Int       @id @default(autoincrement())
-  code      String    @unique
-  courseLevelId Int
-  courseLevel CourseLevel @relation(fields: [courseLevelId], references: [id])
+  id               Int           @id @default(autoincrement())
+  code             String        @unique
+  courseLevelId    Int
+  courseLevel      CourseLevel   @relation(fields: [courseLevelId], references: [id])
   validityInMonths Int?
-  issuedBy  Int?
-  issuedAt  DateTime  @default(now())
-  usedBy    Int
-  user      User     @relation(fields: [usedBy], references: [id])
-  used      Boolean   @default(false)
-  usedAt    DateTime?
-  expiresAt DateTime?
-  isActive  Boolean   @default(true)
-  transaction Transaction[]
+  issuedBy         Int?
+  issuedAt         DateTime      @default(now())
+  usedBy           Int
+  user             User          @relation(fields: [usedBy], references: [id])
+  used             Boolean       @default(false)
+  usedAt           DateTime?
+  expiresAt        DateTime?
+  isActive         Boolean       @default(true)
+  status           StatusCode    @default(ACTIVE)
+  transaction      Transaction[]
 
   @@index([courseLevelId])
   @@index([usedBy])
@@ -295,16 +297,16 @@ model AccessCode {
 
 // ---------- Access / Purchase /  yments ----------
 model Transaction {
- id              Int       @id @default(autoincrement())
+  id              Int        @id @default(autoincrement())
   receiptImageUrl String
-  amountPaid      Decimal   @db.Decimal(12, 2)
+  amountPaid      Decimal    @db.Decimal(12, 2)
   notes           String?
   accessCodeId    Int
   accessCode      AccessCode @relation(fields: [accessCodeId], references: [id])
   couponId        Int?
   coupon          Coupon?    @relation(fields: [couponId], references: [id])
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
 
   @@index([accessCodeId])
   @@index([couponId])
@@ -312,37 +314,36 @@ model Transaction {
 }
 
 model CodeRequest {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  courseLevelId  Int
-  courseLevel    CourseLevel   @relation(fields: [courseLevelId], references: [id])
-  status    String   @default("PENDING") // PENDING, APPROVED, REJECTED
-  contact   String? // رقم واتساب أو تيليغرام المستخدم
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id])
+  courseLevelId Int
+  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
+  status        String      @default("PENDING") // PENDING, APPROVED, REJECTED
+  contact       String? // رقم واتساب أو تيليغرام المستخدم
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@index([userId])
   @@index([courseLevelId])
   @@map("codeRequest")
 }
 
-
 model Coupon {
-  id        Int       @id @default(autoincrement())
-  code      String    @unique
-  discount  Float
-  isPercent Boolean   @default(true)
-  expiry    DateTime?
-  maxUsage  Int?
-  usedCount Int       @default(0)
-  isActive  Boolean   @default(true)
+  id            Int           @id @default(autoincrement())
+  code          String        @unique
+  discount      Float
+  isPercent     Boolean       @default(true)
+  expiry        DateTime?
+  maxUsage      Int?
+  usedCount     Int           @default(0)
+  isActive      Boolean       @default(true)
   courseLevelId Int
-  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
-  transaction Transaction[]
-  createdBy Int?
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  courseLevel   CourseLevel   @relation(fields: [courseLevelId], references: [id])
+  transaction   Transaction[]
+  createdBy     Int?
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@index([courseLevelId])
   @@map("coupon")
@@ -351,7 +352,7 @@ model Coupon {
 // ---------- Quizzes & Results ----------
 
 model Question {
-  id            Int      @id @default(autoincrement())
+  id            Int         @id @default(autoincrement())
   courseLevelId Int
   courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
   text          String
@@ -372,14 +373,14 @@ model Option {
 }
 
 model QuizResult {
-  id            Int      @id @default(autoincrement())
+  id            Int         @id @default(autoincrement())
   userId        Int
-  user          User     @relation(fields: [userId], references: [id])
+  user          User        @relation(fields: [userId], references: [id])
   courseLevelId Int
   courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
   score         Float
   answers       Json
-  createdAt     DateTime @default(now())
+  createdAt     DateTime    @default(now())
 
   @@index([userId])
   @@index([courseLevelId])
@@ -387,16 +388,16 @@ model QuizResult {
 }
 
 model CourseProgress {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  courseLevelId  Int
-  courseLevel    CourseLevel   @relation(fields: [courseLevelId], references: [id])
-  progress  Float    @default(0)
-  completed Boolean  @default(false)
-  score     Float?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id])
+  courseLevelId Int
+  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
+  progress      Float       @default(0)
+  completed     Boolean     @default(false)
+  score         Float?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
 
   @@unique([userId, courseLevelId])
   @@map("courseProgress")
@@ -475,14 +476,14 @@ model Advertisement {
 
 // ---------- Ratings / Feedback / Support ----------
 model Review {
-  id        Int      @id @default(autoincrement())
-  userId    Int
-  user      User     @relation(fields: [userId], references: [id])
-  courseLevelId  Int
-  courseLevel    CourseLevel   @relation(fields: [courseLevelId], references: [id])
-  rating    Int
-  comment   String?
-  createdAt DateTime @default(now())
+  id            Int         @id @default(autoincrement())
+  userId        Int
+  user          User        @relation(fields: [userId], references: [id])
+  courseLevelId Int
+  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
+  rating        Int
+  comment       String?
+  createdAt     DateTime    @default(now())
 
   @@index([userId])
   @@index([courseLevelId])
@@ -503,13 +504,13 @@ model SupportMessage {
 }
 
 model Suggestion {
-  id              Int           @id @default(autoincrement())
-  userId          Int
-  user            User          @relation(fields: [userId], references: [id])
-  courseLevelId   Int?
-  courseLevel     CourseLevel?   @relation(fields: [courseLevelId], references: [id])
-  message         String
-  createdAt       DateTime      @default(now())
+  id            Int          @id @default(autoincrement())
+  userId        Int
+  user          User         @relation(fields: [userId], references: [id])
+  courseLevelId Int?
+  courseLevel   CourseLevel? @relation(fields: [courseLevelId], references: [id])
+  message       String
+  createdAt     DateTime     @default(now())
 
   @@index([userId])
   @@index([courseLevelId])
@@ -518,8 +519,8 @@ model Suggestion {
 
 // ---------- Utilities / Admin logs / Settings ----------
 model File {
-  id            Int         @id @default(autoincrement())
-  key           String      @unique
+  id            Int          @id @default(autoincrement())
+  key           String       @unique
   url           String
   name          String?
   type          String?
@@ -527,7 +528,7 @@ model File {
   meta          Json?
   courseLevelId Int?
   courseLevel   CourseLevel? @relation(fields: [courseLevelId], references: [id])
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime     @default(now())
 
   @@index([courseLevelId])
   @@map("file")

@@ -184,7 +184,6 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
 
     const lesson = await createLessonForLevel(parseInt(req.params.courseLevelId, 10), {
       title: req.body.title,
-      description: req.body.description,
       youtubeUrl,
       youtubeId: req.body.youtubeId,
       googleDriveUrl: googleDriveUrl || null,
@@ -243,7 +242,6 @@ export const adminUpdateLesson = async (req, res, next) => {
 
     const lesson = await updateLesson(parseInt(req.params.id, 10), {
       title: req.body.title,
-      description: req.body.description,
       youtubeUrl: youtubeUrl || undefined,
       youtubeId: req.body.youtubeId ?? undefined,
       googleDriveUrl: googleDriveUrl || undefined,

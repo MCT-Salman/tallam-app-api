@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `accesscode` ADD COLUMN `status` ENUM('ACTIVE', 'EXPIRED', 'CANCELLED') NOT NULL DEFAULT 'ACTIVE';
