@@ -264,10 +264,10 @@ export const updateAccessCodeWithTransaction = async ({
   const updatedAccessCode = await prisma.accessCode.update({
     where: { id },
     data: {
-      courseLevelId: courseLevelId ?? existingCode.courseLevelId,
-      usedBy: userId ?? existingCode.usedBy,
-      validityInMonths: validityInMonths ?? existingCode.validityInMonths,
-      issuedBy: issuedBy ?? existingCode.issuedBy,
+      courseLevelId: courseLevelId ,
+      usedBy: userId ,
+      validityInMonths: validityInMonths ,
+      issuedBy: issuedBy ,
     }
   });
 
@@ -282,9 +282,9 @@ export const updateAccessCodeWithTransaction = async ({
       where: { id: existingTransaction.id },
       data: {
         receiptImageUrl: receiptImageUrl ?? existingTransaction.receiptImageUrl,
-        amountPaid: amountPaid !== undefined ? parseFloat(amountPaid) : existingTransaction.amountPaid,
-        notes: notes ?? existingTransaction.notes,
-        couponId: couponId ?? existingTransaction.couponId
+        amountPaid: amountPaid ? parseFloat(amountPaid) : undefined,
+        notes: notes,
+        couponId: couponId
       }
     });
   } else {
