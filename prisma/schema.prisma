@@ -15,12 +15,6 @@ enum Role {
   SUBADMIN
 }
 
-enum StatusCode {
-  ACTIVE
-  EXPIRED
-  CANCELLED
-}
-
 // ---------- Auth / Sessions / Security ----------
 model User {
   id             Int              @id @default(autoincrement())
@@ -287,7 +281,6 @@ model AccessCode {
   usedAt           DateTime?
   expiresAt        DateTime?
   isActive         Boolean       @default(true)
-  status           StatusCode    @default(ACTIVE)
   transaction      Transaction[]
 
   @@index([courseLevelId])
