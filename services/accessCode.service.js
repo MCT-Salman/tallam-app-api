@@ -57,7 +57,11 @@ export const getAllAccessCodes = async () => {
     include: {
       courseLevel: {
         include: {
-          course: true,
+          course: {
+            include: {
+              specialization: true
+            }
+          },
           instructor: true,
         }
       },
@@ -150,7 +154,12 @@ export const getAccessCodesByCourse = async (courseId) => {
   return prisma.accessCode.findMany({
     where: { courseLevel: { courseId } },
     include: {
-      courseLevel: { select: { id: true, name: true, courseId: true, course: { select: { id: true, title: true } } } },
+      courseLevel: { select: { id: true, name: true, courseId: true, course: { select: { id: true, title: true, specialization: { select: { id: true, name: true } } } } } },
+      transaction: {
+        include: {
+          coupon: true,
+        }
+      },
       // Include user info if the code is used
       user: { select: { id: true, name: true, phone: true } },
     },
@@ -169,13 +178,34 @@ export const getAccessCodesByUserId = async (userId) => {
   return prisma.accessCode.findMany({
     where: { usedBy: userId },
     include: {
-      courseLevel: { select: { id: true, name: true, courseId: true, course: { select: { id: true, title: true } } } },
+      courseLevel: {
+        select: {
+          id: true,
+          name: true,
+          courseId: true,
+          course: {
+            select: {
+              id: true,
+              title: true,
+              specialization: {
+                select: { id: true, name: true },
+              },
+            },
+          },
+        },
+      },
+      transaction: {
+        include: {
+          coupon: true,
+        },
+      },
     },
     orderBy: {
       issuedAt: 'desc',
     },
   });
 };
+
 
 /**
  * Get all access codes for a specific user (for students and admins).
@@ -211,17 +241,70 @@ export const getCourseLevelsByUserId = async (userId) => {
   }).then(codes => codes.map(code => ({ ...code.courseLevel })));
 };
 
-export const updateAccessCode = async (id, data) => {
-  return prisma.accessCode.update({
+export const updateAccessCodeWithTransaction = async ({
+  id,
+  courseLevelId,
+  userId,
+  validityInMonths,
+  isActive,
+  issuedBy,
+  couponId,
+  amountPaid,
+  receiptImageUrl,
+  notes
+}) => {
+
+  // 1️⃣ تحقق من وجود الكود أولاً
+  const existingCode = await prisma.accessCode.findUnique({
+    where: { id }
+  });
+  if (!existingCode) throw new Error('الكود غير موجود');
+
+  // 2️⃣ تحديث كود الوصول
+  const updatedAccessCode = await prisma.accessCode.update({
     where: { id },
-    data,
-    include: {
-      courseLevel: {
-        select: { id: true, name: true, courseId: true, course: { select: { id: true, title: true } } }
-      }
+    data: {
+      courseLevelId: courseLevelId ?? existingCode.courseLevelId,
+      usedBy: userId ?? existingCode.usedBy,
+      validityInMonths: validityInMonths ?? existingCode.validityInMonths,
+      issuedBy: issuedBy ?? existingCode.issuedBy,
     }
   });
+
+  // 3️⃣ البحث عن المعاملة المرتبطة بالكود
+  const existingTransaction = await prisma.transaction.findFirst({
+    where: { accessCodeId: id }
+  });
+
+  if (existingTransaction) {
+    // تحديث المعاملة الموجودة
+    await prisma.transaction.update({
+      where: { id: existingTransaction.id },
+      data: {
+        receiptImageUrl: receiptImageUrl ?? existingTransaction.receiptImageUrl,
+        amountPaid: amountPaid !== undefined ? parseFloat(amountPaid) : existingTransaction.amountPaid,
+        notes: notes ?? existingTransaction.notes,
+        couponId: couponId ?? existingTransaction.couponId
+      }
+    });
+  } else {
+    // إنشاء معاملة جديدة
+    const newTransaction = await prisma.transaction.create({
+      data: {
+        accessCodeId: id,
+        receiptImageUrl: receiptImageUrl ?? '',
+        amountPaid: amountPaid !== undefined ? parseFloat(amountPaid) : 0,
+        notes: notes ?? '',
+        couponId: couponId ?? null
+      }
+    });
+  }
+
+  return { ...updatedAccessCode, transaction: existingTransaction ?? newTransaction };
 };
+
+
+
 
 /**
  * Get all expired courses for a specific user (for students and admins).

@@ -124,18 +124,38 @@ export const adminGetCourseCodes = async (req, res, next) => {
 export const adminUpdateAccessCode = async (req, res, next) => {
   try {
     const id = parseInt(req.params.id, 10);
-    const data = req.body;
-    const updatedCode = await AccessCodeService.updateAccessCode(id, data);
+    const { courseLevelId, userId, validityInMonths, isActive, couponId, amountPaid, notes } = req.body;
+
+    const adminId = req.user.id;
+    const receiptImageUrl = req.file ? `/uploads/images/financial/${req.file.filename}` : undefined;
+    const parsedCourseLevelId = courseLevelId ? parseInt(courseLevelId, 10) : null;
+    const parsedUserId = userId ? parseInt(userId, 10) : null;
+
+    const updatedCode = await AccessCodeService.updateAccessCodeWithTransaction({
+      id,
+      courseLevelId: parsedCourseLevelId,
+      userId: parsedUserId,
+      validityInMonths: validityInMonths ? parseInt(validityInMonths, 10) : null,
+      isActive,
+      issuedBy: adminId,
+      couponId: couponId ? parseInt(couponId, 10) : null,
+      amountPaid,
+      receiptImageUrl,
+      notes
+    });
+
     res.json({
       success: true,
-      message: "تم تحديث الكود بنجاح.",
+      message: `تم تعديل الكود ${updatedCode.code} بنجاح.`,
       data: serializeResponse(updatedCode),
     });
+
   } catch (error) {
     error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
     next(error);
   }
 };
+
 
 export const adminToggleAccessCode = async (req, res, next) => {
   try {

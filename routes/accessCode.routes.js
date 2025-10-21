@@ -17,7 +17,7 @@ router.post('/admin/generate', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), 
 router.get('/admin/course/:courseId', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(courseIdParam), adminGetCourseCodes);
 router.get('/admin/all', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), adminGetAllCodes);
 router.get('/admin/user/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), adminGetCodesByUserId);
-router.put('/admin/access-code/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), adminUpdateAccessCode);
+router.put('/admin/access-code/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), uploadNoticeImage.single('receiptImageUrl'), validate(idParam), adminUpdateAccessCode);
 router.put('/admin/access-code/:id/active', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), adminToggleAccessCode);
 router.delete('/admin/access-code/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), adminDeleteAccessCode);
 
