@@ -21,7 +21,7 @@ router.use(requireRole(['ADMIN', 'SUBADMIN']));
 router.get("/", adminGetSettings);
 router.get("/:key", adminGetSetting);
 router.post("/", adminCreateSetting);
-router.put("/:key", adminUpdateSetting);
+router.put("/key", adminUpdateSetting);
 router.put("/", adminUpdateSettings); // For bulk updates
 router.delete("/:key", adminDeleteSetting);
 

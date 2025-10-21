@@ -121,7 +121,7 @@ export const adminCreateSetting = async (req, res, next) => {
  */
 export const adminUpdateSetting = async (req, res, next) => {
   try {
-    const { key } = req.params;
+    const { key } = req.body;
     const { value } = req.body;
 
     if (value === undefined) {
