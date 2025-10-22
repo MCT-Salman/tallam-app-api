@@ -6,7 +6,8 @@ import { BAD_REQUEST_STATUS_CODE, SUCCESS_STATUS_CODE } from "../validators/stat
 export const requestOtp = async (req, res, next) => {
   try {
     const { phone } = req.body;
-
+    const user = await UserModel.findByPhone(phone);
+    if (user && user.isActive === false) throw new Error("هذا الحساب غير نشط");
     const result = await sendOtp(phone);
 
     // Use appropriate HTTP status based on success/failure
