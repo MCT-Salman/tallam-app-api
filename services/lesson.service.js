@@ -396,8 +396,10 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
       where: {
         usedBy: userId,
         courseLevelId,
-        used: true,
-        isActive: true
+        isActive: true,
+        expiresAt: {
+        gt: new Date()
+      }
       }
     });
     if (accessCode || result.isFree) {
