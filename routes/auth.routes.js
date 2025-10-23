@@ -3,6 +3,7 @@ import {
   register,
   login,
   refresh,
+  validateToken,
   logout,
   logoutAll,
   getSessions,
@@ -19,7 +20,7 @@ import {
 } from '../middlewares/auth.middleware.js';
 import { uploadUserAvatar } from "../middlewares/upload.middleware.js";;
 import { validate } from '../middlewares/validate.middleware.js';
-import { registerRules, loginRules, refreshRules, forgotRequestOtpRules, forgotVerifyOtpRules, profileUpdateRules } from '../validators/auth.validators.js';
+import { registerRules, loginRules, refreshRules, TokenValidator, forgotRequestOtpRules, forgotVerifyOtpRules, profileUpdateRules } from '../validators/auth.validators.js';
 import { normalizePhoneE164 } from '../middlewares/phone.middleware.js';
 import { otpRateLimitByPhone } from '../middlewares/otpRateLimit.middleware.js';
 import { authRateLimit } from '../middlewares/authRateLimit.middleware.js';
@@ -32,7 +33,8 @@ router.use(logRequest);
 // مسارات المصادقة العامة (لا تتطلب مصادقة)
 router.post('/register', uploadUserAvatar.single('avatar'), normalizePhoneE164, validate(registerRules), register);
 router.post('/login',  normalizePhoneE164, validate(loginRules), login);
-//router.post('/refresh',  validate(refreshRules), refresh);
+router.post('/refresh',  validate(refreshRules), refresh);
+router.post('/validate-token', validate(TokenValidator), validateToken);
 // router.post('/register', authRateLimit, uploadAvatar.single('avatar'), normalizePhoneE164, validate(registerRules), register);
 // router.post('/login', authRateLimit, normalizePhoneE164, validate(loginRules), login);
 // router.post('/refresh', authRateLimit, validate(refreshRules), refresh);

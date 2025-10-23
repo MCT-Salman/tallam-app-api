@@ -4,6 +4,7 @@ import {
   registerUser,
   loginUser,
   refreshToken as refreshAccessTokenService,
+  verifyToken,
   logoutUser,
   logoutAllDevices,
   getActiveSessions,
@@ -137,6 +138,29 @@ export const refresh = async (req, res, next) => {
   }
 };
 
+export const validateToken = async (req, res, next) => {
+  try {
+    const { Token } = req.body;
+
+    const result = await verifyToken(Token);
+    if (!result) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid token",
+        data: {}
+      });
+    }else {
+      return res.json({
+        success: true,
+        message: "Token is valid",
+        data: {}
+      });
+    }
+  } catch (error) {
+    error.statusCode = error.statusCode || 401;
+    return next(error);
+  } 
+};
 /**
  * تسجيل خروج المستخدم
  */

@@ -1,4 +1,4 @@
-import { generateTokenPair, refreshAccessToken, revokeAllUserRefreshTokens, revokeRefreshToken, revokeUserRefreshTokensExceptSession } from "../utils/jwt.js";
+import { generateTokenPair, refreshAccessToken, revokeAllUserRefreshTokens, revokeRefreshToken, verifyAccessToken, revokeUserRefreshTokensExceptSession } from "../utils/jwt.js";
 import { getRealIP } from "../utils/ip.js";
 import { rateLimiter } from "../utils/rateLimiter.js";
 import { getCountryFromPhone, validatePhoneNumber } from "../utils/phoneCountry.js";
@@ -190,6 +190,17 @@ export const refreshToken = async (refreshToken) => {
     return await refreshAccessToken(refreshToken);
   } catch (error) {
     throw new Error(FALIURE_REFERESH_TOKEN);
+  }
+};
+
+/**
+ * التحقق من صحة refresh token
+ */
+export const verifyToken = async (Token) => {
+  try {
+    return verifyAccessToken(Token);
+  } catch (error) {
+    return false;
   }
 };
 

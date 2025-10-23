@@ -42,12 +42,16 @@ export const requiredBirthDate = body("birthDate")
 export const sexValidator = body("sex")
   .exists({ checkFalsy: true }).withMessage("نوع الجنس مطلوب")
   .isString().withMessage("الحقل يجب أن يكون نصاً")
-  .isIn(["ذ", "ا","أ", "ذكر", "انثى","أنثى"]).withMessage("القيمة غير صالحة للحقل sex");
+  .isIn(["ذ", "ا", "أ", "ذكر", "انثى", "أنثى"]).withMessage("القيمة غير صالحة للحقل sex");
 
 export const sexValidatorUpdate = body("sex")
   .optional()
   .isString().withMessage("الحقل يجب أن يكون نصاً")
-  .isIn(["ذ", "ا","أ", "ذكر", "انثى","أنثى"]).withMessage("القيمة غير صالحة للحقل sex");
+  .isIn(["ذ", "ا", "أ", "ذكر", "انثى", "أنثى"]).withMessage("القيمة غير صالحة للحقل sex");
+
+export const TokenValidator = body("Token")
+  .exists({ checkFalsy: true }).withMessage("token مطلوب")
+  .isString().withMessage("token يجب أن يكون نصاً");
 
 export const refreshTokenValidator = body("refreshToken")
   .exists({ checkFalsy: true }).withMessage("Refresh token مطلوب")
@@ -68,7 +72,7 @@ export const registerRules = [
   sexValidator,
 ];
 
-export const phoneNumber =[phoneValidator]
+export const phoneNumber = [phoneValidator]
 
 export const loginRules = [
   loginPhoneValidator

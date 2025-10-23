@@ -54,7 +54,8 @@ export const generateRefreshToken = (payload) => {
  * التحقق من access token
  */
 export const verifyAccessToken = (token) => {
-  return jwt.verify(token, JWT_SECRET);
+  const decoded = jwt.verify(token, JWT_SECRET);
+  return decoded;
 };
 
 /**
@@ -126,7 +127,6 @@ export const refreshAccessToken = async (refreshToken) => {
     if (decoded.type !== 'refresh') {
       throw new Error(TOKEN_NOT_CORRECT);
     }
-
     // التحقق من وجود refresh token في قاعدة البيانات
     const refreshTokenHash = crypto.createHash('sha256').update(refreshToken).digest('hex');
     
@@ -163,7 +163,8 @@ export const refreshAccessToken = async (refreshToken) => {
     const newRefreshToken = generateRefreshToken({
       id: decoded.id,
       sid: decoded.sid,
-      type: 'refresh'
+      type: 'refresh',
+      rand: crypto.randomUUID()
     });
     const newRefreshTokenHash = crypto.createHash('sha256').update(newRefreshToken).digest('hex');
     const refreshMs = durationToMs(REFRESH_TOKEN_EXPIRY) || (7 * 24 * 60 * 60 * 1000);
@@ -194,6 +195,7 @@ export const refreshAccessToken = async (refreshToken) => {
     };
  
   } catch (error) {
+    console.error('Error refreshing access token:', error);
     throw new Error('Invalid or expired refresh token');
   }
 };
