@@ -35,7 +35,6 @@ model User {
   expiresAt      DateTime?
   fcmToken       String? // Firebase Cloud Messaging token for push notifications
   points         Int              @default(0)
-  status         Status           @default(ACTIVE)
   accessCodes    AccessCode[]
   lessonProgress LessonProgress[]
 
