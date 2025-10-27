@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `accesscode` MODIFY `status` ENUM('ACTIVE', 'CANCELLED', 'EXPIRED') NOT NULL DEFAULT 'ACTIVE';
+
+-- AlterTable
+ALTER TABLE `user` ADD COLUMN `points` INTEGER NOT NULL DEFAULT 0;
