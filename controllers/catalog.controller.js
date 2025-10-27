@@ -3,7 +3,7 @@ import {
   createDomain, listDomains, updateDomain, toggleDomain, DeleteDomain,
   getSpecializationById, createSpecialization, listSpecializations, listSpecializationsBySubject, updateSpecialization, toggleSpecialization, DeleteSpecialization,
   createSubject, listSubjects, listSubjectsByDomain, updateSubject, toggleSubject, DeleteSubject,
-  getInstructorById, createInstructor, listInstructors, updateInstructor, toggleInstructor, DeleteInstructor,
+  reportInstructors, getInstructorById, createInstructor, listInstructors, updateInstructor, toggleInstructor, DeleteInstructor, countStudents,
   createCourse, updateCourse, toggleCourse, deleteCourse, getCourseById, getCourseByIdForUser, listCoursesPublic, listCoursesAdmin,
   listInstructorsForCourse,
 } from "../services/catalog.service.js";
@@ -318,6 +318,32 @@ export const adminDeleteSpecialization = async (req, res, next) => {
 
 
 // Admin: Instructors
+export const adminreportInstructors = async (req, res, next) => {
+  try {
+    const {
+      startDate,
+      endDate,
+      instructorId
+    } = req.query;
+
+    const filters = {
+      startDate,
+      endDate,
+      instructorId
+    };
+
+    const list = await reportInstructors(filters);
+    res.json({
+      success: true,
+      message: "تم جلب تقرير المدربين بنجاح",
+      data: list
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
 export const adminCreateInstructor = async (req, res, next) => {
   try {
     const { name, bio, specializationId } = req.body;
@@ -414,6 +440,20 @@ export const adminDeleteInstructor = async (req, res, next) => {
     } else {
       e.statusCode = e.statusCode || 400;
     }
+    next(e);
+  }
+};
+
+export const adminCountStudents = async (req, res, next) => {
+  try {
+    const count = await countStudents();
+    res.json({
+      success: true,
+      message: "تم جلب عدد الطلاب بنجاح",
+      data: { count }
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
     next(e);
   }
 };
@@ -572,6 +612,7 @@ export const publicListSubjects = async (req, res, next) => {
     next(e);
   }
 };
+
 
 // Public: Instructors
 export const publicListInstructors = async (req, res, next) => {

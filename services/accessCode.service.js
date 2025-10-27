@@ -354,3 +354,69 @@ export const getExpiredCoursesByUserId = async (userId) => {
   };
 };
 
+export const getActiveCodesStats = async () => {
+  // 1️⃣ عدد الأكواد النشطة
+  const activeCodesCount = await prisma.accessCode.count({
+    where: { isActive: true,
+      expiresAt: {
+        gt: new Date()
+      }
+     },
+  });
+
+  // 2️⃣ جلب كل الأكواد النشطة لمعالجة المستخدمين حسب المستوى
+  const activeCodes = await prisma.accessCode.findMany({
+    where: { isActive: true,
+      expiresAt: {
+        gt: new Date()
+      }
+     },
+    select: {
+      courseLevelId: true,
+      usedBy: true,
+    },
+  });
+
+  // 3️⃣ تجميع عدد المستخدمين الفريدين لكل مستوى
+  const groupedUsers = {};
+  for (const code of activeCodes) {
+    const levelId = code.courseLevelId;
+    const userId = code.usedBy;
+    if (!groupedUsers[levelId]) groupedUsers[levelId] = new Set();
+    groupedUsers[levelId].add(userId);
+  }
+
+  // تحويل النتائج إلى مصفوفة
+  const usersByLevel = Object.entries(groupedUsers).map(([levelId, users]) => ({
+    courseLevelId: parseInt(levelId),
+    totalUsersWithActiveCode: users.size,
+  }));
+
+  // 4️⃣ جلب أسماء المستويات (CourseLevel)
+  const levels = await prisma.courseLevel.findMany({
+    where: {
+      id: { in: usersByLevel.map(l => l.courseLevelId) },
+    },
+    select: { id: true, name: true },
+  });
+
+  // دمج الأسماء مع النتائج
+  const usersByLevelWithNames = usersByLevel.map(item => {
+    const level = levels.find(l => l.id === item.courseLevelId);
+    return {
+      courseLevelId: item.courseLevelId,
+      courseLevelName: level ? level.name : 'غير محدد',
+      totalUsersWithActiveCode: item.totalUsersWithActiveCode,
+    };
+  });
+
+  // 5️⃣ عدد كل المستخدمين الذين لديهم كود نشط (بغض النظر عن المستوى)
+  const totalUsersWithAnyActiveCode = new Set(activeCodes.map(c => c.usedBy)).size;
+
+  // ✅ النتيجة النهائية
+  return {
+    activeCodesCount, // 🔢 عدد الأكواد النشطة
+    totalUsersWithAnyActiveCode, // 👥 عدد المشتركين الذين لديهم كود نشط
+    usersByLevel: usersByLevelWithNames, // 🧍‍♂️ عدد المشتركين الذين لديهم كود نشط لكل مستوى
+  };
+};

@@ -12,10 +12,10 @@ import {
   adminCreateDomain, adminListDomains, adminUpdateDomain, adminToggleDomain, adminDeleteDomain,
   adminCreateSpecialization, adminListSpecializations, adminListSubjectsByDomain, adminUpdateSpecialization, adminToggleSpecialization, adminDeleteSpecialization,
   adminCreateSubject, adminListSubjects, adminListSpecializationsBySubject, adminUpdateSubject, adminToggleSubject, adminDeleteSubject,
-  adminCreateInstructor, adminListInstructors, adminUpdateInstructor, adminToggleInstructor, adminDeleteInstructor,
+  adminreportInstructors, adminCreateInstructor, adminListInstructors, adminUpdateInstructor, adminToggleInstructor, adminDeleteInstructor,
   adminCreateCourse, adminUpdateCourse, adminToggleCourse, adminDeleteCourse, adminListCourses,
   publicListCourses, publicGetCourse, publicListInstructorsForCourse,
-  publicListSpecializations, publicListCoursesBySpecialization, publicListCoursesByInstructor,
+  publicListSpecializations, publicListCoursesBySpecialization, publicListCoursesByInstructor, adminCountStudents,
   publicListDomains, publicListSubjects, publicListInstructors, adminListInstructorsForCourse
 } from "../controllers/catalog.controller.js";
 import { uploadCourseImage, uploadSpecializationImage, uploadInstructorImage } from "../middlewares/upload.middleware.js";
@@ -46,11 +46,13 @@ r.put("/admin/specializations/:id/active", requireAuth, requireRole(["ADMIN"]), 
 r.delete("/admin/specializations/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteSpecialization);
 
 // Instructors
+r.get("/admin/report/instructors", requireAuth, requireRole(["ADMIN"]), adminreportInstructors);
 r.get("/admin/instructors", requireAuth, requireRole(["ADMIN"]), adminListInstructors);
 r.post("/admin/instructors", requireAuth, requireRole(["ADMIN"]), uploadInstructorImage.single('avatarUrl'), validate(instructorCreateRules), adminCreateInstructor);
 r.put("/admin/instructors/:id", requireAuth, requireRole(["ADMIN"]), uploadInstructorImage.single('avatarUrl'), validate(idParam), validate(instructorUpdateRules), adminUpdateInstructor);
 r.put("/admin/instructors/:id/active", requireAuth, requireRole(["ADMIN"]), validate(idParam), validate(toggleActiveRules), adminToggleInstructor);
 r.delete("/admin/instructors/:id", requireAuth, requireRole(["ADMIN"]), validate(idParam), adminDeleteInstructor);
+r.get("/admin/count/students", requireAuth, requireRole(["ADMIN"]), adminCountStudents);
 
 // Courses
 r.get("/admin/courses", requireAuth, requireRole(["ADMIN", "SUBADMIN"]), validate(listQueryRules), adminListCourses);

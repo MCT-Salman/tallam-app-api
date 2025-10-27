@@ -18,6 +18,21 @@ export const adminGetAllUsers = async (req, res, next) => {
   }
 };
 
+export const adminGetUsersReport = async (req, res, next) => {
+  try {
+    const { startDate, endDate, role } = req.query;
+    const filters = { startDate, endDate, role };
+    const report = await UserService.getUsersReport(filters);
+    res.status(SUCCESS_STATUS_CODE).json({
+      success: SUCCESS_REQUEST,
+      message: 'تم جلب تقرير المستخدمين بنجاح',
+      data: report,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const adminGetUserById = async (req, res, next) => {
   try {
     const user = await UserService.getUserById(parseInt(req.params.id));

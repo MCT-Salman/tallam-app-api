@@ -188,6 +188,21 @@ export const adminDeleteAccessCode = async (req, res, next) => {
   }
 };
 
+export const adminGetaccessCodesReport = async (req, res, next) => {
+  try {
+    const { startDate, endDate, role } = req.query;
+    const filters = { startDate, endDate, role };
+    const report = await AccessCodeService.getActiveCodesStats(filters);
+    res.status(SUCCESS_STATUS_CODE).json({
+      success: SUCCESS_REQUEST,
+      message: 'تم جلب تقرير المستخدمين بنجاح',
+      data: report,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // --- Student Controllers ---
 
 export const studentGetMyCodes = async (req, res, next) => {

@@ -14,6 +14,7 @@ router.use(requireAuth, requireRole(['ADMIN', 'SUBADMIN']));
 router.get('/', UserController.adminGetAllUsers);
 router.post('/', validate(adminCreateUserRules), UserController.adminCreateUser);
 
+router.get('/report', UserController.adminGetUsersReport);
 router.get('/:id', validate(idParam), UserController.adminGetUserById);
 router.put('/:id', validate(idParam), validate(adminUpdateUserRules), UserController.adminUpdateUser);
 router.delete('/:id', validate(idParam), UserController.adminDeleteUser);

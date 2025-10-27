@@ -128,6 +128,115 @@ export const toggleSubject = (id, isActive) => prisma.subject.update({ where: { 
 export const DeleteSubject = (id) => prisma.subject.delete({ where: { id } });
 
 // Instructors
+export const reportInstructors = async (filters) => {
+  const { startDate, endDate, instructorId } = filters;
+
+  const where = {};
+  if (startDate || endDate) {
+    where.createdAt = {};
+    if (startDate) where.createdAt.gte = new Date(startDate);
+    if (endDate) where.createdAt.lte = new Date(endDate);
+  }
+
+  if (instructorId) {
+    where.instructorId = parseInt(instructorId);
+  }
+
+  // جلب مستويات الكورسات مع المدرس والكورس والكودات
+  const courseLevels = await prisma.courseLevel.findMany({
+    where,
+    include: {
+      instructor: { select: { id: true, name: true, avatarUrl: true } },
+      course: { select: { id: true, title: true } },
+      accessCodes: {
+        select: {
+          user: { select: { id: true, name: true, phone: true, avatarUrl: true } },
+          transaction: { select: { amountPaid: true } }
+        }
+      }
+    },
+    orderBy: { createdAt: 'desc' },
+  });
+
+  const reportByInstructor = {};
+
+  courseLevels.forEach(level => {
+    const instId = level.instructor.id;
+
+    if (!reportByInstructor[instId]) {
+      reportByInstructor[instId] = {
+        instructor: level.instructor,
+        totalCourses: 0,
+        levels: [],
+        totalStudents: 0,
+        totalAmount: 0,
+        allStudents: {} // لتجميع الطلاب لكل المدرب
+      };
+    }
+
+    // معلومات الطلاب لكل مستوى
+    const studentsInfo = level.accessCodes.map(ac => {
+      const amountPaid = ac.transaction.reduce(
+        (sum, t) => sum + parseFloat(t.amountPaid.toString()),
+        0
+      );
+      // إضافة الطالب لقائمة جميع الطلاب للمدرب
+      if (!reportByInstructor[instId].allStudents[ac.user.id]) {
+        reportByInstructor[instId].allStudents[ac.user.id] = {
+          id: ac.user.id,
+          name: ac.user.name,
+          phone: ac.user.phone,
+          avatarUrl: ac.user.avatarUrl,
+          totalPaid: 0
+        };
+      }
+      reportByInstructor[instId].allStudents[ac.user.id].totalPaid += amountPaid;
+
+      return {
+        id: ac.user.id,
+        name: ac.user.name,
+        phone: ac.user.phone,
+        avatarUrl: ac.user.avatarUrl,
+        amountPaid
+      };
+    });
+
+    const totalStudents = studentsInfo.length;
+    const totalAmount = studentsInfo.reduce((sum, s) => sum + s.amountPaid, 0);
+
+    // بيانات المستويات
+    reportByInstructor[instId].levels.push({
+      courseLevel: {
+        id: level.id,
+        name: level.name,
+        priceUSD: level.priceUSD,
+        priceSAR: level.priceSAR
+      },
+      course: level.course,
+      totalStudents,
+      totalAmount,
+      students: studentsInfo
+    });
+
+    reportByInstructor[instId].totalCourses += 1;
+    reportByInstructor[instId].totalStudents += totalStudents;
+    reportByInstructor[instId].totalAmount += totalAmount;
+  });
+
+  // تحويل الطلاب من object إلى array
+  const finalReport = Object.values(reportByInstructor).map(inst => ({
+    instructor: inst.instructor,
+    totalCourses: inst.totalCourses,
+    totalStudents: inst.totalStudents,
+    totalAmount: inst.totalAmount,
+    levels: inst.levels,
+    allStudents: Object.values(inst.allStudents) // قائمة الطلاب لجميع المستويات
+  }));
+
+  return finalReport;
+};
+
+
 export const getInstructorById = (id) => prisma.instructor.findUnique({ where: { id } });
 export const createInstructor = (data) => prisma.instructor.create({ data });
 export const listInstructors = async (pagination = {}) => {
@@ -158,6 +267,46 @@ export const updateInstructor = (id, data) => prisma.instructor.update({ where: 
 export const toggleInstructor = (id, isActive) => prisma.instructor.update({ where: { id }, data: { isActive } });
 export const DeleteInstructor = (id) => prisma.instructor.delete({ where: { id } });
 
+export const countStudents = async () => {
+  const instructors = await prisma.instructor.findMany({
+    where: { isActive: true },
+    select: {
+      id: true,
+      name: true,
+      courseLevels: {
+        select: {
+          id: true,
+          name: true,
+          accessCodes: {
+            where: { used: true },
+            select: {
+              usedBy: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  // نحسب عدد الطلاب الفريدين لكل أستاذ
+  const result = instructors.map((instructor) => {
+    const studentIds = new Set();
+
+    instructor.courseLevels.forEach((level) => {
+      level.accessCodes.forEach((code) => {
+        studentIds.add(code.usedBy);
+      });
+    });
+
+    return {
+      instructorId: instructor.id,
+      instructorName: instructor.name,
+      studentCount: studentIds.size,
+    };
+  });
+  return result;
+};
+
 /**
  * Create a new course and associate it with instructors.
  * @param {object} courseData - { title, description, subjectId, etc. }
@@ -180,12 +329,12 @@ export const createCourse = async (courseData) => {
   });
 
   // Send notification for new course creation (async, don't wait)
-/*  try {
-    await sendNewCourseNotification(result);
-    console.log(`✅ Notification sent for new course: ${result.title}`);
-  } catch (error) {
-    console.error(`❌ Failed to send notification for new course: ${result.title}`, error.message);
-  }*/
+  /*  try {
+      await sendNewCourseNotification(result);
+      console.log(`✅ Notification sent for new course: ${result.title}`);
+    } catch (error) {
+      console.error(`❌ Failed to send notification for new course: ${result.title}`, error.message);
+    }*/
 
   return result;
 };

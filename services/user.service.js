@@ -1,6 +1,7 @@
 import { UserModel } from '../models/index.js';
 import { getCountryFromPhone } from '../utils/phoneCountry.js';
 import { INSUFFICIENT_PERMISSIONS, NUMBER_ALREADY_EXIST } from '../validators/messagesResponse.js';
+import prisma from '../prisma/client.js';
 
 /**
  * Get all users with filtering and pagination (for admins)
@@ -46,6 +47,40 @@ export const getAllUsers = async (filters = {}, skip = 0, take = 20) => {
   ]);
 
   return { items, total, skip, take };
+};
+
+
+export const getUsersReport = async (filters = {}) => {
+  const { startDate, endDate, role } = filters;
+
+  const where = {};
+
+  if (startDate || endDate) {
+    where.createdAt = {};
+    if (startDate) where.createdAt.gte = new Date(startDate);
+    if (endDate) where.createdAt.lte = new Date(endDate);
+  }
+
+  if (role) where.role = role;
+
+  // استخدام groupBy لجلب عدد المستخدمين حسب البلد
+  const usersByCountry = await prisma.user.groupBy({
+    by: ['country'],
+    where,
+    _count: {
+      id: true,
+    },
+    orderBy: {
+      _count: {
+        id: 'desc',
+      },
+    },
+  });
+
+  return usersByCountry.map(item => ({
+    country: item.country || 'غير محدد',
+    totalUsers: item._count.id,
+  }));
 };
 
 /**
