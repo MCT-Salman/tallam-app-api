@@ -374,7 +374,6 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
         select: {
           id: true,
           title: true,
-          description: true,
           durationSec: true,
           orderIndex: true,
           courseLevelId: true,
