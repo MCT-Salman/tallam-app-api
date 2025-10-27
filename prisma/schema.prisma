@@ -61,7 +61,7 @@ model User {
 model Admin {
   id           Int    @id @default(autoincrement())
   userId       Int
-  user         User   @relation(fields: [userId], references: [id])
+  user         User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   username     String @unique
   email        String @unique
   passwordHash String
@@ -71,7 +71,7 @@ model Admin {
 
 model Session {
   id         String    @id @default(cuid())
-  user       User      @relation(fields: [userId], references: [id])
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId     Int
   userAgent  String?
   ip         String?
@@ -91,9 +91,9 @@ model Session {
 model RefreshToken {
   id        Int       @id @default(autoincrement())
   tokenHash String    @unique // hash للتوكن للأمان
-  user      User      @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
-  session   Session   @relation(fields: [sessionId], references: [id])
+  session   Session   @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   sessionId String
   expiresAt DateTime
   isRevoked Boolean   @default(false)
@@ -109,7 +109,7 @@ model RefreshToken {
 model LoginAttempt {
   id            Int      @id @default(autoincrement())
   identifier    String // رقم الهاتف أو البريد الإلكتروني
-  user          User?    @relation(fields: [userId], references: [id])
+  user          User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId        Int?
   ip            String
   userAgent     String?
@@ -157,7 +157,7 @@ model Subject {
   slug           String?          @unique
   isActive       Boolean          @default(true)
   domainId       Int?
-  domain         Domain?          @relation(fields: [domainId], references: [id])
+  domain         Domain?          @relation(fields: [domainId], references: [id], onDelete: Cascade)
   specialization Specialization[]
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
@@ -173,7 +173,7 @@ model Specialization {
   imageUrl    String?
   isActive    Boolean      @default(true)
   subjectId   Int?
-  subject     Subject?     @relation(fields: [subjectId], references: [id])
+  subject     Subject?     @relation(fields: [subjectId], references: [id], onDelete: Cascade)
   instructors Instructor[]
   courses     Course[]
   createdAt   DateTime     @default(now())
@@ -190,7 +190,7 @@ model Course {
   description      String?
   imageUrl         String?
   specializationId Int
-  specialization   Specialization @relation(fields: [specializationId], references: [id])
+  specialization   Specialization @relation(fields: [specializationId], references: [id], onDelete: Cascade)
   isActive         Boolean        @default(true)
   levels           CourseLevel[]
   createdAt        DateTime       @default(now())
@@ -206,7 +206,7 @@ model Instructor {
   bio              String?
   avatarUrl        String?
   specializationId Int
-  specialization   Specialization @relation(fields: [specializationId], references: [id])
+  specialization   Specialization @relation(fields: [specializationId], references: [id], onDelete: Cascade)
   // courses    Course[]
   isActive         Boolean        @default(true)
   createdAt        DateTime       @default(now())
@@ -230,9 +230,9 @@ model CourseLevel {
   previewUrl   String?
   downloadUrl  String?
   courseId     Int
-  course       Course           @relation(fields: [courseId], references: [id])
+  course       Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
   instructorId Int
-  instructor   Instructor       @relation(fields: [instructorId], references: [id])
+  instructor   Instructor       @relation(fields: [instructorId], references: [id], onDelete: Cascade)
   lessons      Lesson[]
   questions    Question[]
   quizResults  QuizResult[]
@@ -263,7 +263,7 @@ model Lesson {
   isFreePreview  Boolean          @default(false)
   isActive       Boolean          @default(true)
   courseLevelId  Int
-  courseLevel    CourseLevel      @relation(fields: [courseLevelId], references: [id])
+  courseLevel    CourseLevel      @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
   createdAt      DateTime         @default(now())
   updatedAt      DateTime         @updatedAt
   progress       LessonProgress[]
@@ -276,15 +276,15 @@ model AccessCode {
   id               Int           @id @default(autoincrement())
   code             String        @unique
   courseLevelId    Int
-  courseLevel      CourseLevel   @relation(fields: [courseLevelId], references: [id])
-  validityInMonths Int?
+  courseLevel      CourseLevel   @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
+  validityInMonths Float?
   issuedBy         Int?
   issuedAt         DateTime      @default(now())
   usedBy           Int
-  user             User          @relation(fields: [usedBy], references: [id])
+  user             User          @relation(fields: [usedBy], references: [id], onDelete: Cascade)
   used             Boolean       @default(false)
   usedAt           DateTime?
-  status          Status        @default(ACTIVE) // ACTIVE, EXPIRED, CANCELLED
+  status           Status        @default(ACTIVE) // ACTIVE, EXPIRED, CANCELLED
   expiresAt        DateTime?
   isActive         Boolean       @default(true)
   transaction      Transaction[]
@@ -301,9 +301,9 @@ model Transaction {
   amountPaid      Decimal    @db.Decimal(12, 2)
   notes           String?
   accessCodeId    Int
-  accessCode      AccessCode @relation(fields: [accessCodeId], references: [id])
+  accessCode      AccessCode @relation(fields: [accessCodeId], references: [id], onDelete: Cascade)
   couponId        Int?
-  coupon          Coupon?    @relation(fields: [couponId], references: [id])
+  coupon          Coupon?    @relation(fields: [couponId], references: [id], onDelete: Cascade)
   createdAt       DateTime   @default(now())
   updatedAt       DateTime   @updatedAt
 
@@ -315,9 +315,9 @@ model Transaction {
 model CodeRequest {
   id            Int         @id @default(autoincrement())
   userId        Int
-  user          User        @relation(fields: [userId], references: [id])
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseLevelId Int
-  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
+  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
   status        String      @default("PENDING") // PENDING, APPROVED, REJECTED
   contact       String? // رقم واتساب أو تيليغرام المستخدم
   createdAt     DateTime    @default(now())
@@ -338,7 +338,7 @@ model Coupon {
   usedCount     Int           @default(0)
   isActive      Boolean       @default(true)
   courseLevelId Int
-  courseLevel   CourseLevel   @relation(fields: [courseLevelId], references: [id])
+  courseLevel   CourseLevel   @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
   transaction   Transaction[]
   createdBy     Int?
   createdAt     DateTime      @default(now())
@@ -353,7 +353,7 @@ model Coupon {
 model Question {
   id            Int         @id @default(autoincrement())
   courseLevelId Int
-  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
+  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
   text          String
   order         Int?
   options       Option[]
@@ -364,7 +364,7 @@ model Question {
 model Option {
   id         Int      @id @default(autoincrement())
   questionId Int
-  question   Question @relation(fields: [questionId], references: [id])
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
   text       String
   isCorrect  Boolean  @default(false)
 
@@ -374,9 +374,9 @@ model Option {
 model QuizResult {
   id            Int         @id @default(autoincrement())
   userId        Int
-  user          User        @relation(fields: [userId], references: [id])
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseLevelId Int
-  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
+  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
   score         Float
   answers       Json
   createdAt     DateTime    @default(now())
@@ -389,9 +389,9 @@ model QuizResult {
 model CourseProgress {
   id            Int         @id @default(autoincrement())
   userId        Int
-  user          User        @relation(fields: [userId], references: [id])
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseLevelId Int
-  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
+  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
   progress      Float       @default(0)
   completed     Boolean     @default(false)
   score         Float?
@@ -430,7 +430,7 @@ enum NotificationType {
 model Notification {
   id        Int              @id @default(autoincrement())
   userId    Int?
-  user      User?            @relation(fields: [userId], references: [id])
+  user      User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
   title     String
   body      String
   type      NotificationType @default(GENERAL)
@@ -477,9 +477,9 @@ model Advertisement {
 model Review {
   id            Int         @id @default(autoincrement())
   userId        Int
-  user          User        @relation(fields: [userId], references: [id])
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseLevelId Int
-  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id])
+  courseLevel   CourseLevel @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
   rating        Int
   comment       String?
   createdAt     DateTime    @default(now())
@@ -492,7 +492,7 @@ model Review {
 model SupportMessage {
   id        Int      @id @default(autoincrement())
   userId    Int
-  user      User     @relation(fields: [userId], references: [id])
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   message   String
   reply     String?
   isRead    Boolean  @default(false)
@@ -505,9 +505,9 @@ model SupportMessage {
 model Suggestion {
   id            Int          @id @default(autoincrement())
   userId        Int
-  user          User         @relation(fields: [userId], references: [id])
+  user          User         @relation(fields: [userId], references: [id], onDelete: Cascade)
   courseLevelId Int?
-  courseLevel   CourseLevel? @relation(fields: [courseLevelId], references: [id])
+  courseLevel   CourseLevel? @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
   message       String
   createdAt     DateTime     @default(now())
 
@@ -526,7 +526,7 @@ model File {
   size          Int?
   meta          Json?
   courseLevelId Int?
-  courseLevel   CourseLevel? @relation(fields: [courseLevelId], references: [id])
+  courseLevel   CourseLevel? @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
   createdAt     DateTime     @default(now())
 
   @@index([courseLevelId])
@@ -536,7 +536,7 @@ model File {
 model AuditLog {
   id        Int      @id @default(autoincrement())
   actorId   Int?
-  actor     User?    @relation(fields: [actorId], references: [id])
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: Cascade)
   action    String
   resource  String?
   meta      Json?

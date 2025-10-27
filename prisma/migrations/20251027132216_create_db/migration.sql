@@ -13,6 +13,7 @@ CREATE TABLE `user` (
     `isActive` BOOLEAN NOT NULL DEFAULT true,
     `expiresAt` DATETIME(3) NULL,
     `fcmToken` VARCHAR(191) NULL,
+    `points` INTEGER NOT NULL DEFAULT 0,
     `currentSessionId` VARCHAR(191) NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
@@ -226,12 +227,13 @@ CREATE TABLE `accessCode` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `code` VARCHAR(191) NOT NULL,
     `courseLevelId` INTEGER NOT NULL,
-    `validityInMonths` INTEGER NULL,
+    `validityInMonths` DOUBLE NULL,
     `issuedBy` INTEGER NULL,
     `issuedAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `usedBy` INTEGER NOT NULL,
     `used` BOOLEAN NOT NULL DEFAULT false,
     `usedAt` DATETIME(3) NULL,
+    `status` ENUM('ACTIVE', 'CANCELLED', 'EXPIRED') NOT NULL DEFAULT 'ACTIVE',
     `expiresAt` DATETIME(3) NULL,
     `isActive` BOOLEAN NOT NULL DEFAULT true,
 
@@ -498,79 +500,79 @@ CREATE TABLE `appSettings` (
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
 -- AddForeignKey
-ALTER TABLE `admin` ADD CONSTRAINT `admin_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `admin` ADD CONSTRAINT `admin_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `session` ADD CONSTRAINT `session_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `session` ADD CONSTRAINT `session_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `refreshToken` ADD CONSTRAINT `refreshToken_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `refreshToken` ADD CONSTRAINT `refreshToken_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `refreshToken` ADD CONSTRAINT `refreshToken_sessionId_fkey` FOREIGN KEY (`sessionId`) REFERENCES `session`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `refreshToken` ADD CONSTRAINT `refreshToken_sessionId_fkey` FOREIGN KEY (`sessionId`) REFERENCES `session`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `loginAttempt` ADD CONSTRAINT `loginAttempt_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `loginAttempt` ADD CONSTRAINT `loginAttempt_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `subject` ADD CONSTRAINT `subject_domainId_fkey` FOREIGN KEY (`domainId`) REFERENCES `domain`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `subject` ADD CONSTRAINT `subject_domainId_fkey` FOREIGN KEY (`domainId`) REFERENCES `domain`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `specialization` ADD CONSTRAINT `specialization_subjectId_fkey` FOREIGN KEY (`subjectId`) REFERENCES `subject`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `specialization` ADD CONSTRAINT `specialization_subjectId_fkey` FOREIGN KEY (`subjectId`) REFERENCES `subject`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `course` ADD CONSTRAINT `course_specializationId_fkey` FOREIGN KEY (`specializationId`) REFERENCES `specialization`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `course` ADD CONSTRAINT `course_specializationId_fkey` FOREIGN KEY (`specializationId`) REFERENCES `specialization`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `instructor` ADD CONSTRAINT `instructor_specializationId_fkey` FOREIGN KEY (`specializationId`) REFERENCES `specialization`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `instructor` ADD CONSTRAINT `instructor_specializationId_fkey` FOREIGN KEY (`specializationId`) REFERENCES `specialization`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `courseLevel` ADD CONSTRAINT `courseLevel_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `course`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `courseLevel` ADD CONSTRAINT `courseLevel_courseId_fkey` FOREIGN KEY (`courseId`) REFERENCES `course`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `courseLevel` ADD CONSTRAINT `courseLevel_instructorId_fkey` FOREIGN KEY (`instructorId`) REFERENCES `instructor`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `courseLevel` ADD CONSTRAINT `courseLevel_instructorId_fkey` FOREIGN KEY (`instructorId`) REFERENCES `instructor`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `lesson` ADD CONSTRAINT `lesson_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `lesson` ADD CONSTRAINT `lesson_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `accessCode` ADD CONSTRAINT `accessCode_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `accessCode` ADD CONSTRAINT `accessCode_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `accessCode` ADD CONSTRAINT `accessCode_usedBy_fkey` FOREIGN KEY (`usedBy`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `accessCode` ADD CONSTRAINT `accessCode_usedBy_fkey` FOREIGN KEY (`usedBy`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `transaction` ADD CONSTRAINT `transaction_accessCodeId_fkey` FOREIGN KEY (`accessCodeId`) REFERENCES `accessCode`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `transaction` ADD CONSTRAINT `transaction_accessCodeId_fkey` FOREIGN KEY (`accessCodeId`) REFERENCES `accessCode`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `transaction` ADD CONSTRAINT `transaction_couponId_fkey` FOREIGN KEY (`couponId`) REFERENCES `coupon`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `transaction` ADD CONSTRAINT `transaction_couponId_fkey` FOREIGN KEY (`couponId`) REFERENCES `coupon`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `codeRequest` ADD CONSTRAINT `codeRequest_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `codeRequest` ADD CONSTRAINT `codeRequest_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `codeRequest` ADD CONSTRAINT `codeRequest_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `codeRequest` ADD CONSTRAINT `codeRequest_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `coupon` ADD CONSTRAINT `coupon_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `coupon` ADD CONSTRAINT `coupon_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `question` ADD CONSTRAINT `question_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `question` ADD CONSTRAINT `question_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `option` ADD CONSTRAINT `option_questionId_fkey` FOREIGN KEY (`questionId`) REFERENCES `question`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `option` ADD CONSTRAINT `option_questionId_fkey` FOREIGN KEY (`questionId`) REFERENCES `question`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `quizResult` ADD CONSTRAINT `quizResult_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `quizResult` ADD CONSTRAINT `quizResult_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `quizResult` ADD CONSTRAINT `quizResult_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `quizResult` ADD CONSTRAINT `quizResult_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `courseProgress` ADD CONSTRAINT `courseProgress_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `courseProgress` ADD CONSTRAINT `courseProgress_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `courseProgress` ADD CONSTRAINT `courseProgress_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `courseProgress` ADD CONSTRAINT `courseProgress_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `lessonProgress` ADD CONSTRAINT `lessonProgress_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
@@ -579,25 +581,25 @@ ALTER TABLE `lessonProgress` ADD CONSTRAINT `lessonProgress_userId_fkey` FOREIGN
 ALTER TABLE `lessonProgress` ADD CONSTRAINT `lessonProgress_lessonId_fkey` FOREIGN KEY (`lessonId`) REFERENCES `lesson`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `notification` ADD CONSTRAINT `notification_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `notification` ADD CONSTRAINT `notification_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `review` ADD CONSTRAINT `review_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `review` ADD CONSTRAINT `review_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `review` ADD CONSTRAINT `review_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `review` ADD CONSTRAINT `review_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `supportMessage` ADD CONSTRAINT `supportMessage_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `supportMessage` ADD CONSTRAINT `supportMessage_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `suggestion` ADD CONSTRAINT `suggestion_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `suggestion` ADD CONSTRAINT `suggestion_userId_fkey` FOREIGN KEY (`userId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `suggestion` ADD CONSTRAINT `suggestion_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `suggestion` ADD CONSTRAINT `suggestion_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `file` ADD CONSTRAINT `file_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `file` ADD CONSTRAINT `file_courseLevelId_fkey` FOREIGN KEY (`courseLevelId`) REFERENCES `courseLevel`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `auditLog` ADD CONSTRAINT `auditLog_actorId_fkey` FOREIGN KEY (`actorId`) REFERENCES `user`(`id`) ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE `auditLog` ADD CONSTRAINT `auditLog_actorId_fkey` FOREIGN KEY (`actorId`) REFERENCES `user`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;

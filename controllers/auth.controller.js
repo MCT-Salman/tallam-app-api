@@ -272,6 +272,7 @@ export const getProfile = async (req, res, next) => {
       sex: true,
       country: true,
       countryCode: true,
+      points: true,
       isVerified: true,
       isActive: true,
       createdAt: true,
