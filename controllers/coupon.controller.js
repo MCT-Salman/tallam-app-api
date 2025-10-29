@@ -67,6 +67,22 @@ export const adminDeleteCoupon = async (req, res, next) => {
   }
 };
 
+export const adminListCouponsbyuserorlevel = async (req, res, next) => {
+  try {
+    const { skip, take } = req.query;
+    const { userId, courseLevelId } = req.body;
+    const coupons = await CouponService.listCouponsByUserOrLevel({ skip, take , userId, courseLevelId });
+    res.status(SUCCESS_STATUS_CODE).json({
+      success: SUCCESS_REQUEST,
+      message: 'تم جلب الكوبونات بنجاح.',
+      data: serializeResponse(coupons),
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
+    next(error);
+  }
+};
+
 export const adminListByLevel = async (req, res, next) => {
   try {
     const coupons = await CouponService.listCouponsByCourseLevel(req.params.courseLevelId);

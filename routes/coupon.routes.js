@@ -13,7 +13,8 @@ import {
   studentValidateCoupon,
   studentApplyCoupon,
   adminListactiveByLevel,
-  adminListUsers
+  adminListUsers,
+  adminListCouponsbyuserorlevel
 } from '../controllers/coupon.controller.js';
 import {
   couponCreateRules,
@@ -36,6 +37,7 @@ router.post('/admin/coupon/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN'])
 router.get('/admin/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(couponIdParam), adminGetCoupon);
 router.put('/admin/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(couponIdParam), validate(couponUpdateRules), adminUpdateCoupon);
 router.delete('/admin/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(couponIdParam), adminDeleteCoupon);
+router.post('/admin/listcoupons', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(listQueryRules), adminListCouponsbyuserorlevel);
 
 
 

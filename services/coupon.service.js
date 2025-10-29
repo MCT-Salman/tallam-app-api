@@ -15,6 +15,7 @@ export const createCoupon = async ({ code, discount, isPercent = true, expiry, m
       where: { id: userId },
       data: { points: user.points - 5 }
     });
+    maxUsage = 1;
   }
   const data = {
     code: code.trim().toUpperCase(),
@@ -84,6 +85,36 @@ export const updateCoupon = async (id, data) => {
 export const deleteCoupon = async (id) => {
   return prisma.coupon.delete({ where: { id: Number(id) } });
 };
+
+export const listCouponsByUserOrLevel = async ({ skip = 0, take = 50, userId, courseLevelId, maxUsage = Infinity } = {}) => {
+  const where = {
+    isActive: true,
+    AND: [
+      {
+        OR: [
+          { userId: Number(userId) || undefined },
+          { userId: null },
+        ],
+      },
+      {
+        OR: [
+          { courseLevelId: Number(courseLevelId) || undefined },
+          { courseLevelId: null },
+        ],
+      },
+    ],
+  };
+
+  const coupons = await prisma.coupon.findMany({
+    where,
+    skip: Number(skip),
+    take: Number(take),
+    orderBy: { createdAt: "desc" }
+  });
+
+  return coupons.filter(coupon => coupon.usedCount < coupon.maxUsage);
+};
+
 
 export const listCouponsByCourseLevel = async (courseLevelId) => {
   return prisma.coupon.findMany({
@@ -197,10 +228,10 @@ export const listactiveCouponsByCourseLevel = async (courseLevelId) => {
 
 export const listUsers = async () => {
   return prisma.user.findMany({
-    where: { 
+    where: {
       role: "STUDENT",
       points: { gte: 5 }
-     },
+    },
     select: { id: true, name: true, points: true },
   });
 };

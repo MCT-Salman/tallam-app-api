@@ -19,7 +19,6 @@ const nanoid = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 10);
  */
 export const generateAccessCodes = async ({
   courseLevelId, userId, validityInMonths, issuedBy, couponId, status, amountPaid, receiptImageUrl, notes }) => {
-    console.log(status);
   // Validate level exists and implicitly validate course via level
   const level = await prisma.courseLevel.findUnique({
     where: { id: courseLevelId },
@@ -27,6 +26,7 @@ export const generateAccessCodes = async ({
   });
   if (!level) throw new Error('المستوى غير موجود');
 
+  
   // Generate a unique access code
   const code = nanoid();
 
@@ -101,7 +101,7 @@ export const activateCode = async (code, userId, courseLevelId, tx = prisma) => 
     const days = existingAccessCode.validityInMonths * 30.44; // متوسط الأيام لكل شهر
     expiresAt = addDays(new Date(), days);
   }
-  
+
   // 3️⃣ تحديث الكود فقط داخل transaction
   const updatedCode = await tx.accessCode.update({
     where: { id: existingAccessCode.id },

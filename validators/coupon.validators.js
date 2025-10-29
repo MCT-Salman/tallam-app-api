@@ -8,7 +8,10 @@ export const couponCreateRules = [
   body('expiry').optional().isISO8601().withMessage('expiry يجب أن يكون تاريخ ISO'),
   body('maxUsage').optional().isInt({ min: 1 }).withMessage('maxUsage يجب أن يكون رقمًا صحيحًا موجبًا'),
   body('isActive').optional().isBoolean(),
-  body('courseLevelId').exists().withMessage('courseLevelId مطلوب').isInt({ gt: 0 }).withMessage('courseLevelId غير صالح'),
+  body('courseLevelId').optional().isInt({ gt: 0 }).withMessage('courseLevelId غير صالح'),
+  body('userId').optional().isInt({ gt: 0 }).withMessage('userId غير صالح'),
+  body('reason').optional().isString().isLength({ min: 3, max: 200 }).withMessage('reason يجب أن يكون نصًا'),
+  body('point').optional().isBoolean(),
 ];
 
 export const couponUpdateRules = [

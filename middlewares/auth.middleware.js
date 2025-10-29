@@ -47,7 +47,9 @@ export const requireAuth = async (req, res, next) => {
       return res.status(401).json({
         success: FAILURE_REQUEST,
         message: IN_ACTIVE_ACCOUNT,
-        data: {}
+        data: {
+          isActive: false
+        }
       });
     }
 
