@@ -274,7 +274,7 @@ model Lesson {
   @@index([courseLevelId])
   @@map("lesson")
 }
-
+//edit 
 model AccessCode {
   id               Int           @id @default(autoincrement())
   code             String        @unique
