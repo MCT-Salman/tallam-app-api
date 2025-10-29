@@ -678,7 +678,7 @@ export const publicListCoursesBySpecialization = async (req, res, next) => {
         // Don't fail the main request if notification check fails
       }
     }
-
+ 
     res.json({
       success: true,
       message: "تم جلب قائمة الكورسات بنجاح",

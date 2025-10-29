@@ -21,7 +21,7 @@ router.put('/admin/access-code/:id', requireAuth, requireRole(['ADMIN', 'SUBADMI
 router.put('/admin/access-code/:id/active', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), adminToggleAccessCode);
 router.delete('/admin/access-code/:id', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), validate(idParam), adminDeleteAccessCode);
 router.get('/admin/report', requireAuth, requireRole(['ADMIN', 'SUBADMIN']), adminGetaccessCodesReport);
-
+ 
 // --- Student Routes ---
 router.get('/my-codes', requireAuth, requireRole(['STUDENT']), studentGetMyCodes);
 router.get('/my-courses', requireAuth, requireRole(['STUDENT']), studentGetMyCourses);

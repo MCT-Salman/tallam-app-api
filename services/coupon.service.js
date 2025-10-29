@@ -3,7 +3,19 @@ import prisma from "../prisma/client.js";
 import { disconnect } from "process";
 
 // -------- Admin Services --------
-export const createCoupon = async ({ code, discount, isPercent = true, expiry, maxUsage, isActive = true, courseLevelId, createdBy }) => {
+export const createCoupon = async ({ code, discount, isPercent = true, expiry, maxUsage, isActive = true, courseLevelId, userId, reason, point, createdBy }) => {
+  if (point === true) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { points: true }
+    });
+    if (!user) throw new Error('المستخدم غير موجود');
+    if (user.points < 5) throw new Error('لا يوجد نقاط كافية');
+    await prisma.user.update({
+      where: { id: userId },
+      data: { points: user.points - 5 }
+    });
+  }
   const data = {
     code: code.trim().toUpperCase(),
     discount: parseFloat(discount),
@@ -11,7 +23,9 @@ export const createCoupon = async ({ code, discount, isPercent = true, expiry, m
     expiry: expiry ? new Date(expiry) : null,
     maxUsage: maxUsage != null ? Number(maxUsage) : null,
     isActive: Boolean(isActive),
-    courseLevelId: Number(courseLevelId),
+    courseLevelId: Number(courseLevelId) ?? null,
+    userId: Number(userId) ?? null,
+    reason: reason ?? null,
     createdBy: createdBy ?? null,
   };
   return prisma.coupon.create({ data });
@@ -55,7 +69,9 @@ export const updateCoupon = async (id, data) => {
   if (update.expiry !== undefined) update.expiry = update.expiry ? new Date(update.expiry) : null;
   if (update.maxUsage !== undefined) update.maxUsage = update.maxUsage != null ? Number(update.maxUsage) : null;
   if (update.isActive != null) update.isActive = Boolean(update.isActive);
-  if (update.courseLevelId != null) update.courseLevelId = Number(update.courseLevelId);
+  //if (update.courseLevelId != null) update.courseLevelId = Number(update.courseLevelId);
+  //if (update.userId != null) update.userId = Number(update.userId);
+  if (update.reason != null) update.reason = update.reason;
 
   const existingCoupon = await prisma.coupon.findUnique({ where: { id: couponId } });
   if (!existingCoupon) throw new Error("الكوبون غير موجود");
@@ -176,4 +192,15 @@ export const listactiveCouponsByCourseLevel = async (courseLevelId) => {
   });
 
   return coupons.filter(c => c.usedCount < c.maxUsage)
+};
+
+
+export const listUsers = async () => {
+  return prisma.user.findMany({
+    where: { 
+      role: "STUDENT",
+      points: { gte: 5 }
+     },
+    select: { id: true, name: true, points: true },
+  });
 };

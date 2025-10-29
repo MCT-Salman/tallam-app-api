@@ -13,8 +13,8 @@ export const generateCodesRules = [
     .withMessage('userId غير صالح'),
   body('validityInMonths')
     .optional()
-    .isInt({ gt: 0 })
-    .withMessage('مدة الصلاحية بالأشهر يجب أن تكون رقماً صحيحاً أكبر من صفر'),
+    .isFloat({ gt: 0 })
+    .withMessage('مدة الصلاحية بالأشهر يجب أن تكون رقماً أكبر من صفر'),
 ];
 
 export const activateCodeRules = [

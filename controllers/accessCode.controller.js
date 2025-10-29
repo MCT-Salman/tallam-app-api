@@ -1,5 +1,6 @@
 import * as AccessCodeService from '../services/accessCode.service.js';
 import { serializeResponse } from '../utils/serialize.js';
+import * as NotificationService from "../services/notification.service.js";
 import prisma from "../prisma/client.js";
 import {
   COURSE_NOT_FOUND,
@@ -32,9 +33,10 @@ export const adminGenerateCodes = async (req, res, next) => {
       where: {
         usedBy: parsedUserId,
         courseLevelId: parsedCourseLevelId,
-        expiresAt: {
-          gt: new Date() // يعني أن الكود ما زال صالحًا (لم ينتهِ بعد)
-        }
+        OR: [
+          { expiresAt: null },
+          { expiresAt: { gt: new Date() } }
+        ]
       },
     });
 
@@ -45,21 +47,20 @@ export const adminGenerateCodes = async (req, res, next) => {
         data: {}
       });
     }
-
     // ✅ 2. إنشاء الكود الجديد لأن لا يوجد كود صالح حاليًا
     const receiptImageUrl = `/uploads/images/financial/${req.file.filename}`;
 
     const result = await AccessCodeService.generateAccessCodes({
       courseLevelId: parsedCourseLevelId,
       userId: parsedUserId,
-      validityInMonths: validityInMonths ? parseInt(validityInMonths, 10) : null,
+      validityInMonths: validityInMonths ? parseFloat(validityInMonths) : null,
       issuedBy: adminId,
       couponId: couponId ? parseInt(couponId, 10) : null,
+      status: 'NOT_USED',
       amountPaid,
       receiptImageUrl,
       notes
     });
-
     res.json({
       success: true,
       message: `تم توليد الكود ${result.code} بنجاح.`,
@@ -130,13 +131,14 @@ export const adminUpdateAccessCode = async (req, res, next) => {
     const receiptImageUrl = req.file ? `/uploads/images/financial/${req.file.filename}` : undefined;
     const parsedCourseLevelId = courseLevelId ? parseInt(courseLevelId, 10) : null;
     const parsedUserId = userId ? parseInt(userId, 10) : null;
-
+    const status = isActive ? 'USED' : 'CANCELLED';
     const updatedCode = await AccessCodeService.updateAccessCodeWithTransaction({
       id,
       courseLevelId: parsedCourseLevelId,
       userId: parsedUserId,
-      validityInMonths: validityInMonths ? parseInt(validityInMonths, 10) : null,
+      validityInMonths: validityInMonths ? parseFloat(validityInMonths) : null,
       isActive,
+      status,
       issuedBy: adminId,
       couponId: couponId ? parseInt(couponId, 10) : null,
       amountPaid,
@@ -159,9 +161,11 @@ export const adminUpdateAccessCode = async (req, res, next) => {
 
 export const adminToggleAccessCode = async (req, res, next) => {
   try {
+
     const id = parseInt(req.params.id, 10);
     const isActive = !!req.body.isActive;
-    const updatedCode = await AccessCodeService.toggleAccessCode(id, isActive);
+    const status = isActive ? 'USED' : 'CANCELLED';
+    const updatedCode = await AccessCodeService.toggleAccessCode(id, isActive, status);
     res.json({
       success: true,
       message: `تم ${isActive ? "تفعيل" : "تعطيل"} الكود بنجاح.`,
@@ -234,7 +238,7 @@ export const studentGetMyCourses = async (req, res, next) => {
     next(error);
   }
 };
-
+/*
 export const studentActivateCode = async (req, res, next) => {
   try {
     const { code } = req.body;
@@ -265,7 +269,65 @@ export const studentActivateCode = async (req, res, next) => {
     next(error);
   }
 };
+*/
+export const studentActivateCode = async (req, res, next) => {
+  try {
+    const { code } = req.body;
+    const userId = req.user.id;
+    const courseLevelId = parseInt(req.params.courseLevelId, 10);
 
+    // ✅ تنفيذ العمليات داخل معاملة Prisma
+    const result = await prisma.$transaction(async (tx) => {
+      // 1️⃣ تفعيل الكود (مرر tx إلى الدالة لو كانت تستخدم prisma داخلياً)
+      const activatedCode = await AccessCodeService.activateCode(code, userId, courseLevelId, tx);
+
+      // 2️⃣ تحديث نقاط المستخدم
+      const user = await tx.user.findUnique({ where: { id: userId } });
+
+      if (!user) throw new Error('المستخدم غير موجود.');
+
+      const updatedUser = await tx.user.update({
+        where: { id: userId },
+        data: {
+          points: (user.points || 0) + 1,
+        },
+      });
+
+      // 3️⃣ تحديد هل سيرسل إشعار بعد نجاح العملية
+      const shouldSendDiscountNotification = updatedUser.points >= 5;
+
+      // 4️⃣ إرجاع البيانات
+      return { activatedCode, shouldSendDiscountNotification };
+    },{ timeout: 20000 });
+
+    // ✅ إرسال الإشعار فقط بعد نجاح كل العمليات في الـtransaction
+    if (result.shouldSendDiscountNotification) {
+      await NotificationService.SendDiscountNotification(userId);
+    }
+
+    // ✅ الرد النهائي
+    res.status(SUCCESS_STATUS_CODE).json({
+      success: SUCCESS_REQUEST,
+      message: `تم تفعيل الكود بنجاح! يمكنك الآن الوصول إلى دورة "${result.activatedCode.courseLevel?.course?.title || ''}"${result.activatedCode.courseLevel ? ` (المستوى: ${result.activatedCode.courseLevel.name})` : ''}.`,
+      data: {
+        courseId: result.activatedCode.courseLevel?.course?.id,
+        ...(result.activatedCode.courseLevelId ? { courseLevelId: result.activatedCode.courseLevelId } : {}),
+        expiresAt: result.activatedCode.expiresAt,
+      },
+    });
+  } catch (error) {
+    if (
+      error.message.includes('غير صحيح') ||
+      error.message.includes('غير موجود') ||
+      error.message.includes('تم استخدامه')
+    ) {
+      error.statusCode = NOT_FOUND_STATUS_CODE;
+    } else {
+      error.statusCode = BAD_REQUEST_STATUS_CODE;
+    }
+    next(error);
+  }
+};
 export const studentGetExpiredCourses = async (req, res, next) => {
   try {
     const userId = req.user.id;

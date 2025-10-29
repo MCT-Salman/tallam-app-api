@@ -80,7 +80,7 @@ export const adminListByLevel = async (req, res, next) => {
 export const adminGetfinalPrice = async (req, res, next) => {
   try {
     const couponId = req.params.id;
-    const courseLevelId  = req.body.courseLevelId;
+    const courseLevelId = req.body.courseLevelId;
     const coupon = await CouponService.getFinalPriceWithCoupon({ couponId, courseLevelId });
     res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم حساب السعر النهائي بنجاح.', data: coupon });
   } catch (error) {
@@ -121,7 +121,7 @@ export const studentApplyCoupon = async (req, res, next) => {
     res.status(SUCCESS_STATUS_CODE).json({
       success: SUCCESS_REQUEST,
       message: 'تم تطبيق الكوبون بنجاح.',
-      data: serializeResponse({ id: coupon.id, usedCount: coupon.usedCount, code: coupon.code , finalPrice: coupon.finalPrice })
+      data: serializeResponse({ id: coupon.id, usedCount: coupon.usedCount, code: coupon.code, finalPrice: coupon.finalPrice })
     });
   } catch (error) {
     error.statusCode = BAD_REQUEST_STATUS_CODE;
@@ -133,6 +133,16 @@ export const adminListactiveByLevel = async (req, res, next) => {
   try {
     const coupons = await CouponService.listactiveCouponsByCourseLevel(req.params.courseLevelId);
     res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم جلب كوبونات المستوى بنجاح.', data: serializeResponse(coupons) });
+  } catch (error) {
+    error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
+    next(error);
+  }
+};
+
+export const adminListUsers = async (req, res, next) => {
+  try {
+    const users = await CouponService.listUsers();
+    res.status(SUCCESS_STATUS_CODE).json({ success: SUCCESS_REQUEST, message: 'تم جلب المستخدمين بنجاح.', data: serializeResponse(users) });
   } catch (error) {
     error.statusCode = error.statusCode || BAD_REQUEST_STATUS_CODE;
     next(error);

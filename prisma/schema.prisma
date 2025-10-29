@@ -9,10 +9,12 @@ datasource db {
 
 // ---------- Enums ----------
 enum Status {
-  ACTIVE
+  NOT_USED
+  USED
   CANCELLED
   EXPIRED
 }
+
 enum Role {
   STUDENT
   ADMIN
@@ -54,6 +56,7 @@ model User {
   AuditLog       AuditLog[]
   CodeRequest    CodeRequest[]
   Admin          Admin[]
+  Coupons        Coupon[]
 
   @@map("user")
 }
@@ -284,7 +287,7 @@ model AccessCode {
   user             User          @relation(fields: [usedBy], references: [id], onDelete: Cascade)
   used             Boolean       @default(false)
   usedAt           DateTime?
-  status           Status        @default(ACTIVE) // ACTIVE, EXPIRED, CANCELLED
+  status           Status        @default(NOT_USED) // USED,NOT_USED ,EXPIRED, CANCELLED
   expiresAt        DateTime?
   isActive         Boolean       @default(true)
   transaction      Transaction[]
@@ -337,13 +340,17 @@ model Coupon {
   maxUsage      Int?
   usedCount     Int           @default(0)
   isActive      Boolean       @default(true)
-  courseLevelId Int
-  courseLevel   CourseLevel   @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
+  courseLevelId Int?
+  courseLevel   CourseLevel?  @relation(fields: [courseLevelId], references: [id], onDelete: Cascade)
+  userId        Int?
+  user          User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason        String?
   transaction   Transaction[]
   createdBy     Int?
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
+  @@index([userId])
   @@index([courseLevelId])
   @@map("coupon")
 }
@@ -454,6 +461,7 @@ model Story {
   startedAt  DateTime?
   endedAt    DateTime?
   orderIndex Int?
+  isStory    Boolean   @default(true)
   isActive   Boolean   @default(true)
   createdAt  DateTime  @default(now())
 

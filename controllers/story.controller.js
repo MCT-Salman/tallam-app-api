@@ -17,10 +17,11 @@ export const adminCreateStory = async (req, res, next) => {
     const data = {
       title: req.body.title,
       imageUrl,
-      startedAt: req.body.startedAt ? new Date(req.body.startedAt) : undefined,
-      endedAt: req.body.endedAt ? new Date(req.body.endedAt) : undefined,
-      orderIndex: req.body.orderIndex ? parseInt(req.body.orderIndex, 10) : undefined,
-      isActive: req.body.isActive !== undefined ? req.body.isActive === 'true' : true
+      startedAt: req.body.startedAt ? new Date(req.body.startedAt) : null,
+      endedAt: req.body.endedAt ? new Date(req.body.endedAt) : null,
+      orderIndex: req.body.orderIndex ? parseInt(req.body.orderIndex, 10) : 0,
+      isActive: req.body.isActive ? req.body.isActive === 'true' : true,
+      isStory: req.body.isStory ? req.body.isStory === 'true' : true,
     };
 
     const story = await createStory(data);
@@ -71,6 +72,9 @@ export const adminUpdateStory = async (req, res, next) => {
     if (req.body.isActive !== undefined)
       data.isActive = req.body.isActive === "true" || req.body.isActive === true;
 
+    if (req.body.isStory !== undefined)
+      data.isStory = req.body.isStory === "true" || req.body.isStory === true;
+    
     const updated = await updateStory(id, data);
 
     res.json({

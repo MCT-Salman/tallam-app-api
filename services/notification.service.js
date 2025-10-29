@@ -448,10 +448,10 @@ export const sendNewLessonNotification = async (lesson) => {
 
     const courseLevel = await prisma.courseLevel.findUnique({
       where: { id: lesson.courseLevelId },
-      select: { 
-        id: true, 
-        name: true, 
-        instructorId: true, 
+      select: {
+        id: true,
+        name: true,
+        instructorId: true,
         courseId: true,
         course: { select: { id: true, title: true } }
       }
@@ -766,6 +766,38 @@ export const sendInstantPushToUser = async (userId, notificationData) => {
 
   } catch (error) {
     console.error(`Error sending instant push notification to user ${userId}:`, error);
+    throw error;
+  }
+};
+
+export const SendDiscountNotification = async (userId) => {
+  try {
+    console.log(`🎉 إرسال إشعار تهنئة للمستخدم ${userId} بفوزه بعرض الخصم`);
+
+    await createNotification({
+      userId: userId,
+      title: ' تهانينا! لقد ربحت عرضًا مميزًا',
+      body: `
+        <p> مبروك! لقد حصلت على <b>كود خصم</b> لاشتراكك في <b>خمس كورسات</b> مميزة!</p>
+        <p>تواصل الآن مع <b>فريق الدعم</b> للحصول على كود الخصم الخاص بك واستمتع بالتعلم!</p>
+      `,
+      type: 'GENERAL',
+      data: {
+        action: 'contact_support',
+      },
+      link: `/support/contact`,
+      imageUrl: '/uploads/iconsnotication/Gift-Box.png'
+    }, true);
+
+    console.log('✅ إشعار الفوز تم إرساله بنجاح');
+
+    return {
+      success: true,
+      message: 'تم إرسال إشعار الفوز بنجاح!',
+    };
+
+  } catch (error) {
+    console.error('❌ خطأ أثناء إرسال إشعار الفوز:', error);
     throw error;
   }
 };

@@ -1,6 +1,7 @@
 import { customAlphabet } from 'nanoid';
 import prisma from "../prisma/client.js";
 import { sendCourseSubscriptionNotification } from './notification.service.js';
+import { addDays } from 'date-fns';
 
 // Define a custom alphabet for generating codes (uppercase letters and numbers, no ambiguous chars)
 const nanoid = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 10);
@@ -17,7 +18,8 @@ const nanoid = customAlphabet('23456789ABCDEFGHJKLMNPQRSTUVWXYZ', 10);
  * @returns {Promise<string[]>} - Array of generated codes.
  */
 export const generateAccessCodes = async ({
-  courseLevelId, userId, validityInMonths, issuedBy, couponId, amountPaid, receiptImageUrl, notes }) => {
+  courseLevelId, userId, validityInMonths, issuedBy, couponId, status, amountPaid, receiptImageUrl, notes }) => {
+    console.log(status);
   // Validate level exists and implicitly validate course via level
   const level = await prisma.courseLevel.findUnique({
     where: { id: courseLevelId },
@@ -36,6 +38,7 @@ export const generateAccessCodes = async ({
       issuedBy,
       validityInMonths,
       usedBy: userId,
+      status
     }
   });
 
@@ -83,66 +86,34 @@ export const getAllAccessCodes = async () => {
  * @param {number} courseLevelId - The ID of the course level.
  * @returns {Promise<import('@prisma/client').AccessCode>}
  */
-export const activateCode = async (code, userId, courseLevelId) => {
-  const existingAccessCode = await prisma.accessCode.findFirst({
-    where: {
-      code,
-      usedBy: userId,
-      courseLevelId: courseLevelId
-    }
+export const activateCode = async (code, userId, courseLevelId, tx = prisma) => {
+  // 1️⃣ جلب الكود مع التحقق
+  const existingAccessCode = await tx.accessCode.findFirst({
+    where: { code, usedBy: userId, courseLevelId },
   });
 
-  // --- Validation Checks ---
-  if (!existingAccessCode) {
-    throw new Error('الكود غير صحيح أو لا ينتمي لهذا المستوى.');
-  }
+  if (!existingAccessCode) throw new Error('الكود غير صحيح أو لا ينتمي لهذا المستوى.');
+  if (existingAccessCode.used) throw new Error('هذا الكود تم استخدامه مسبقاً.');
 
-  if (existingAccessCode.used) {
-    throw new Error('هذا الكود تم استخدامه مسبقاً.');
-  }
-
-  // Calculate expiration date if validityInMonths is set
+  // 2️⃣ حساب تاريخ الانتهاء
   let expiresAt = null;
   if (existingAccessCode.validityInMonths) {
-    expiresAt = new Date();
-    expiresAt.setMonth(expiresAt.getMonth() + existingAccessCode.validityInMonths);
+    const days = existingAccessCode.validityInMonths * 30.44; // متوسط الأيام لكل شهر
+    expiresAt = addDays(new Date(), days);
   }
-
-  // Update the access code in the database
-  await prisma.accessCode.update({
+  
+  // 3️⃣ تحديث الكود فقط داخل transaction
+  const updatedCode = await tx.accessCode.update({
     where: { id: existingAccessCode.id },
     data: {
       usedAt: new Date(),
       used: true,
+      status: 'USED',
       expiresAt,
-    }
+    },
   });
 
-  // Return the code with included relations
-  const fullCode = await prisma.accessCode.findFirst({
-    where: { code },
-    include: {
-      courseLevel: {
-        include: {
-          course: { select: { id: true, title: true } },
-          instructor: { select: { id: true, name: true } }
-        }
-      },
-      user: {
-        select: { id: true, name: true, phone: true }
-      }
-    }
-  });
-
-  // Send subscription notification
-  try {
-    await sendCourseSubscriptionNotification(fullCode.user, fullCode.courseLevel);
-    console.log(`✅ تم إرسال إشعار الاشتراك للمستخدم: ${fullCode.user.name}`);
-  } catch (error) {
-    console.error(`❌ فشل إرسال إشعار الاشتراك: ${error.message}`);
-  }
-
-  return fullCode;
+  return updatedCode; // ✅ لا ترسل إشعار هنا داخل transaction
 };
 
 /**
@@ -264,10 +235,10 @@ export const updateAccessCodeWithTransaction = async ({
   const updatedAccessCode = await prisma.accessCode.update({
     where: { id },
     data: {
-      courseLevelId: courseLevelId ,
-      usedBy: userId ,
-      validityInMonths: validityInMonths ,
-      issuedBy: issuedBy ,
+      courseLevelId: courseLevelId,
+      usedBy: userId,
+      validityInMonths: validityInMonths,
+      issuedBy: issuedBy,
     }
   });
 
@@ -311,10 +282,13 @@ export const updateAccessCodeWithTransaction = async ({
  * @param {number} userId
  * @returns {Promise<import('@prisma/client').AccessCode[]>}
  */
-export const toggleAccessCode = async (id, isActive) => {
+export const toggleAccessCode = async (id, isActive, status) => {
   return prisma.accessCode.update({
     where: { id },
-    data: { isActive },
+    data: {
+      isActive,
+      status
+    },
     include: {
       courseLevel: {
         select: { id: true, name: true, courseId: true, course: { select: { id: true, title: true } } }
@@ -357,20 +331,22 @@ export const getExpiredCoursesByUserId = async (userId) => {
 export const getActiveCodesStats = async () => {
   // 1️⃣ عدد الأكواد النشطة
   const activeCodesCount = await prisma.accessCode.count({
-    where: { isActive: true,
+    where: {
+      isActive: true,
       expiresAt: {
         gt: new Date()
       }
-     },
+    },
   });
 
   // 2️⃣ جلب كل الأكواد النشطة لمعالجة المستخدمين حسب المستوى
   const activeCodes = await prisma.accessCode.findMany({
-    where: { isActive: true,
+    where: {
+      isActive: true,
       expiresAt: {
         gt: new Date()
       }
-     },
+    },
     select: {
       courseLevelId: true,
       usedBy: true,

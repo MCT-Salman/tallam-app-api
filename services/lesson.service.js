@@ -397,8 +397,8 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
         courseLevelId,
         isActive: true,
         expiresAt: {
-        gt: new Date()
-      }
+          gt: new Date()
+        }
       }
     });
     if (accessCode || result.isFree) {
