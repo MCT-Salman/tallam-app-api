@@ -161,6 +161,30 @@ export const validateToken = async (req, res, next) => {
     return next(error);
   } 
 };
+export const getstatususer = async (req, res, next) => {
+  try {
+    const userId = req.user.id;
+    const user = await UserModel.findById(userId, {
+      id: true,
+      phone: true,
+      name: true,
+      role: true,
+      isActive: true,
+      isVerified: true,
+      expiresAt: true
+    });
+    res.json({
+      success: true,
+      message: "تم جلب حالة المستخدم بنجاح",
+      data: {
+        isActive: user.isActive
+      }
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || 401;
+    return next(error);
+  } 
+};
 /**
  * تسجيل خروج المستخدم
  */

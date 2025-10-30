@@ -24,7 +24,7 @@ import { registerRules, loginRules, refreshRules, TokenValidator, forgotRequestO
 import { normalizePhoneE164 } from '../middlewares/phone.middleware.js';
 import { otpRateLimitByPhone } from '../middlewares/otpRateLimit.middleware.js';
 import { authRateLimit } from '../middlewares/authRateLimit.middleware.js';
-
+import { getstatususer } from '../controllers/auth.controller.js';
 const router = express.Router();
 
 // تطبيق middleware لتسجيل الطلبات على جميع المسارات
@@ -48,6 +48,7 @@ router.post('/forgot/verify-otp', normalizePhoneE164, validate(forgotVerifyOtpRu
 router.use(requireAuth); // تطبيق middleware المصادقة على جميع المسارات التالية
 
 // إدارة الجلسات
+router.get('/active-user', getstatususer);
 router.post('/logout', logout);
 router.post('/logout-all', logoutAll);
 router.get('/sessions', getSessions);

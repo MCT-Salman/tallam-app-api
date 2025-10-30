@@ -8,13 +8,11 @@ export const requestOtp = async (req, res, next) => {
     const { phone } = req.body;
     const user = await UserModel.findByPhone(phone);
     if (user && user.isActive === false) throw new Error("هذا الحساب غير فعال");
-    const result = await sendOtp(phone);
-
+    const result = await sendOtp(phone); 
     // Use appropriate HTTP status based on success/failure
     const statusCode = result.success ? SUCCESS_STATUS_CODE : BAD_REQUEST_STATUS_CODE;
 
     // if (result.success) {
-      
       res.status(statusCode).json({
         success: result.success,
         message: result.message,

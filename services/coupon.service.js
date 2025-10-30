@@ -130,26 +130,31 @@ export const getFinalPriceWithCoupon = async ({ couponId, courseLevelId }) => {
   if (isNaN(cLevelId) || isNaN(cId)) throw new Error("معرف الكورس أو الكوبون غير صالح");
 
   // استخدام transaction لجلب البيانات دفعة واحدة
-  const [price, isDollar, coupon] = await prisma.$transaction([
+  const [price, usercountry, coupon] = await prisma.$transaction([
     prisma.courseLevel.findUnique({
       where: { id: cLevelId },
       select: { priceUSD: true, priceSAR: true }
     }),
-    prisma.appSettings.findUnique({
-      where: { key: "isDollar" },
-      select: { value: true }
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { country: true }
     }),
     prisma.coupon.findUnique({
       where: { id: cId }
     })
   ]);
 
+  let isDollar = true;
+  if (usercountry.country === 'SAR' || usercountry.country === 'Syria' || usercountry.country === 'سوريا') {
+    isDollar = false;
+  } else {
+    isDollar = true;
+  }
   if (!price) throw new Error("مستوى الكورس غير موجود");
-  if (!isDollar) throw new Error("إعداد العملة غير موجود");
   if (!coupon) throw new Error("الكوبون غير موجود");
 
   // حساب السعر الأساسي حسب العملة
-  let finalPrice = isDollar.value === 'true' ? price.priceUSD : price.priceSAR;
+  let finalPrice = isDollar ? price.priceUSD : price.priceSAR;
   const basePrice = finalPrice;
 
   // تطبيق الخصم
@@ -191,12 +196,19 @@ export const applyCoupon = async ({ code, courseLevelId }) => {
     select: { priceUSD: true, priceSAR: true }
   });
 
-  const isDollar = await prisma.appSettings.findUnique({
-    where: { key: "isDollar" },
-    select: { value: true }
+  const usercountry = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { country: true }
   });
 
-  let finalPrice = isDollar.value === 'true' ? price.priceUSD : price.priceSAR;
+  let isDollar = true;
+  if (usercountry.country === 'SAR' || usercountry.country === 'Syria' || usercountry.country === 'سوريا') {
+    isDollar = false;
+  } else {
+    isDollar = true;
+  }
+
+  let finalPrice = isDollar ? price.priceUSD : price.priceSAR;
 
   if (coupon.isPercent) {
     finalPrice = finalPrice - (finalPrice * (coupon.discount / 100));
