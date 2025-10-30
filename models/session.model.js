@@ -1,5 +1,9 @@
 import prisma from "../prisma/client.js";
 
+export const findByuserId = (userId) => prisma.session.findFirst({
+  where: { userId: userId }
+});
+
 export const createSession = (data) => prisma.session.create({ data });
 
 export const revokeOtherSessions = (userId, keepSessionId) =>

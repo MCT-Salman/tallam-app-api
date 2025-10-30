@@ -1,4 +1,4 @@
-import { UserModel } from "../models/index.js";
+import { UserModel , SessionModel } from "../models/index.js";
 import { sendOtp, verifyOtp } from "../services/otp.service.js";
 import { FAILURE_REQUEST, OTP_ALREADY_VERIFIED, SUCCESS_REQUEST } from "../validators/messagesResponse.js";
 import { BAD_REQUEST_STATUS_CODE, SUCCESS_STATUS_CODE } from "../validators/statusCode.js";
@@ -10,10 +10,7 @@ export const requestOtp = async (req, res, next) => {
     if (user && user.isActive === false) throw new Error("هذا الحساب غير فعال");
 
     if (user) {
-      const activeSession = await prisma.session.findFirst({
-        where: { userId: user.id },
-        select: { id: true , deviceInfo: true}
-      });
+      const activeSession = await SessionModel.findByuserId(user.id);
 
       if (activeSession && deviceInfo !== activeSession.deviceInfo) {
         return res.status(403).json({

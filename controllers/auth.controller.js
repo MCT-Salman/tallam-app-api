@@ -46,11 +46,20 @@ export const register = async (req, res, next) => {
  */
 export const forgotRequestOtp = async (req, res, next) => {
   try {
-    const { phone } = req.body;
+    const { phone , deviceInfo } = req.body;
 
     const user = await UserModel.findByPhone(phone);
     if (!user) return res.status(BAD_REQUEST_STATUS_CODE).json({ success: FAILURE_REQUEST, message: USER_NOT_FOUND_FORGET, data: {} });
+    if (user) {
+      const activeSession = await SessionModel.findByuserId(user.id);
 
+      if (activeSession && deviceInfo !== activeSession.deviceInfo) {
+        return res.status(403).json({
+          success: false,
+          message: "لا يمكن تسجيل الدخول إلا من جهاز واحد ,يرجى التواصل مع فريق الدعم",
+        });
+      }
+    }
     await OtpCodeModel.markOtpUnUsed(phone);
     const result = await sendOtp(phone);
     res.json({
@@ -150,7 +159,7 @@ export const validateToken = async (req, res, next) => {
         message: "Invalid token",
         data: {}
       });
-    }else {
+    } else {
       return res.json({
         success: true,
         message: "Token is valid",
@@ -160,7 +169,7 @@ export const validateToken = async (req, res, next) => {
   } catch (error) {
     error.statusCode = error.statusCode || 401;
     return next(error);
-  } 
+  }
 };
 export const getstatususer = async (req, res, next) => {
   try {
@@ -184,7 +193,7 @@ export const getstatususer = async (req, res, next) => {
   } catch (error) {
     error.statusCode = error.statusCode || 401;
     return next(error);
-  } 
+  }
 };
 /**
  * تسجيل خروج المستخدم
@@ -316,7 +325,7 @@ export const getProfile = async (req, res, next) => {
       success: SUCCESS_REQUEST,
       message: "تم جلب البيانات بنجاح",
       data: {
-        ...serializeResponse(user)  
+        ...serializeResponse(user)
       }
     });
   } catch (error) {
