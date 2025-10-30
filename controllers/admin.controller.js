@@ -6,7 +6,9 @@ import {
   getAllAdmins,
   getAdminById,
   updateAdmin,
-  deleteAdmin
+  deleteAdmin,
+  deletesession,
+  deleteallsessions
 } from "../services/admin.service.js";
 import { SUCCESS_REQUEST, SUCCESS_LOGIN } from "../validators/messagesResponse.js";
 
@@ -190,3 +192,36 @@ export const removeAdmin = async (req, res, next) => {
   }
 };
 
+export const deleteSession = async (req, res, next) => {
+  try {
+    const userId = req.body.userId;
+
+    const result = await deletesession(userId);
+
+    res.json({
+      success: true,
+      message: result.message,
+      data: {}
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || 401;
+    return next(error);
+  }
+    
+};
+
+export const deleteAllSessions = async (req, res, next) => {
+  try {
+
+    const result = await deleteallsessions();
+
+    res.json({
+      success: true,
+      message: result.message,
+      data: {}
+    });
+  } catch (error) {
+    error.statusCode = error.statusCode || 401;
+    return next(error);
+  }
+};

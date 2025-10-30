@@ -9,7 +9,9 @@ import {
   listAdmins,
   getAdmin,
   editAdmin,
-  removeAdmin
+  removeAdmin,
+  deleteSession,
+  deleteAllSessions
 } from "../controllers/admin.controller.js";
 import { validate } from "../middlewares/validate.middleware.js";
 import {
@@ -29,6 +31,9 @@ router.post("/login", validate(adminLoginRules), adminLogin);
 router.post("/create-admin", requireAuth, requireRole(["ADMIN"]), validate(addAdminRules), addAdmin);
 router.put("/set-role", requireAuth, requireRole(["ADMIN"]), changeRole);
 router.put("/toggle-active", requireAuth, requireRole(["ADMIN"]), deactivateUser);
+
+router.delete("/all-sessions", requireAuth, requireRole(["ADMIN"]), deleteAllSessions);
+router.delete("/delete-session", requireAuth, requireRole(["ADMIN"]), deleteSession);
 
 router.get("/list", requireAuth, requireRole(["ADMIN"]), validate(listAdminsQuery), listAdmins);
 router.get("/:id", requireAuth, requireRole(["ADMIN"]), validate(adminIdParam), getAdmin);

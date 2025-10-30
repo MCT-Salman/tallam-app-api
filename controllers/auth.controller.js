@@ -9,6 +9,7 @@ import {
   logoutAllDevices,
   getActiveSessions,
   revokeSession
+
 } from "../services/auth.service.js";
 import { sendOtp, verifyOtp } from "../services/otp.service.js";
 import { generatePasswordResetToken, generateTokenPair, revokeAllUserRefreshTokens, revokeUserRefreshTokensExceptSession } from "../utils/jwt.js";

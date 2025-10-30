@@ -5,28 +5,34 @@ import { BAD_REQUEST_STATUS_CODE, SUCCESS_STATUS_CODE } from "../validators/stat
 
 export const requestOtp = async (req, res, next) => {
   try {
-    const { phone } = req.body;
+    const { phone, deviceInfo } = req.body;
     const user = await UserModel.findByPhone(phone);
     if (user && user.isActive === false) throw new Error("هذا الحساب غير فعال");
-    const result = await sendOtp(phone); 
+
+    if (user) {
+      const activeSession = await prisma.session.findFirst({
+        where: { userId: user.id },
+        select: { id: true , deviceInfo: true}
+      });
+
+      if (activeSession && deviceInfo !== activeSession.deviceInfo) {
+        return res.status(403).json({
+          success: false,
+          message: "لا يمكن تسجيل الدخول إلا من جهاز واحد ,يرجى التواصل مع فريق الدعم",
+        });
+      }
+    }
+
+    const result = await sendOtp(phone);
     // Use appropriate HTTP status based on success/failure
     const statusCode = result.success ? SUCCESS_STATUS_CODE : BAD_REQUEST_STATUS_CODE;
 
-    // if (result.success) {
-      res.status(statusCode).json({
-        success: result.success,
-        message: result.message,
-        data: result.data
-      });
-    // }
-    //  else {
-     
-    //   res.status(statusCode).json({
-    //     success: result.success,
-    //     message: result.message,
-    //    data: result.data
-    //   });
-    // }
+    res.status(statusCode).json({
+      success: result.success,
+      message: result.message,
+      data: result.data
+    });
+
   } catch (e) {
     e.statusCode = e.statusCode || BAD_REQUEST_STATUS_CODE;
     return next(e);
@@ -35,10 +41,10 @@ export const requestOtp = async (req, res, next) => {
 
 export const checkOtp = async (req, res, next) => {
   try {
-    const { phone, code } = req.body;
+    const { phone, code, deviceInfo } = req.body;
 
     // Verify the OTP
-    const result = await verifyOtp(phone, code,req);
+    const result = await verifyOtp(phone, code, deviceInfo, req);
 
     res.json({
       success: result.success,

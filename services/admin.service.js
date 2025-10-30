@@ -359,3 +359,20 @@ export const deleteAdmin = async (adminId) => {
 };
 
 
+export const deletesession = async (userId) => {
+  try {
+    await SessionModel.deleteByuserId(userId);
+    return { success: true, message: "تم حذف الجلسة بنجاح" };
+  } catch (error) {
+    throw new Error("فشل في حذف الجلسة");
+  }
+};
+
+export const deleteallsessions = async () => {
+  try {
+    await SessionModel.deleteallsessions();
+    return { success: true, message: "تم حذف جميع الجلسات بنجاح" };
+  } catch (error) {
+    throw new Error("فشل في حذف جميع الجلسات");
+  }
+};

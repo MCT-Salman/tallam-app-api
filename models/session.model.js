@@ -28,3 +28,10 @@ export const findActiveSessionsByUser = (userId) =>
 
 export const revokeSessionById = (id) =>
   prisma.session.update({ where: { id }, data: { revokedAt: new Date() } });
+
+
+export const deleteByuserId = (userId) =>
+  prisma.session.deleteMany({ where: { userId } });
+
+export const deleteallsessions = () =>
+  prisma.session.deleteMany();

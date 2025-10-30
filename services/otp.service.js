@@ -76,7 +76,7 @@ export const sendOtp = async (phone) => {
   // };
 };
 
-export const verifyOtp = async (phone, code, req) => {
+export const verifyOtp = async (phone, code, deviceInfo, req) => {
   const otp = await OtpCodeModel.findForVerify(phone, code);
   const user = await UserModel.findByPhone(phone);
   // const isVerifiedNumber = await OtpCodeModel.findForVerifeidNumber(phone);
@@ -106,7 +106,8 @@ export const verifyOtp = async (phone, code, req) => {
       userId: user.id,
       userAgent,
       ip: req.ip,
-      realIp
+      realIp,
+      deviceInfo
     });
 
     // تحديث معرف الجلسة الحالية
@@ -119,7 +120,7 @@ export const verifyOtp = async (phone, code, req) => {
     await rateLimiter.recordSuccessfulAttempt(phone, realIp, userAgent, user.id);
 
     // إلغاء جميع Refresh Tokens الأخرى للمستخدم للحفاظ على جلسة واحدة فعّالة فقط
-    await revokeUserRefreshTokensExceptSession(user.id, session.id);
+    //await revokeUserRefreshTokensExceptSession(user.id, session.id);
 
     const { isVerified: __, ...safeUser } = user;
     return {

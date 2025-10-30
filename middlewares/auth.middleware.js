@@ -6,7 +6,7 @@ import { ACCOUNT_EXPIRED, CANCELD_SESSION, FAILURE_REQUEST, IN_ACTIVE_ACCOUNT, N
 /**
  * Middleware للتحقق من المصادقة
  */
-export const requireAuth = async (req, res, next) => {
+export const  requireAuth = async (req, res, next) => {
   const hdr = req.headers.authorization;
 
   if (!hdr?.startsWith("Bearer ")) {

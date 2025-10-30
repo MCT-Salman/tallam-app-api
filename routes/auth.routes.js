@@ -25,6 +25,7 @@ import { normalizePhoneE164 } from '../middlewares/phone.middleware.js';
 import { otpRateLimitByPhone } from '../middlewares/otpRateLimit.middleware.js';
 import { authRateLimit } from '../middlewares/authRateLimit.middleware.js';
 import { getstatususer } from '../controllers/auth.controller.js';
+
 const router = express.Router();
 
 // تطبيق middleware لتسجيل الطلبات على جميع المسارات
@@ -53,6 +54,7 @@ router.post('/logout', logout);
 router.post('/logout-all', logoutAll);
 router.get('/sessions', getSessions);
 router.delete('/sessions/:sessionId', revokeSessionById);
+
 
 // إدارة الملف الشخصي
 router.get('/profile', getProfile);
