@@ -28,6 +28,10 @@ export const getLevelById = async (id) => {
 };
 
 export const createLevel = async (courseId, data) => {
+  const existingLevel = await prisma.courseLevel.findFirst({
+    where: { courseId, instructorId: data.instructorId, order: data.order }
+  });
+  if (existingLevel) throw new Error("هذا الترتيب مستخدم مسبقًا في هذا الدورة لنفس المدرس");
   const level = await prisma.courseLevel.create({
     data: { ...data, courseId },
     include: {
@@ -35,15 +39,6 @@ export const createLevel = async (courseId, data) => {
       instructor: true
     }
   });
-
-  // Send new course level notification
-  /* try {
-     await sendNewCourseLevelNotification(level);
-     console.log(`✅ تم إرسال إشعار المستوى الجديد: ${level.name}`);
-   } catch (error) {
-     console.error(`❌ فشل إرسال إشعار المستوى الجديد: ${error.message}`);
-   }*/
-
   return level;
 };
 
@@ -104,6 +99,10 @@ export const createLessonForLevel = async (courseLevelId, data) => {
     select: { courseId: true }
   });
   if (!level) throw new Error("المستوى غير موجود");
+  const existingLesson = await prisma.lesson.findFirst({
+    where: { courseLevelId, orderIndex: data.orderIndex }
+  });
+  if (existingLesson) throw new Error("يوجد درس بنفس الترتيب في هذا المستوى");
 
   const lesson = await prisma.lesson.create({
     data: { ...data, courseLevelId },
