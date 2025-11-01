@@ -41,9 +41,9 @@ router.post('/validate-token', validate(TokenValidator), validateToken);
 // router.post('/refresh', authRateLimit, validate(refreshRules), refresh);
 // نسيت كلمة المرور
 // router.post('/forgot/request-otp', normalizePhoneE164, otpRateLimitByPhone, validate(forgotRequestOtpRules), forgotRequestOtp);
-router.post('/forgot/request-otp', normalizePhoneE164, validate(forgotRequestOtpRules), forgotRequestOtp);
+//router.post('/forgot/request-otp', normalizePhoneE164, validate(forgotRequestOtpRules), forgotRequestOtp);
 // router.post('/forgot/verify-otp', normalizePhoneE164, otpRateLimitByPhone, validate(forgotVerifyOtpRules), forgotVerifyOtp);
-router.post('/forgot/verify-otp', normalizePhoneE164, validate(forgotVerifyOtpRules), forgotVerifyOtp);
+//router.post('/forgot/verify-otp', normalizePhoneE164, validate(forgotVerifyOtpRules), forgotVerifyOtp);
 
 // مسارات تتطلب مصادقة
 router.use(requireAuth); // تطبيق middleware المصادقة على جميع المسارات التالية

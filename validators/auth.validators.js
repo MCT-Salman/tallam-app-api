@@ -17,6 +17,10 @@ export const phoneValidator = body("phone")
     return true;
   });
 
+export const deviceInfoValidator = body("deviceInfo")
+  .exists({ checkFalsy: true }).withMessage("معلومات الجهاز مطلوبة")
+  .isString().withMessage("يرجى المحاولة  مرة أخرى");
+
 // Validator مخفف لصفحة تسجيل الدخول حتى لا نفصح عن تفاصيل صيغة الهاتف
 export const loginPhoneValidator = body("phone")
   .exists({ checkFalsy: true }).withMessage("بيانات تسجيل الدخول غير صحيحة")
@@ -72,7 +76,7 @@ export const registerRules = [
   sexValidator,
 ];
 
-export const phoneNumber = [phoneValidator]
+export const phoneNumber = [phoneValidator, deviceInfoValidator]
 
 export const loginRules = [
   loginPhoneValidator

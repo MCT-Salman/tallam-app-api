@@ -55,21 +55,21 @@ export const registerUser = async (phone, name, birthDate, sex, avatarUrl, req) 
     const realIp = getRealIP(req);
     const userAgent = req.headers["user-agent"];
 
-    const session = await SessionModel.createSession({
-      userId: user.id,
-      userAgent,
-      ip: req.ip,
-      realIp
-    });
+    /* const session = await SessionModel.createSession({
+       userId: user.id,
+       userAgent,
+       ip: req.ip,
+       realIp
+     });*/
 
     // تحديث الجلسة بمعلومات الموقع والجهاز بشكل غير متزامن
-    updateSessionWithIPInfo(session.id, realIp, userAgent).catch(() => { });
+    //updateSessionWithIPInfo(session.id, realIp, userAgent).catch(() => { });
 
     // تحديث معرف الجلسة الحالية
     await UserModel.updateById(user.id, { currentSessionId: session.id });
 
     // إلغاء جميع الجلسات الأخرى للمستخدم فوراً
-    await SessionModel.revokeOtherSessions(user.id, session.id);
+    //await SessionModel.revokeOtherSessions(user.id, session.id);
 
     // إنشاء التوكنات
     const tokens = await generateTokenPair(user.id, session.id, user.role);
@@ -146,15 +146,16 @@ export const loginUser = async (phone, req) => {
     }
 
     // إنشاء جلسة جديدة
-    const session = await SessionModel.createSession({
+    const session = await SessionModel.findByuserId(user.id);;
+    /*await SessionModel.createSession({
       userId: user.id,
       userAgent,
       ip: req.ip,
       realIp
-    });
+    });*/
 
     // تحديث معرف الجلسة الحالية
-    await UserModel.updateById(user.id, { currentSessionId: session.id });
+    //await UserModel.updateById(user.id, { currentSessionId: session.id });
 
     // إنشاء التوكنات
     const tokens = await generateTokenPair(user.id, session.id, user.role);
@@ -163,7 +164,7 @@ export const loginUser = async (phone, req) => {
     await rateLimiter.recordSuccessfulAttempt(phone, realIp, userAgent, user.id);
 
     // إلغاء جميع Refresh Tokens الأخرى للمستخدم للحفاظ على جلسة واحدة فعّالة فقط
-    await revokeUserRefreshTokensExceptSession(user.id, session.id);
+    //await revokeUserRefreshTokensExceptSession(user.id, session.id);
 
     const { isVerified: __, ...safeUser } = user;
     return {

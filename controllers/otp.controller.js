@@ -1,7 +1,7 @@
-import { UserModel , SessionModel } from "../models/index.js";
+import { UserModel, SessionModel } from "../models/index.js";
 import { sendOtp, verifyOtp } from "../services/otp.service.js";
 import { FAILURE_REQUEST, OTP_ALREADY_VERIFIED, SUCCESS_REQUEST } from "../validators/messagesResponse.js";
-import { BAD_REQUEST_STATUS_CODE, SUCCESS_STATUS_CODE } from "../validators/statusCode.js";
+import { BAD_REQUEST_STATUS_CODE, FORBIDDEN_STATUS_CODE, SUCCESS_STATUS_CODE } from "../validators/statusCode.js";
 
 export const requestOtp = async (req, res, next) => {
   try {
@@ -13,7 +13,7 @@ export const requestOtp = async (req, res, next) => {
       const activeSession = await SessionModel.findByuserId(user.id);
 
       if (activeSession && deviceInfo !== activeSession.deviceInfo) {
-        return res.status(403).json({
+        return res.status(FORBIDDEN_STATUS_CODE).json({
           success: false,
           message: "لا يمكن تسجيل الدخول إلا من جهاز واحد ,يرجى التواصل مع فريق الدعم",
         });
@@ -39,7 +39,6 @@ export const requestOtp = async (req, res, next) => {
 export const checkOtp = async (req, res, next) => {
   try {
     const { phone, code, deviceInfo } = req.body;
-
     // Verify the OTP
     const result = await verifyOtp(phone, code, deviceInfo, req);
 

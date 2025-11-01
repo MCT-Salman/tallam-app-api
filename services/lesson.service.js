@@ -239,132 +239,8 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
     }
   };
 
-  // Base query: always include level details and lesson names (without full details)
-  const result = await prisma.courseLevel.findUnique({
-    where: { id: courseLevelId },
-    select: {
-      id: true,
-      name: true,
-      description: true,
-      priceUSD: true,
-      priceSAR: true,
-      previewUrl: true,
-      order: true,
-      imageUrl: true,
-      ...baseInclude,
-      lessons: {
-        select: {
-          id: true,
-          title: true,
-          description: true,
-          durationSec: true,
-          orderIndex: true,
-          courseLevelId: true,
-          isFreePreview: true,
-        }
-      }
-    }
-  });
-
-  if (!result) {
-    throw new Error("المستوى غير موجود");
-  }
-  // If user is not logged in, return basic details
-  if (!userId) {
-    return { ...result, issubscribed: false };
-  }
-
-  // Check if user has valid access code
-  const accessCode = await prisma.accessCode.findFirst({
-    where: {
-      usedBy: userId,
-      courseLevelId: courseLevelId,
-      used: true
-    }
-  });
-
-  // If access code exists with used=true, include full lesson details
-  if (accessCode || result.isFree) {
-    const fullResult = await prisma.courseLevel.findUnique({
-      where: { id: courseLevelId },
-      select: {
-        // الحقول المباشرة من CourseLevel
-        id: true,
-        name: true,
-        description: true,
-        priceUSD: true,
-        priceSAR: true,
-        previewUrl: true,
-        order: true,
-        ...baseInclude,
-        lessons: {
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            durationSec: true,
-            orderIndex: true,
-            youtubeUrl: true,
-            youtubeId: true,
-            googleDriveUrl: true,
-            courseLevelId: true,
-            isFreePreview: true,
-          },
-        },
-        /* files: {
-           select: {
-             id: true,
-             url: true,
-             name: true,
-             type: true,
-           },
-         },
-         quizzes: {
-           select: {
-             id: true,
-             title: true,
-           },
-         },*/
-/*   },
- });
-
- return { ...fullResult, issubscribed: true };
-}
-// Otherwise, return basic details
-return { ...result, issubscribed: false };
-};*/
-export const DetailLevel = async (courseLevelId, userId = null) => {
-  const baseInclude = {
-    course: {
-      select: {
-        id: true,
-        title: true,
-        description: true,
-      }
-    },
-    instructor: {
-      select: {
-        id: true,
-        name: true,
-      }
-    }
-  };
-  /*
-    const isDollar = await prisma.appSettings.findUnique({
-      where: { key: "isDollar" },
-      select: { value: true }
-    });*/
-  const usercountry = await prisma.user.findUnique({
-    where: { id: userId },
-    select: { country: true }
-  });
-
   let isDollar = true;
-  if (usercountry.country === 'SAR' || usercountry.country === 'Syria' || usercountry.country === 'سوريا') {
-    isDollar = false;
-  } else {
-    isDollar = true;
-  }
+
   // جلب كل المعلومات الأساسية + الدروس مع كل الحقول الممكنة
   const result = await prisma.courseLevel.findUnique({
     where: { id: courseLevelId },
@@ -400,6 +276,15 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
   // إذا المستخدم غير مسجل
   let isSubscribed = false;
   if (userId) {
+    const usercountry = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { country: true }
+    });
+    if (usercountry.country === 'SAR' || usercountry.country === 'Syria' || usercountry.country === 'سوريا') {
+      isDollar = false;
+    } else {
+      isDollar = true;
+    }
     const accessCode = await prisma.accessCode.findFirst({
       where: {
         usedBy: userId,
@@ -440,4 +325,82 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
   }
 
   return { ...result, lessons, issubscribed: isSubscribed, isDollar, review, existingResult };
+};*/
+export const DetailLevel = async (courseLevelId, userId = null) => {
+  let isDollar = true;
+
+  const result = await prisma.courseLevel.findUnique({
+    where: { id: courseLevelId },
+    include: {
+      course: { select: { id: true, title: true, description: true } },
+      instructor: { select: { id: true, name: true } },
+      lessons: {
+        select: {
+          id: true,
+          title: true,
+          durationSec: true,
+          orderIndex: true,
+          courseLevelId: true,
+          isFreePreview: true,
+          youtubeUrl: true,
+          youtubeId: true,
+          googleDriveUrl: true,
+        },
+        orderBy: { orderIndex: 'asc' },
+      },
+    },
+  });
+
+  if (!result) throw new Error("المستوى غير موجود");
+
+  let isSubscribed = false;
+
+  if (userId) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { country: true },
+    });
+
+    const country = user?.country?.toLowerCase();
+    isDollar = !(country === 'sar' || country === 'syria' || country === 'سوريا');
+
+    const accessCode = await prisma.accessCode.findFirst({
+      where: {
+        usedBy: userId,
+        courseLevelId,
+        isActive: true,
+        expiresAt: { gt: new Date() },
+      },
+    });
+
+    isSubscribed = !!(accessCode || result.isFree);
+  }
+
+  const lessons = result.lessons.map(({ isFreePreview, ...rest }) =>
+    (isSubscribed || isFreePreview)
+      ? { isFreePreview, ...rest }
+      : {
+        id: rest.id,
+        title: rest.title,
+        durationSec: rest.durationSec,
+        orderIndex: rest.orderIndex,
+        courseLevelId: rest.courseLevelId,
+        isFreePreview,
+      }
+  );
+
+  let hasReview = false;
+  let hasQuizResult = false;
+
+  if (userId) {
+    const [review, quizResult] = await Promise.all([
+      prisma.review.findFirst({ where: { userId, courseLevelId } }),
+      prisma.quizResult.findFirst({ where: { courseLevelId, userId } }),
+    ]);
+    hasReview = !!review;
+    hasQuizResult = !!quizResult;
+  }
+
+  return { ...result, lessons, isSubscribed, isDollar, hasReview, hasQuizResult };
 };
+

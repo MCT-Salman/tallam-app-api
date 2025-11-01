@@ -12,6 +12,7 @@ import {
 export const adminCreateLevel = async (req, res, next) => {
   try {
     const imageUrl = req.file ? `/uploads/images/courselevel/${req.file.filename}` : null;
+    
     const level = await createLevel(parseInt(req.params.courseId, 10), {
       name: `المستوى ${req.body.order}`,
       description: req.body.description,
@@ -359,7 +360,6 @@ export const publicDetailLevel = async (req, res, next) => {
   try {
     const courseLevelId = parseInt(req.params.courseLevelId, 10);
     const userId = req.user ? req.user.id : null; // Check if user is logged in
-    console.log(userId)
     const level = await DetailLevel(courseLevelId, userId);
     res.json({
       success: true,

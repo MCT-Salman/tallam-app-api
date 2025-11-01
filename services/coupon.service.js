@@ -195,18 +195,14 @@ export const applyCoupon = async ({ code, courseLevelId }) => {
     where: { id: courseLevelId },
     select: { priceUSD: true, priceSAR: true }
   });
-
+  let isDollar = true;
   const usercountry = await prisma.user.findUnique({
     where: { id: userId },
     select: { country: true }
   });
 
-  let isDollar = true;
-  if (usercountry.country === 'SAR' || usercountry.country === 'Syria' || usercountry.country === 'سوريا') {
-    isDollar = false;
-  } else {
-    isDollar = true;
-  }
+  const country = usercountry?.country?.toLowerCase();
+  isDollar = !(country === 'sar' || country === 'syria' || country === 'سوريا');
 
   let finalPrice = isDollar ? price.priceUSD : price.priceSAR;
 
