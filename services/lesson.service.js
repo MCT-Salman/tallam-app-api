@@ -29,7 +29,7 @@ export const getLevelByEncode = async (encode) => {
   const level = await prisma.courseLevel.findUnique({
     where: { encode },
     include: {
-      course: { 
+      course: {
         select: {
           ...courseSelect,
           specialization: { select: { id: true, name: true } }
@@ -38,7 +38,7 @@ export const getLevelByEncode = async (encode) => {
       instructor: true
     }
   });
-  if (!level)  throw new Error("المستوى غير موجود");
+  if (!level) throw new Error("المستوى غير موجود");
   return level;
 };
 
@@ -114,15 +114,57 @@ export const listLevelsByCourse = async (courseId, pagination = {}) => {
   };
 };
 
-export const updateLevel = (id, data) =>
-  prisma.courseLevel.update({
-    where: { id },
-    data,
-    include: {
-      course: { select: courseSelect },
-      instructor: true
-    }
-  });
+export const updateLevel = async (id, data) => {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      // 1️⃣ جلب المستوى الحالي
+      const existingLevel = await tx.courseLevel.findUnique({ where: { id } });
+      if (!existingLevel) throw new Error("المستوى غير موجود");
+
+      // 2️⃣ التحقق من عدم تكرار order لنفس المدرس والدورة
+      const duplicateOrder = await tx.courseLevel.findFirst({
+        where: {
+          courseId: data.courseId || existingLevel.courseId,
+          instructorId: data.instructorId || existingLevel.instructorId,
+          order: data.order || existingLevel.order,
+          NOT: { id }
+        }
+      });
+      if (duplicateOrder)
+        throw new Error("هذا الترتيب مستخدم مسبقًا في هذا الدورة لنفس المدرس");
+
+      // 3️⃣ تحديد القيم النهائية لتوليد Encode
+      const finalCourseId = data.courseId || existingLevel.courseId;
+      const finalInstructorId = data.instructorId || existingLevel.instructorId;
+
+      // 4️⃣ جلب specializationId قبل التحديث
+      const specialization = await tx.course.findUnique({
+        where: { id: finalCourseId },
+        select: { specializationId: true }
+      });
+
+      if (!specialization) throw new Error("الدورة المرتبطة غير موجودة");
+
+      const Encode = `TL-${specialization.specializationId}-${finalCourseId}-${finalInstructorId}-${id}`;
+
+      // 5️⃣ تحديث المستوى مع Encode في خطوة واحدة
+      const updatedLevel = await tx.courseLevel.update({
+        where: { id },
+        data: { ...data, Encode },
+        include: {
+          course: { select: courseSelect },
+          instructor: true
+        }
+      });
+
+      return updatedLevel;
+    });
+  } catch (err) {
+    console.error("Error updating course level:", err);
+    throw err;
+  }
+};
+
 
 export const toggleLevel = (id, isActive) =>
   prisma.courseLevel.update({
@@ -195,14 +237,59 @@ export const listLessonsByLevel = async (courseLevelId, pagination = {}) => {
   };
 };
 
-export const updateLesson = (id, data) =>
-  prisma.lesson.update({
-    where: { id },
-    data,
-    include: {
-      courseLevel: { include: { course: { select: courseSelect } } }
-    }
-  });
+export const updateLesson = async (id, data) => {
+  try {
+    return await prisma.$transaction(async (tx) => {
+      // 1️⃣ جلب الدرس الحالي
+      const existingLesson = await tx.lesson.findUnique({
+        where: { id },
+        include: { courseLevel: true }
+      });
+      if (!existingLesson) throw new Error("الدرس غير موجود");
+
+      // 2️⃣ التحقق من عدم تكرار orderIndex في نفس المستوى
+      const duplicateOrder = await tx.lesson.findFirst({
+        where: {
+          courseLevelId: existingLesson.courseLevelId,
+          orderIndex: data.orderIndex || existingLesson.orderIndex,
+          NOT: { id }
+        }
+      });
+      if (duplicateOrder)
+        throw new Error("يوجد درس بنفس الترتيب في هذا المستوى");
+
+      // 3️⃣ تحديث الدرس
+      const updatedLesson = await tx.lesson.update({
+        where: { id },
+        data,
+        include: {
+          courseLevel: { include: { course: { select: courseSelect } } }
+        }
+      });
+
+      // 4️⃣ إرسال إشعار إذا كان هذا الدرس الأول (اختياري)
+      const count = await tx.lesson.count({
+        where: { courseLevelId: updatedLesson.courseLevelId }
+      });
+      if (count === 1) {
+        try {
+          await sendNewLessonNotification(updatedLesson);
+          console.log(`✅ Notification sent for updated lesson: ${updatedLesson.title}`);
+        } catch (error) {
+          console.error(
+            `❌ Failed to send notification for updated lesson: ${updatedLesson.title}`,
+            error.message
+          );
+        }
+      }
+
+      return updatedLesson;
+    });
+  } catch (err) {
+    console.error("Error updating lesson:", err);
+    throw err;
+  }
+};
 
 export const toggleLesson = (id, isActive) =>
   prisma.lesson.update({
@@ -443,6 +530,6 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
     existingResult = !!quizResult;
   }
 
-  return { ...result, lessons, isSubscribed, isDollar, review, existingResult };
+  return { ...result, lessons, issubscribed: isSubscribed, isDollar, review, existingResult };
 };
 
