@@ -145,12 +145,12 @@ export const updateLevel = async (id, data) => {
 
       if (!specialization) throw new Error("الدورة المرتبطة غير موجودة");
 
-      const Encode = `TL-${specialization.specializationId}-${finalCourseId}-${finalInstructorId}-${id}`;
+      const encode = `TL-${specialization.specializationId}-${finalCourseId}-${finalInstructorId}-${id}`;
 
       // 5️⃣ تحديث المستوى مع Encode في خطوة واحدة
       const updatedLevel = await tx.courseLevel.update({
         where: { id },
-        data: { ...data, Encode },
+        data: { ...data, encode },
         include: {
           course: { select: courseSelect },
           instructor: true
