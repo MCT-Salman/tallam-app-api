@@ -48,6 +48,14 @@ export const toggleActiveRules = [
   body("isActive").isBoolean().withMessage("isActive غير صالح")
 ];
 
+
+export const codeParam = [
+  param("encode")
+    .isString().withMessage("صيغة الكود غير صحيحة")
+    .matches(/^TL-[A-Za-z0-9\-]+$/)
+    .withMessage("الكود يجب أن يبدأ بـ TL- ويحتوي على أحرف وأرقام فقط")
+];
+
 export const instructorIdParam = [
   param("instructorId").isInt({ min: 1 }).withMessage("معرف المدرب غير صحيح"),
 ];

@@ -2,6 +2,7 @@ import { serializeResponse } from "../utils/serialize.js";
 import { checkUrl, isYouTubeUrl, checkYouTubeAvailability } from "../utils/urlCheck.js";
 import { deleteFile } from "../utils/deleteFile.js";
 import {
+  listCodeLevels, getLevelByEncode,
   getLevelById, createLevel, listLevelsByCourse, updateLevel, toggleLevel, deleteLevel,
   createLessonForLevel, listLessonsByLevel,
   updateLesson, toggleLesson, deleteLesson,
@@ -9,10 +10,38 @@ import {
 } from "../services/lesson.service.js";
 
 // Levels (Admin)
+export const adminListCodeLevels = async (req, res, next) => {
+  try {
+    const levels = await listCodeLevels();
+    res.json({
+      success: true,
+      message: "تم جلب قائمة أكواد المستويات بنجاح",
+      data: levels
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
+export const adminDetailLevel = async (req, res, next) => {
+  try {
+    const level = await getLevelByEncode(req.params.encode);
+    res.json({
+      success: true,
+      message: "تم جلب تفاصيل المستوى بنجاح",
+      data: level
+    });
+  } catch (e) {
+    e.statusCode = e.statusCode || 400;
+    next(e);
+  }
+};
+
 export const adminCreateLevel = async (req, res, next) => {
   try {
     const imageUrl = req.file ? `/uploads/images/courselevel/${req.file.filename}` : null;
-    
+
     const level = await createLevel(parseInt(req.params.courseId, 10), {
       name: `المستوى ${req.body.order}`,
       description: req.body.description,
@@ -183,7 +212,7 @@ export const adminCreateLessonForLevel = async (req, res, next) => {
           });
         }*/
 
-    
+
     const lesson = await createLessonForLevel(parseInt(req.params.courseLevelId, 10), {
       title: req.body.title,
       youtubeUrl,

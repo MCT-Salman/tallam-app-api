@@ -224,6 +224,7 @@ model CourseLevel {
   id           Int              @id @default(autoincrement())
   name         String
   description  String?
+  encode       String?          @unique
   order        Int?
   priceUSD     Float?
   priceSAR     Float?

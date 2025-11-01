@@ -16,6 +16,31 @@ export const courseSelect = {
 };
 
 // Levels
+export const listCodeLevels = async () => {
+  return prisma.courseLevel.findMany({
+    select: {
+      id: true,
+      name: true,
+      encode: true
+    }
+  });
+};
+export const getLevelByEncode = async (encode) => {
+  const level = await prisma.courseLevel.findUnique({
+    where: { encode },
+    include: {
+      course: { 
+        select: {
+          ...courseSelect,
+          specialization: { select: { id: true, name: true } }
+        }
+      },
+      instructor: true
+    }
+  });
+  if (!level)  throw new Error("المستوى غير موجود");
+  return level;
+};
 
 export const getLevelById = async (id) => {
   return prisma.courseLevel.findUnique({
@@ -28,19 +53,36 @@ export const getLevelById = async (id) => {
 };
 
 export const createLevel = async (courseId, data) => {
-  const existingLevel = await prisma.courseLevel.findFirst({
-    where: { courseId, instructorId: data.instructorId, order: data.order }
+  return await prisma.$transaction(async (tx) => {
+    const existingLevel = await tx.courseLevel.findFirst({
+      where: { courseId, instructorId: data.instructorId, order: data.order }
+    });
+    if (existingLevel) throw new Error("هذا الترتيب مستخدم مسبقًا في هذا الدورة لنفس المدرس");
+
+    const specialization = await tx.course.findUnique({
+      where: { id: courseId },
+      select: { specializationId: true }
+    });
+
+    const level = await tx.courseLevel.create({
+      data: { ...data, courseId },
+      include: {
+        course: { select: courseSelect },
+        instructor: true
+      }
+    });
+
+    const encode = `TL-${specialization.specializationId}${courseId}${data.instructorId}${level.id}`;
+
+    const updatedLevel = await tx.courseLevel.update({
+      where: { id: level.id },
+      data: { encode }
+    });
+
+    return updatedLevel;
   });
-  if (existingLevel) throw new Error("هذا الترتيب مستخدم مسبقًا في هذا الدورة لنفس المدرس");
-  const level = await prisma.courseLevel.create({
-    data: { ...data, courseId },
-    include: {
-      course: { select: courseSelect },
-      instructor: true
-    }
-  });
-  return level;
 };
+
 
 export const listLevelsByCourse = async (courseId, pagination = {}) => {
   const { page = 1, limit = 10 } = pagination;
@@ -389,18 +431,18 @@ export const DetailLevel = async (courseLevelId, userId = null) => {
       }
   );
 
-  let hasReview = false;
-  let hasQuizResult = false;
+  let review = false;
+  let existingResult = false;
 
   if (userId) {
-    const [review, quizResult] = await Promise.all([
+    const [reviews, quizResult] = await Promise.all([
       prisma.review.findFirst({ where: { userId, courseLevelId } }),
       prisma.quizResult.findFirst({ where: { courseLevelId, userId } }),
     ]);
-    hasReview = !!review;
-    hasQuizResult = !!quizResult;
+    review = !!reviews;
+    existingResult = !!quizResult;
   }
 
-  return { ...result, lessons, isSubscribed, isDollar, hasReview, hasQuizResult };
+  return { ...result, lessons, isSubscribed, isDollar, review, existingResult };
 };
 
